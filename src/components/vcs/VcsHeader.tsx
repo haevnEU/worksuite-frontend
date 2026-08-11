@@ -1,13 +1,13 @@
 import React from "react";
-import { GitPullRequest, Plus, RefreshCw, ExternalLink } from "lucide-react";
-import { GITLAB_URL } from "../../constants/url.constant.ts";
+import { ExternalLink, GitPullRequest, RefreshCw } from "lucide-react";
+import { VCS_URL } from "../../constants/url.constant.ts";
 
-interface GitLabHeaderProps {
+interface VcsHeaderProps {
   onRefresh: () => void;
   isLoading: boolean;
 }
 
-export const GitLabHeader: React.FC<GitLabHeaderProps> = ({
+export const VcsHeader: React.FC<VcsHeaderProps> = ({
   onRefresh,
   isLoading,
 }) => {
@@ -18,7 +18,7 @@ export const GitLabHeader: React.FC<GitLabHeaderProps> = ({
           <GitPullRequest className="w-5 h-5" />
         </div>
         <div>
-          <h1 className="text-base font-extrabold text-white">GitLab Hub</h1>
+          <h1 className="text-base font-extrabold text-white">VCS Hub</h1>
           <p className="text-xs text-slate-400 mt-0.5">
             Code Reviews, Merge Requests & CI/CD Pipelines
           </p>
@@ -39,12 +39,12 @@ export const GitLabHeader: React.FC<GitLabHeaderProps> = ({
         </button>
 
         <a
-          href={`${GITLAB_URL}`}
+          href={`${VCS_URL}`}
           target="_blank"
           rel="noreferrer"
           className="flex items-center space-x-2 px-3.5 py-2 bg-orange-600/10 hover:bg-orange-600/20 text-orange-400 border border-orange-500/30 rounded-xl text-xs font-bold transition-colors"
         >
-          <span>Open GitLab</span>
+          <span>Open VCS</span>
           <ExternalLink className="w-3.5 h-3.5" />
         </a>
       </div>

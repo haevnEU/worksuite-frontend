@@ -1,12 +1,11 @@
-import { ShareableResource } from "../../models/shareableResource.model.ts";
 import { NetworkService } from "./network.service.ts";
 import { QaProtocolData } from "../../models/ticket.model.ts";
 
-export class GitlabService extends NetworkService {
+export class VcsService extends NetworkService {
   constructor() {
-    super("/gitlab");
+    super("/vcs");
     console.log(
-      "[GitlabService] Initialized GitlabService with base URL:",
+      "[VcsService] Initialized VcsService with base URL:",
       this.baseUrl,
     );
   }
@@ -31,4 +30,4 @@ export class GitlabService extends NetworkService {
   };
 }
 
-export const gitlabService = new GitlabService();
+export const vcsService = new VcsService();

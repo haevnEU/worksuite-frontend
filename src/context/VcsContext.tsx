@@ -6,20 +6,20 @@ import React, {
   useState,
 } from "react";
 
-interface GitLabContextType {
-  gitlabLink: string;
+interface VcsContextType {
+  vcsLink: string;
   repos: GitLabRepository[];
   fetchRepos: () => Promise<void>;
   fetchPipeline: () => Promise<void>;
   fetchMergeRequests: () => Promise<void>;
 }
 
-const GitLabContext = createContext<GitLabContextType | undefined>(undefined);
+const VcsContext = createContext<VcsContextType | undefined>(undefined);
 
-export const GitLabProvider: React.FC<{ children: ReactNode }> = ({
+export const VcsProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const gitlabLink: string = "git/";
+  const vcsLink: string = "git/";
   const [repos, setRepos] = useState<GitLabRepository[]>([]);
   const fetchRepos = async () => {};
 
@@ -95,9 +95,9 @@ export const GitLabProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   return (
-    <GitLabContext.Provider
+    <VcsContext.Provider
       value={{
-        gitlabLink,
+        vcsLink,
         repos,
         fetchRepos,
         fetchMergeRequests,
@@ -105,14 +105,14 @@ export const GitLabProvider: React.FC<{ children: ReactNode }> = ({
       }}
     >
       {children}
-    </GitLabContext.Provider>
+    </VcsContext.Provider>
   );
 };
 
-export const useVCS = (): GitLabContextType => {
-  const context = useContext(GitLabContext);
+export const useVCS = (): VcsContextType => {
+  const context = useContext(VcsContext);
   if (!context) {
-    throw new Error("useVCS must be used within a GitLabProvider");
+    throw new Error("useVCS must be used within a VcsProvider");
   }
   return context;
 };

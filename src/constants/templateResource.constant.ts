@@ -1,4 +1,4 @@
-export const TEMPLATE_PLATFORMS = ["general", "redmine", "gitlab"] as const;
+export const TEMPLATE_PLATFORMS = ["general", "redmine", "vcs"] as const;
 export const TEMPLATE_TAGS = [
   "General",
   "Merge Request",

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { UserModel } from "../models/userModel.model.ts";
+import { UserModel } from "../models/user.model.ts";
 
 interface AuthContextType {
   user: UserModel | null;

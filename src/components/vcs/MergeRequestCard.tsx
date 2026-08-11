@@ -10,8 +10,8 @@ import {
   Check,
   ExternalLink,
 } from "lucide-react";
-import { MergeRequestModel } from "../../models/gitlab.model.ts";
-import { PipelineStatus } from "../../types/gitlab.type.ts";
+import { MergeRequestModel } from "../../models/vcs.model.ts";
+import { PipelineStatus } from "../../types/vcs.type.ts";
 
 interface MergeRequestCardProps {
   mr: MergeRequestModel;

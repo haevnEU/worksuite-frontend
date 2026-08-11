@@ -6,20 +6,19 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-interface GitLabKpiCardsProps {
+interface VcsKpiCardsProps {
   pendingReviewsCount: number;
   myMrCount: number;
   failedPipelinesCount: number;
 }
 
-export const GitLabKpiCards: React.FC<GitLabKpiCardsProps> = ({
+export const VcsKpiCards: React.FC<VcsKpiCardsProps> = ({
   pendingReviewsCount,
   myMrCount,
   failedPipelinesCount,
 }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {/* Pending Reviews */}
       <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
@@ -34,7 +33,6 @@ export const GitLabKpiCards: React.FC<GitLabKpiCardsProps> = ({
         </div>
       </div>
 
-      {/* My MRs */}
       <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
@@ -49,7 +47,6 @@ export const GitLabKpiCards: React.FC<GitLabKpiCardsProps> = ({
         </div>
       </div>
 
-      {/* Failed Pipelines */}
       <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">

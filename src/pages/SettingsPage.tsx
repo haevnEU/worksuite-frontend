@@ -5,7 +5,7 @@ import { AvatarSection } from "../components/settings/AvatarSection.tsx";
 import { PdfExportPreferencesSection } from "../components/settings/PdfExportPreferencesSection.tsx";
 import { KpiSettingsSection } from "../components/settings/KpiSettingsSection.tsx";
 import { AppearanceSection } from "../components/settings/AppearanceSection.tsx";
-import { GitlabKeySection } from "../components/settings/GitlabKeySection.tsx";
+import { VcsKeySection } from "../components/settings/VcsKeySection.tsx";
 import { RedmineKeySection } from "../components/settings/RedmineKeySection.tsx";
 import { PasswordSection } from "../components/settings/PasswordSection.tsx";
 
@@ -34,7 +34,7 @@ export const SettingsPage: React.FC = () => {
         <PdfExportPreferencesSection />
         <KpiSettingsSection />
         <AppearanceSection />
-        <GitlabKeySection />
+        <VcsKeySection />
         <RedmineKeySection />
       </div>
     </div>

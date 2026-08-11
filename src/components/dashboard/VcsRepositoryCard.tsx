@@ -1,4 +1,4 @@
-// TODO When real gitlab is usable edit it according
+// TODO When real VCS is usable edit it according
 
 import React from "react";
 import {
@@ -9,14 +9,13 @@ import {
   GitPullRequest,
   PlayCircle,
 } from "lucide-react";
-import { GitLabRepository } from "../../models/gitlab.model.ts";
 import { useToast } from "../../toaster/ToastContext.tsx";
 
-interface GitlabRepositoryCardProps {
+interface VcsRepositoryCardProps {
   repo: GitLabRepository;
 }
 
-export const GitlabRepositoryCard: React.FC<GitlabRepositoryCardProps> = ({
+export const VcsRepositoryCard: React.FC<VcsRepositoryCardProps> = ({
   repo,
 }) => {
   const { toastGood } = useToast();
@@ -148,7 +147,7 @@ export const GitlabRepositoryCard: React.FC<GitlabRepositoryCardProps> = ({
           rel="noopener noreferrer"
           className="text-blue-400 hover:text-blue-300 font-semibold flex items-center space-x-1 text-xs"
         >
-          <span>Open GitLab</span>
+          <span>Open VCS</span>
           <ExternalLink className="w-3 h-3" />
         </a>
       </div>

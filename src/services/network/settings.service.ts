@@ -1,6 +1,6 @@
 import { NetworkService } from "./network.service.ts";
 import { ToastManager } from "../../toaster/ToastManager.ts";
-import { UserModel } from "../../models/userModel.model.ts";
+import { UserModel } from "../../models/user.model.ts";
 
 export class SettingsService extends NetworkService {
   constructor() {
@@ -34,15 +34,15 @@ export class SettingsService extends NetworkService {
     }
   }
 
-  public async setGitlabKey(user: UserModel, apiKey: string): Promise<void> {
+  public async setVcsKey(user: UserModel, apiKey: string): Promise<void> {
     try {
-      console.log("[SettingsService] Setting GitLab API Key for user:", user);
+      console.log("[SettingsService] Setting VCS API Key for user:", user);
       const reqOpts = {
         headers: {
-          "X-Gitlab-API-Key": apiKey,
+          "X-VCS-API-Key": apiKey,
         },
       };
-      await this.put<void>(`/users/${user.id}/gitlab-key`, {}, reqOpts);
+      await this.put<void>(`/users/${user.id}/vcs-key`, {}, reqOpts);
       ToastManager.toastGood("GitLab API Key set.");
     } catch (error) {
       ToastManager.toastBad("Could not set GitLab key:");

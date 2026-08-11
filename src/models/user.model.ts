@@ -3,7 +3,7 @@ export interface UserModel {
   firstName: string;
   lastName: string;
   role: string;
-  gitlabKey?: string;
+  vcsKey?: string;
   redmineKey?: string;
   createdAt: string;
   avatarUrl?: string;

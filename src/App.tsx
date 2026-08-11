@@ -18,7 +18,7 @@ import { SharePage } from "./pages/SharePage.tsx";
 import { TemplatePage } from "./pages/TemplatePage.tsx";
 import { NotesPage } from "./pages/NotesPage.tsx";
 import { SnippetsPage } from "./pages/SnippetsPage.tsx";
-import { GitLabPage } from "./pages/GitLabPage.tsx";
+import { VcsPage } from "./pages/VcsPage.tsx";
 import { SettingsPage } from "./pages/SettingsPage.tsx";
 import { DatabaseQueryPage } from "./pages/DatabaseQueryPage.tsx";
 import { WeeklyMeetingPage } from "./pages/WeeklyMeetingPage.tsx";
@@ -29,7 +29,7 @@ import { NoConnectionPage } from "./pages/NoConnection.tsx";
 import { ToastProvider } from "./toaster/ToastContext.tsx";
 import { SettingsProvider } from "./context/SettingsContext.tsx";
 import { TicketProvider, useTickets } from "./context/TicketContext.tsx";
-import { GitLabProvider, useVCS } from "./context/GitlabContext.tsx";
+import { VcsProvider, useVCS } from "./context/VcsContext.tsx";
 import { KPIProvider } from "./context/KPIContext.tsx";
 import { TimeProvider, useTime } from "./context/TimeContext.tsx";
 import { InfoProvider } from "./context/InfoContext.tsx";
@@ -97,7 +97,7 @@ const AuthenticatedLayout: React.FC = () => {
               <Route path="/teammeeting" element={<TeamMeetingPage />} />
               <Route path="/csv-viewer" element={<CsvViewerPage />} />
               <Route path="/log" element={<LogPage />} />
-              <Route path="/gitlab" element={<GitLabPage />} />
+              <Route path="/vcs" element={<VcsPage />} />
               <Route path="/time-log" element={<TimeTrackingPage />} />
               <Route path="/review" element={<ReviewPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
@@ -127,13 +127,13 @@ const AppRoutes: React.FC = () => {
           <ProtectedRoute>
             <InfoProvider>
               <TimeProvider>
-                <GitLabProvider>
+                <VcsProvider>
                   <TicketProvider>
                     <KPIProvider>
                       <AuthenticatedLayout />
                     </KPIProvider>
                   </TicketProvider>
-                </GitLabProvider>
+                </VcsProvider>
               </TimeProvider>
             </InfoProvider>
           </ProtectedRoute>

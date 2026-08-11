@@ -6,7 +6,7 @@ import {
   Clock,
   ExternalLink,
 } from "lucide-react";
-import { ProtectedBranchPipeline } from "../../models/gitlab.model.ts";
+import { ProtectedBranchPipeline } from "../../models/vcs.model.ts";
 
 interface PipelineMonitorWidgetProps {
   pipelines: ProtectedBranchPipeline[];

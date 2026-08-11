@@ -1,4 +1,4 @@
-import { PipelineStatus } from "../types/gitlab.type.ts";
+import { PipelineStatus } from "../types/vcs.type.ts";
 
 export interface MergeRequestModel {
   id: string | number;

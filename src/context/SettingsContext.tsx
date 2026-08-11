@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useContext, useState } from "react";
-import { UserModel } from "../models/userModel.model.ts";
+import { UserModel } from "../models/user.model.ts";
 import { settingsService } from "../services/network/settings.service.ts";
 import { DaysRange } from "../types/kpi.type.ts";
 import {
@@ -18,9 +18,9 @@ interface SettingsContextType {
   isDraft: boolean;
   setIsDraft: (isDraft: boolean) => void;
   setSelectedUser: (user: UserModel) => void;
-  updateGitlabKey: (key: string) => Promise<void>;
+  updateVcsKey: (key: string) => Promise<void>;
   updateRedmineKey: (key: string) => Promise<void>;
-  hasGitlabKey: boolean;
+  hasVcsKey: boolean;
   hasRedmineKey: boolean;
   updateAvatar: (file: File) => Promise<void>;
   getAvatarUrl: () => string | undefined;
@@ -115,12 +115,14 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     console.log("[SettingsContext] setSelectedUser called with:", userToSelect);
   };
 
-  const updateGitlabKey = async (key: string) => {
-    await settingsService.setGitlabKey(currentUser, key);
+  const updateVcsKey = async (key: string) => {
+    await settingsService.setVcsKey(currentUser, key);
+    setHasVcsKey(true);
   };
 
   const updateRedmineKey = async (key: string) => {
     await settingsService.setRedmineKey(currentUser, key);
+    setHasRedmineKey(true);
   };
 
   const updateAvatar = async (file: File) => {
@@ -164,9 +166,13 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.setItem(STORAGE_KEY_KPI_SETTINGS, JSON.stringify(updated));
   };
 
-  const hasGitlabKey = !!currentUser.gitlabKey && currentUser.gitlabKey !== "";
-  const hasRedmineKey =
-    !!currentUser.redmineKey && currentUser.redmineKey !== "";
+  const [hasVcsKey, setHasVcsKey] = useState<boolean>(
+    !!currentUser.vcsKey && currentUser.vcsKey !== "",
+  );
+
+  const [hasRedmineKey, setHasRedmineKey] = useState<boolean>(
+    !!currentUser.redmineKey && currentUser.redmineKey !== "",
+  );
 
   return (
     <SettingsContext.Provider
@@ -175,9 +181,9 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
         isDraft,
         setIsDraft,
         setSelectedUser,
-        updateGitlabKey,
+        updateVcsKey,
         updateRedmineKey,
-        hasGitlabKey,
+        hasVcsKey,
         hasRedmineKey,
         updateAvatar,
         getAvatarUrl,

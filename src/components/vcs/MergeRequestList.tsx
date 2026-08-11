@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { GitPullRequest, GitMerge } from "lucide-react";
 import { MergeRequestCard } from "./MergeRequestCard";
-import { MergeRequestModel } from "../../models/gitlab.model.ts";
+import { MergeRequestModel } from "../../models/vcs.model.ts";
 
 interface MergeRequestListProps {
   pendingReviews: MergeRequestModel[];

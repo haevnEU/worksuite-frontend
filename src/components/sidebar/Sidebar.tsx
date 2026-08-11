@@ -52,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       title: "Overview",
       items: [
         { label: "Dashboard", path: "/", icon: LayoutDashboard },
-        { label: "GitLab Repositories", path: "/gitlab", icon: GitBranch },
+        { label: "VCS Repositories", path: "/vcs", icon: GitBranch },
         {
           label: "Redmine Tickets",
           path: "/redmine",
