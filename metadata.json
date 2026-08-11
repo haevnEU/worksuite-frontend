@@ -1,0 +1,6 @@
+{
+  "name": "WorkTool Portal",
+  "description": "Central WorkTool platform with homepage dashboard and professional Redmine ticket management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
