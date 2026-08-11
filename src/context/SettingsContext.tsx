@@ -1,0 +1,204 @@
+import React, { createContext, ReactNode, useContext, useState } from "react";
+import { UserModel } from "../models/userModel.model.ts";
+import { settingsService } from "../services/network/settings.service.ts";
+import { DaysRange } from "../types/kpi.type.ts";
+import {
+  STORAGE_KEY_IS_DRAFT,
+  STORAGE_KEY_KPI_CHART_TYPE,
+  STORAGE_KEY_KPI_DAYS_RANGE,
+  STORAGE_KEY_KPI_SETTINGS,
+} from "../constants/settings.constant.ts";
+
+import { ChartType } from "../types/settings.type.ts";
+import { KpiSettings } from "../models/settings.model.ts";
+import { useAuth } from "./AuthContext.tsx";
+
+interface SettingsContextType {
+  user: UserModel;
+  isDraft: boolean;
+  setIsDraft: (isDraft: boolean) => void;
+  setSelectedUser: (user: UserModel) => void;
+  updateGitlabKey: (key: string) => Promise<void>;
+  updateRedmineKey: (key: string) => Promise<void>;
+  hasGitlabKey: boolean;
+  hasRedmineKey: boolean;
+  updateAvatar: (file: File) => Promise<void>;
+  getAvatarUrl: () => string | undefined;
+  enabledKpis: KpiSettings;
+  enableKpi: (key: string) => Promise<void>;
+  setAllKpis: (value: boolean) => void;
+  daysRange: DaysRange;
+  setDaysRange: (value: DaysRange) => void;
+  chartType: ChartType;
+  setChartType: (value: ChartType) => void;
+}
+
+const SettingsContext = createContext<SettingsContextType | undefined>(
+  undefined,
+);
+
+export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  const { user: authUser } = useAuth();
+
+  const currentUser: UserModel = authUser || {
+    id: "",
+    firstName: "",
+    lastName: "",
+    role: "DEVELOPER",
+    createdAt: "",
+  };
+
+  const [daysRange, setDaysRangeState] = useState<DaysRange>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_KPI_DAYS_RANGE);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed === 7 || parsed === 14 || parsed === 21) {
+          return parsed as DaysRange;
+        }
+      } catch (e) {
+        console.error("Failed to parse KPI days range from localStorage:", e);
+      }
+    }
+    return 7;
+  });
+
+  const setDaysRange = (value: DaysRange) => {
+    setDaysRangeState(value);
+    localStorage.setItem(STORAGE_KEY_KPI_DAYS_RANGE, JSON.stringify(value));
+  };
+
+  const [chartType, setChartTypeState] = useState<ChartType>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_KPI_CHART_TYPE);
+    if (saved === "bar" || saved === "line" || saved === "both") {
+      return saved;
+    }
+    return "both";
+  });
+
+  const setChartType = (value: ChartType) => {
+    setChartTypeState(value);
+    localStorage.setItem(STORAGE_KEY_KPI_CHART_TYPE, value);
+  };
+
+  const [enabledKpis, setEnabledKpis] = useState<KpiSettings>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_KPI_SETTINGS);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse KPI settings from localStorage:", e);
+      }
+    }
+    return {
+      spentHours: true,
+      movedQa: true,
+      fromQa: true,
+      movedReview: true,
+      fromReview: true,
+    };
+  });
+
+  const [isDraft, setIsDraftState] = useState<boolean>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_IS_DRAFT);
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  const setIsDraft = (value: boolean) => {
+    setIsDraftState(value);
+    localStorage.setItem(STORAGE_KEY_IS_DRAFT, JSON.stringify(value));
+  };
+
+  const setSelectedUser = (userToSelect: UserModel) => {
+    console.log("[SettingsContext] setSelectedUser called with:", userToSelect);
+  };
+
+  const updateGitlabKey = async (key: string) => {
+    await settingsService.setGitlabKey(currentUser, key);
+  };
+
+  const updateRedmineKey = async (key: string) => {
+    await settingsService.setRedmineKey(currentUser, key);
+  };
+
+  const updateAvatar = async (file: File) => {
+    await settingsService.setAvatar(currentUser, file);
+  };
+
+  const getAvatarUrl = (): string | undefined => {
+    const avatarUrl = currentUser.avatarUrl || undefined;
+    if (!avatarUrl) {
+      return undefined;
+    }
+    if (avatarUrl.startsWith("http://") || avatarUrl.startsWith("https://")) {
+      return avatarUrl;
+    }
+    const host = window.location.hostname;
+    return `http://${host}/api/v1/settings/users/${currentUser.id}/avatar`;
+  };
+
+  const enableKpi = async (key: string) => {
+    if (key in enabledKpis) {
+      setEnabledKpis((prev) => {
+        const updated = {
+          ...prev,
+          [key as keyof KpiSettings]: !prev[key as keyof KpiSettings],
+        };
+        localStorage.setItem(STORAGE_KEY_KPI_SETTINGS, JSON.stringify(updated));
+        return updated;
+      });
+    }
+  };
+
+  const setAllKpis = (value: boolean) => {
+    const updated: KpiSettings = {
+      spentHours: value,
+      movedQa: value,
+      fromQa: value,
+      movedReview: value,
+      fromReview: value,
+    };
+    setEnabledKpis(updated);
+    localStorage.setItem(STORAGE_KEY_KPI_SETTINGS, JSON.stringify(updated));
+  };
+
+  const hasGitlabKey = !!currentUser.gitlabKey && currentUser.gitlabKey !== "";
+  const hasRedmineKey =
+    !!currentUser.redmineKey && currentUser.redmineKey !== "";
+
+  return (
+    <SettingsContext.Provider
+      value={{
+        user: currentUser,
+        isDraft,
+        setIsDraft,
+        setSelectedUser,
+        updateGitlabKey,
+        updateRedmineKey,
+        hasGitlabKey,
+        hasRedmineKey,
+        updateAvatar,
+        getAvatarUrl,
+        enabledKpis,
+        enableKpi,
+        setAllKpis,
+        daysRange,
+        setDaysRange,
+        chartType,
+        setChartType,
+      }}
+    >
+      {children}
+    </SettingsContext.Provider>
+  );
+};
+
+export const useSettings = (): SettingsContextType => {
+  const context = useContext(SettingsContext);
+  if (!context) {
+    throw new Error("useSettings must be used within a SettingsProvider");
+  }
+  return context;
+};
