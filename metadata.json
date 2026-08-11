@@ -1,0 +1,6 @@
+{
+  "name": "WorkTool Portal",
+  "description": "Zentrale WorkTool Plattform mit Startseite-Dashboard und professioneller Redmine-Ticketverwaltung.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
