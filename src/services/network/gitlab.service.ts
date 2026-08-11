@@ -18,11 +18,17 @@ export class GitlabService extends NetworkService {
     await this.post<void>(`/${id}/merge-request`, mergeRequestData);
   }
 
-  public fetchMergeRequests = async (): Promise<void[]> => {};
+  public fetchMergeRequests = async (): Promise<void[]> => {
+    return await this.get<void[]>(`/merge-requests/my`);
+  };
 
-  public fetchPendingReviews = async (): Promise<void[]> => {};
+  public fetchPendingReviews = async (): Promise<void[]> => {
+    return await this.get<void[]>(`/merge-requests/reviews`);
+  };
 
-  public fetchPipelines = async (): Promise<void[]> => {};
+  public fetchPipelines = async (): Promise<void[]> => {
+    return await this.get<void[]>(`/pipelines`);
+  };
 }
 
 export const gitlabService = new GitlabService();
