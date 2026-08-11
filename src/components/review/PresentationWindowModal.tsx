@@ -1,13 +1,13 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Presentation,
-  X,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  Presentation,
+  RotateCcw,
+  X,
   ZoomIn,
   ZoomOut,
-  RotateCcw,
 } from "lucide-react";
 import { ReviewModel } from "../../models/review.model.ts";
 

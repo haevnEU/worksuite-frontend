@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { GitPullRequest, GitMerge } from "lucide-react";
+import { GitMerge, GitPullRequest } from "lucide-react";
 import { MergeRequestCard } from "./MergeRequestCard";
 import { MergeRequestModel } from "../../models/vcs.model.ts";
 

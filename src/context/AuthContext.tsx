@@ -12,6 +12,12 @@ interface AuthContextType {
     currentPassword: string,
     newPassword: string,
   ) => Promise<void>;
+  register: (
+    username: string,
+    password: string,
+    firstname: string,
+    lastname: string,
+  ) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -73,6 +79,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
+  const register = async (
+    username: string,
+    password: string,
+    firstname: string,
+    lastname: string,
+  ): Promise<void> => {
+    const response = await fetch("/api/v1/user-service/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        password,
+        firstname,
+        lastname,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Registration failed");
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -83,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         login,
         logout,
         changePassword,
+        register,
       }}
     >
       {children}

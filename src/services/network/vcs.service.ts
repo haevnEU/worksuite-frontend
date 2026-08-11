@@ -1,5 +1,9 @@
 import { NetworkService } from "./network.service.ts";
 import { QaProtocolData } from "../../models/ticket.model.ts";
+import {
+  MergeRequestModel,
+  ProtectedBranchPipeline,
+} from "../../models/vcs.model.ts";
 
 export class VcsService extends NetworkService {
   constructor() {
@@ -17,16 +21,16 @@ export class VcsService extends NetworkService {
     await this.post<void>(`/${id}/merge-request`, mergeRequestData);
   }
 
-  public fetchMergeRequests = async (): Promise<void[]> => {
-    return await this.get<void[]>(`/merge-requests/my`);
+  public fetchMergeRequests = async (): Promise<MergeRequestModel[]> => {
+    return await this.get<MergeRequestModel[]>(`/merge-requests/my`);
   };
 
-  public fetchPendingReviews = async (): Promise<void[]> => {
-    return await this.get<void[]>(`/merge-requests/reviews`);
+  public fetchPendingReviews = async (): Promise<MergeRequestModel[]> => {
+    return await this.get<MergeRequestModel[]>(`/merge-requests/reviews`);
   };
 
-  public fetchPipelines = async (): Promise<void[]> => {
-    return await this.get<void[]>(`/pipelines`);
+  public fetchPipelines = async (): Promise<ProtectedBranchPipeline[]> => {
+    return await this.get<ProtectedBranchPipeline[]>(`/pipelines`);
   };
 }
 

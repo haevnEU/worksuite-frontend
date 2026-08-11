@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AlertCircle, CheckCircle2, KeyRound, Lock, User } from "lucide-react";
+import { AlertCircle, CheckCircle2, KeyRound, Lock } from "lucide-react";
 import { useSettings } from "../../context/SettingsContext.tsx";
 
 export const PasswordSection: React.FC = () => {

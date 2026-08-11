@@ -1,9 +1,9 @@
 import React from "react";
 import {
-  GitPullRequest,
-  GitMerge,
   AlertCircle,
   CheckCircle2,
+  GitMerge,
+  GitPullRequest,
 } from "lucide-react";
 
 interface VcsKpiCardsProps {

@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import {
+  AlertTriangle,
+  Check,
+  CheckCircle2,
+  Clock,
+  Copy,
+  ExternalLink,
   GitBranch,
   MessageSquare,
-  CheckCircle2,
   XCircle,
-  Clock,
-  AlertTriangle,
-  Copy,
-  Check,
-  ExternalLink,
 } from "lucide-react";
 import { MergeRequestModel } from "../../models/vcs.model.ts";
 import { PipelineStatus } from "../../types/vcs.type.ts";

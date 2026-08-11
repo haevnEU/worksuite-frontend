@@ -7,17 +7,6 @@ export class NoteService extends NetworkService {
     super("/notes");
   }
 
-  public async fetch(id: string): Promise<NoteResource> {
-    try {
-      console.log(`[NoteService] Fetching note with id: ${id}`);
-      return this.get<NoteResource>(`/${id}`);
-    } catch (error) {
-      ToastManager.toastBad(`Could not fetch note with id ${id}`);
-      console.error("[NoteService] Error fetching note:", error);
-      return Promise.reject(error);
-    }
-  }
-
   public async fetchAll(): Promise<NoteResource[]> {
     try {
       console.log("[NoteService] Fetching all notes...");
@@ -25,7 +14,7 @@ export class NoteService extends NetworkService {
     } catch (error) {
       ToastManager.toastBad("Could not fetch notes");
       console.error("[NoteService]  Error fetching notes:", error);
-      return Promise.resolve([]);
+      return [];
     }
   }
 

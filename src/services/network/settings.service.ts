@@ -14,7 +14,7 @@ export class SettingsService extends NetworkService {
     } catch (error) {
       ToastManager.toastBad("Could not fetch users");
       console.error("[SettingsService] Error fetching users:", error);
-      return Promise.resolve([]);
+      return [];
     }
   }
 

@@ -1,6 +1,5 @@
 import React from "react";
 import { RotateCcw, Search } from "lucide-react";
-import { TicketStatus } from "../../types/ticket.type.ts";
 import { RedmineStatus } from "../../models/ticketModel.model.ts";
 
 interface ProjectOption {

@@ -87,10 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       title: "Settings",
-      items: [
-        { label: "Settings", path: "/settings", icon: Settings },
-        { label: "Logs", path: "/log", icon: FileCode },
-      ],
+      items: [{ label: "Settings", path: "/settings", icon: Settings }],
     },
     {
       title: "Legacy / Dev Tools",

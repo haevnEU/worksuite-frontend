@@ -1,10 +1,10 @@
 import React from "react";
 import {
-  ShieldCheck,
   CheckCircle2,
-  XCircle,
   Clock,
   ExternalLink,
+  ShieldCheck,
+  XCircle,
 } from "lucide-react";
 import { ProtectedBranchPipeline } from "../../models/vcs.model.ts";
 

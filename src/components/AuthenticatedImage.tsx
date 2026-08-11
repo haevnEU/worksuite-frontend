@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { AlertCircle, HelpCircle, Loader2 } from "lucide-react";
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 function cn(...inputs: ClassValue[]) {
@@ -13,12 +13,12 @@ interface AuthenticatedImageProps extends React.ImgHTMLAttributes<HTMLImageEleme
 }
 
 export const AuthenticatedImage: React.FC<AuthenticatedImageProps> = ({
-                                                                        src,
-                                                                        alt,
-                                                                        className,
-                                                                        fallbackClassName,
-                                                                        ...props
-                                                                      }) => {
+  src,
+  alt,
+  className,
+  fallbackClassName,
+  ...props
+}) => {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
@@ -71,59 +71,45 @@ export const AuthenticatedImage: React.FC<AuthenticatedImageProps> = ({
   }, [src]);
 
   const baseFallbackClass =
-      "w-full h-full min-w-0 min-h-0 flex items-center justify-center shrink-0 transition-all duration-200 rounded-inherit";
+    "w-full h-full min-w-0 min-h-0 flex items-center justify-center shrink-0 transition-all duration-200 rounded-inherit";
 
   if (loading) {
     return (
-        <div
-            className={cn(
-                baseFallbackClass,
-                "text-blue-400",
-                fallbackClassName
-            )}
-        >
-          <Loader2 className="w-4 h-4 animate-spin" />
-        </div>
+      <div
+        className={cn(baseFallbackClass, "text-blue-400", fallbackClassName)}
+      >
+        <Loader2 className="w-4 h-4 animate-spin" />
+      </div>
     );
   }
 
   if (error) {
     return (
-        <div
-            className={cn(
-                baseFallbackClass,
-                "text-red-400",
-                fallbackClassName
-            )}
-        >
-          <AlertCircle className="w-4 h-4" />
-        </div>
+      <div className={cn(baseFallbackClass, "text-red-400", fallbackClassName)}>
+        <AlertCircle className="w-4 h-4" />
+      </div>
     );
   }
 
   if (!imageSrc) {
     return (
-        <div
-            className={cn(
-                baseFallbackClass,
-                "text-slate-400",
-                fallbackClassName
-            )}
-        >
-          <HelpCircle className="w-4 h-4" />
-        </div>
+      <div
+        className={cn(baseFallbackClass, "text-slate-400", fallbackClassName)}
+      >
+        <HelpCircle className="w-4 h-4" />
+      </div>
     );
   }
 
   return (
-      <img
-          src={imageSrc}
-          alt={alt}
-          {...props}
-          className={cn(
-              "w-full h-full object-cover shrink-0 rounded-inherit",
-              className
-          )}
-      />
+    <img
+      src={imageSrc}
+      alt={alt}
+      {...props}
+      className={cn(
+        "w-full h-full object-cover shrink-0 rounded-inherit",
+        className,
+      )}
+    />
   );
 };

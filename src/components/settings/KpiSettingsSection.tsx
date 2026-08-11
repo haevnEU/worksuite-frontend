@@ -71,7 +71,7 @@ export const KpiSettingsSection: React.FC = () => {
     setChartType,
   } = useSettings();
 
-  const [, setRefreshState] = useState({});
+  const [_, setRefreshState] = useState({});
 
   const forceRerender = () => setRefreshState({});
 

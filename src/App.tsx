@@ -23,17 +23,16 @@ import { SettingsPage } from "./pages/SettingsPage.tsx";
 import { DatabaseQueryPage } from "./pages/DatabaseQueryPage.tsx";
 import { WeeklyMeetingPage } from "./pages/WeeklyMeetingPage.tsx";
 import { CsvViewerPage } from "./pages/CsvViewerPage.tsx";
-import { LogPage } from "./pages/LogPage.tsx";
 import { NoConnectionPage } from "./pages/NoConnection.tsx";
 
 import { ToastProvider } from "./toaster/ToastContext.tsx";
 import { SettingsProvider } from "./context/SettingsContext.tsx";
 import { TicketProvider, useTickets } from "./context/TicketContext.tsx";
-import { VcsProvider, useVCS } from "./context/VcsContext.tsx";
+import { useVCS, VcsProvider } from "./context/VcsContext.tsx";
 import { KPIProvider } from "./context/KPIContext.tsx";
 import { TimeProvider, useTime } from "./context/TimeContext.tsx";
 import { InfoProvider } from "./context/InfoContext.tsx";
-import { AuthProvider, useAuth } from "./context/AuthContext.tsx";
+import { AuthProvider } from "./context/AuthContext.tsx";
 import {
   ConnectionProvider,
   useConnection,
@@ -43,7 +42,6 @@ import { pushService } from "./services/push/push.service.ts";
 import { LoginPage } from "./components/auth/LoginPage.tsx";
 import { ProtectedRoute } from "./ProtectedRoute.tsx";
 
-// Das geschützte Dashboard-Layout mit Header & Sidebar
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -96,7 +94,6 @@ const AuthenticatedLayout: React.FC = () => {
               <Route path="/redmine" element={<TicketsPage />} />
               <Route path="/teammeeting" element={<TeamMeetingPage />} />
               <Route path="/csv-viewer" element={<CsvViewerPage />} />
-              <Route path="/log" element={<LogPage />} />
               <Route path="/vcs" element={<VcsPage />} />
               <Route path="/time-log" element={<TimeTrackingPage />} />
               <Route path="/review" element={<ReviewPage />} />

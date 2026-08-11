@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Monitor, X, Copy, Check, Save } from "lucide-react";
+import { Check, Copy, Monitor, Save, X } from "lucide-react";
 import { ReviewModel } from "../../models/review.model.ts";
 
 interface DemoNotesModalProps {
