@@ -18,7 +18,6 @@ export const MergeRequestList: React.FC<MergeRequestListProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Tabs */}
       <div className="flex bg-slate-900 p-1.5 rounded-2xl border border-slate-800">
         <button
           type="button"
@@ -53,7 +52,6 @@ export const MergeRequestList: React.FC<MergeRequestListProps> = ({
         </button>
       </div>
 
-      {/* Cards Stream */}
       <div className="space-y-3">
         {currentList.length === 0 ? (
           <div className="bg-slate-900/50 border border-slate-800/60 rounded-2xl p-8 text-center text-slate-500 text-xs">

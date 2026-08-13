@@ -1,7 +1,6 @@
 import { NetworkService } from "./network.service.ts";
 import { ToastManager } from "../../toaster/ToastManager.ts";
 import { RetroResource } from "../../models/retroResource.model.ts";
-import { RequestOptions } from "../../models/http.model.ts";
 
 export class RetroService extends NetworkService {
   constructor() {
@@ -23,30 +22,40 @@ export class RetroService extends NetworkService {
   }
 
   public async createRetro(name: string): Promise<void> {
+    if (!name?.trim()) {
+      ToastManager.toastBad("The retro name is missing!");
+      return;
+    }
+
     try {
       console.log("[RetroService] Creating retro with name:", name);
-      const query = this.buildParams({ name: name });
-      await this.post<void>(`${query}`, {});
+      const query = this.buildParams({ name });
+      await this.post<void>(query, {});
       ToastManager.toastGood("Retro created successfully.");
     } catch (error) {
       console.error("[RetroService] Error occurred during createRetro:", error);
       ToastManager.toastBad("Failed to create retro.");
+      throw error;
     }
   }
 
   public async addItem(item: string, id: string, list: string): Promise<void> {
+    if (!id || !list) {
+      ToastManager.toastBad("Missing ID or list parameter!");
+      return;
+    }
+
     try {
       console.log("[RetroService] Adding item to retro:", { item, id, list });
-      const reqOpts: RequestOptions = {
-        headers: {
-          "Content-Type": "text/plain",
-        },
-      };
-      await this.put<void>(`/${id}/${list}`, item, reqOpts);
+      await this.putRaw<void>(
+        `/${encodeURIComponent(id)}/${encodeURIComponent(list)}`,
+        item,
+      );
       ToastManager.toastGood("Successfully added item to retro.");
     } catch (error) {
       console.error("[RetroService] Error occurred adding item:", error);
       ToastManager.toastBad("Failed to add item");
+      throw error;
     }
   }
 
@@ -55,16 +64,21 @@ export class RetroService extends NetworkService {
     id: string,
     list: string,
   ): Promise<void> {
+    if (!id || !list) {
+      ToastManager.toastBad("Missing ID or list parameter!");
+      return;
+    }
+
     try {
       console.log("[RetroService] Removing item from retro:", {
         item,
         id,
         list,
       });
-      const requestOptions: RequestOptions = {
-        body: item,
-      };
-      await this.delete<void>(`/${id}/${list}`, requestOptions);
+      const query = this.buildParams({ item });
+      await this.delete<void>(
+        `/${encodeURIComponent(id)}/${encodeURIComponent(list)}${query}`,
+      );
       ToastManager.toastGood("Successfully removed item from retro.");
     } catch (error) {
       console.error(
@@ -72,32 +86,39 @@ export class RetroService extends NetworkService {
         error,
       );
       ToastManager.toastBad("Failed to remove item from retro.");
+      throw error;
     }
   }
 
   public async deleteById(id?: string): Promise<void> {
+    if (!id) {
+      ToastManager.toastBad("The ID is missing!");
+      return;
+    }
+
     try {
       console.log("[RetroService] Deleting retro with id:", id);
-      if (!id) {
-        ToastManager.toastBad("The ID is missing!");
-        return;
-      }
-      await this.delete<RetroResource>(`/${id}`);
+      await this.delete<RetroResource>(`/${encodeURIComponent(id)}`);
       ToastManager.toastGood("Retro deleted successfully!");
-      return;
     } catch (error) {
       console.error("[RetroService] Error occurred during deleteById:", error);
       ToastManager.toastBad("Failed to delete retro.");
+      throw error;
     }
   }
 
   public async exportPdf(id: string): Promise<void> {
+    if (!id) {
+      ToastManager.toastBad("The ID is missing!");
+      return;
+    }
+
     try {
       console.log("[RetroService] Exporting retro PDF with id:", id);
-      await this.downloadFile(`/${id}/export`);
+      await this.downloadFile(`/${encodeURIComponent(id)}/export`);
       ToastManager.toastGood("PDF exported successfully.");
     } catch (error) {
-      ToastManager.toastBad("Could not export meeting PDF");
+      ToastManager.toastBad("Could not export retro PDF");
       console.error("[RetroService] Error exporting retro PDF:", error);
     }
   }

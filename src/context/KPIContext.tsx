@@ -1,6 +1,7 @@
 import React, {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -22,14 +23,18 @@ export const KPIProvider: React.FC<{ children: ReactNode }> = ({
   const { daysRange } = useSettings();
   const [data, setData] = useState<KpiModel[]>([]);
 
-  useEffect(() => {
-    refresh();
+  const refresh = useCallback(async () => {
+    try {
+      const result = await kpiService.fetch(daysRange);
+      setData(result || []);
+    } catch (error) {
+      console.error("Failed to fetch KPI data:", error);
+    }
   }, [daysRange]);
 
-  const refresh = async () => {
-    const data = await kpiService.fetch(daysRange);
-    setData(data);
-  };
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   return (
     <KPIContext.Provider value={{ data, refresh }}>

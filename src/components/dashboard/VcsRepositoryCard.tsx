@@ -10,6 +10,7 @@ import {
   PlayCircle,
 } from "lucide-react";
 import { useToast } from "../../toaster/ToastContext.tsx";
+import { GitLabRepository } from "../../models/vcs.model.ts";
 
 interface VcsRepositoryCardProps {
   repo: GitLabRepository;

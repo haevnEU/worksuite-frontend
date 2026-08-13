@@ -1,6 +1,7 @@
 import React, {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -29,15 +30,16 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
   const [status, setStatus] = useState<RedmineStatus[]>([]);
   const [openTickets, setOpenTickets] = useState<number>(0);
 
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     try {
       const fetchedTickets = await ticketService.fetch();
+      const safeTickets = fetchedTickets || [];
 
-      setTickets(fetchedTickets || []);
+      setTickets(safeTickets);
       const projectsMap = new Map<number, Project>();
       const statusMap = new Map<number, RedmineStatus>();
 
-      (fetchedTickets || []).forEach((issue) => {
+      safeTickets.forEach((issue) => {
         const redmineProject = issue.project;
         if (redmineProject) {
           if (!projectsMap.has(redmineProject.id)) {
@@ -67,7 +69,7 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
       setStatus(sortedStatuses);
 
       setOpenTickets(
-        fetchedTickets.filter((t) => {
+        safeTickets.filter((t) => {
           const statusName = t.status?.name?.toLowerCase() || "";
           return (
             !statusName.includes("closed") &&
@@ -80,17 +82,25 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
     } catch (error) {
       console.error("Error fetching tickets:", error);
     }
-  };
-  const getAmountStatus = (id: string) => {
-    return tickets.filter((t) => t.status?.name === id).length;
-  };
-  const getAmountPriority = (id: string) => {
-    return tickets.filter((t) => t.priority?.name === id).length;
-  };
+  }, []);
+
+  const getAmountStatus = useCallback(
+    (name: string) => {
+      return tickets.filter((t) => t.status?.name === name).length;
+    },
+    [tickets],
+  );
+
+  const getAmountPriority = useCallback(
+    (name: string) => {
+      return tickets.filter((t) => t.priority?.name === name).length;
+    },
+    [tickets],
+  );
 
   useEffect(() => {
     fetchTickets();
-  }, []);
+  }, [fetchTickets]);
 
   return (
     <TicketContext.Provider

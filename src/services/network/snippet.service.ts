@@ -21,23 +21,28 @@ export class SnippetService extends NetworkService {
     }
   }
 
-  public async fetch(id: string): Promise<ShareableResource> {
+  public async fetch(id: string): Promise<ShareableResource | null> {
+    if (!id) {
+      ToastManager.toastBad("The ID is missing!");
+      return null;
+    }
+
     try {
-      console.log("[SnippetService] Fetching id for id:", id);
-      return await this.get<ShareableResource>(`/${id}`);
+      console.log("[SnippetService] Fetching snippet for id:", id);
+      return await this.get<ShareableResource>(`/${encodeURIComponent(id)}`);
     } catch (error) {
       console.error(
-        "[SnippetService] Error occurred during fetch snippet:",
+        `[SnippetService] Error occurred during fetch snippet with id ${id}:`,
         error,
       );
       ToastManager.toastBad("Failed to load snippet.");
-      return {} as ShareableResource;
+      return null;
     }
   }
 
   public async create(snippet: ShareableResource): Promise<void> {
     try {
-      console.log("[SnippetService] Creating new snippet...");
+      console.log("[SnippetService] Creating new snippet...", snippet);
       await this.post<string, ShareableResource>("", snippet);
       ToastManager.toastGood("Snippet created successfully!");
     } catch (error) {
@@ -46,18 +51,26 @@ export class SnippetService extends NetworkService {
         error,
       );
       ToastManager.toastBad("Failed to create snippet.");
+      throw error;
     }
   }
 
   public async update(snippet: ShareableResource): Promise<void> {
     const id = snippet.id;
+    if (!id) {
+      ToastManager.toastBad("Snippet ID not found.");
+      return;
+    }
+
     try {
-      console.log("[SnippetService] Update snippet...");
-      if (!id) {
-        ToastManager.toastBad("Snippet not found.");
-        return;
-      }
-      await this.put<ShareableResource, ShareableResource>(`/${id}`, snippet);
+      console.log(
+        `[SnippetService] Updating snippet with id ${id}...`,
+        snippet,
+      );
+      await this.put<ShareableResource, ShareableResource>(
+        `/${encodeURIComponent(id)}`,
+        snippet,
+      );
       ToastManager.toastGood("Snippet updated successfully!");
     } catch (error) {
       console.error(
@@ -65,25 +78,27 @@ export class SnippetService extends NetworkService {
         error,
       );
       ToastManager.toastBad("Failed to update snippet.");
+      throw error;
     }
   }
 
   public async deleteById(id?: string): Promise<void> {
-    try {
-      console.log("[SnippetService] Delete snippet...");
-      if (!id) {
-        ToastManager.toastBad("The ID is missing!");
-        return;
-      }
-      await this.delete<ShareableResource>(`/${id}`);
-      ToastManager.toastGood("Snippet deleted successfully!");
+    if (!id) {
+      ToastManager.toastBad("The ID is missing!");
       return;
+    }
+
+    try {
+      console.log(`[SnippetService] Deleting snippet with id ${id}...`);
+      await this.delete<void>(`/${encodeURIComponent(id)}`);
+      ToastManager.toastGood("Snippet deleted successfully!");
     } catch (error) {
       console.error(
         `[SnippetService] Error occurred during deleteById snippet with id ${id}:`,
         error,
       );
       ToastManager.toastBad("Failed to delete snippet.");
+      throw error;
     }
   }
 }

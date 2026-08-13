@@ -9,18 +9,23 @@ export class KpiService extends NetworkService {
 
   public async create(date: string): Promise<string> {
     console.log("[KpiService] Creating KPI for date:", date);
-    return this.postRaw<string>(`?date=${date}`, undefined);
+    const params = new URLSearchParams({ date });
+    return this.postRaw<string>(`?${params.toString()}`, undefined);
   }
 
   public async fetch(range: DaysRange): Promise<KpiModel[]> {
     console.log("[KpiService] Fetching KPIs for range:", range);
-    return this.get<KpiModel[]>(`?duration=${range}`);
+    const params = new URLSearchParams({ duration: range.toString() });
+    return this.get<KpiModel[]>(`?${params.toString()}`);
   }
 
   public async increment(id: string, kpi: KpiType): Promise<void> {
-    console.log("[KpiService] Incrementing KPI for ID:", id);
-    console.log("[KpiService] KPI Type:", kpi);
-    return this.putRaw<void>(`/${id}?stat=${kpi}`, undefined);
+    console.log("[KpiService] Incrementing KPI for ID:", id, "KPI Type:", kpi);
+    const params = new URLSearchParams({ stat: kpi });
+    return this.putRaw<void>(
+      `/${encodeURIComponent(id)}?${params.toString()}`,
+      undefined,
+    );
   }
 }
 

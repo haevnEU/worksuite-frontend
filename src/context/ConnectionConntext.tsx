@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { ConnectionStatus } from "../types/PushService.type";
 import { pushService } from "../services/push/push.service.ts";
 
@@ -29,9 +35,9 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const isConnected = pushStatus === "connected";
 
-  const retryConnection = () => {
+  const retryConnection = useCallback(() => {
     pushService.connect();
-  };
+  }, []);
 
   return (
     <ConnectionContext.Provider

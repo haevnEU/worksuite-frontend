@@ -10,52 +10,137 @@ export class TicketService extends NetworkService {
   }
 
   public async fetch(): Promise<Issue[]> {
-    console.log("[TicketService] Fetching all tickets...");
-    return this.get<Issue[]>(``);
+    try {
+      console.log("[TicketService] Fetching all tickets...");
+      return await this.get<Issue[]>("");
+    } catch (error) {
+      console.error("[TicketService] Error fetching tickets:", error);
+      ToastManager.toastBad("Failed to load tickets.");
+      return [];
+    }
   }
 
   public async downloadAttachment(
     url: string,
     filename: string,
   ): Promise<void> {
-    const downloadUrl = `/download/attachments`;
-    const reqOpts = {
-      body: url,
-      method: "POST",
-    };
-    console.log(
-      `[TicketService] Downloading attachment from URL: ${url} with filename: ${filename}`,
-    );
-    this.downloadFile(downloadUrl, filename, reqOpts);
-  }
+    if (!url?.trim()) {
+      ToastManager.toastBad("Attachment URL is missing!");
+      return;
+    }
 
-  async moveToQA(id: number, qaFormData: QaProtocolData) {
-    console.log(`[TicketService] Moving ticket with id: ${id} to QA`);
-    await this.post<void>(`/${id}/move-to-qs`, qaFormData);
-  }
-
-  async addComment(id: number, comment: string) {
-    console.log(`[TicketService] Adding comment to ticket with id: ${id}`);
-    await this.postRaw<void>(`/${id}/comment`, comment);
-  }
-
-  async createMergeRequest(id: number, mergeRequestData: QaProtocolData) {
-    console.log(
-      `[TicketService] Creating merge request for ticket with id: ${id}`,
-    );
-    await this.post<void>(`/${id}/merge-request`, mergeRequestData);
-  }
-
-  async logTime(id: number, data: LogTimePayload) {
-    console.log(`[TicketService] Logging time for ticket with id: ${id}`);
     try {
-      await this.post<void>(`/${id}/time-entries`, data);
-    } catch (error) {
+      const downloadUrl = `/download/attachments`;
+      const reqOpts = {
+        body: url,
+        method: "POST",
+      };
       console.log(
+        `[TicketService] Downloading attachment from URL: ${url} with filename: ${filename}`,
+      );
+      await this.downloadFile(downloadUrl, filename, reqOpts);
+      ToastManager.toastGood("Attachment downloaded successfully.");
+    } catch (error) {
+      console.error("[TicketService] Error downloading attachment:", error);
+      ToastManager.toastBad("Failed to download attachment.");
+      throw error;
+    }
+  }
+
+  public async moveToQA(id: number, qaFormData: QaProtocolData): Promise<void> {
+    if (!id || id <= 0) {
+      ToastManager.toastBad("Invalid ticket ID!");
+      return;
+    }
+
+    try {
+      console.log(`[TicketService] Moving ticket with id: ${id} to QA`);
+      await this.post<void>(
+        `/${encodeURIComponent(id)}/move-to-qs`,
+        qaFormData,
+      );
+      ToastManager.toastGood(`Ticket #${id} moved to QA successfully.`);
+    } catch (error) {
+      console.error(`[TicketService] Error moving ticket #${id} to QA:`, error);
+      ToastManager.toastBad(`Could not move ticket #${id} to QA.`);
+      throw error;
+    }
+  }
+
+  public async addComment(id: number, comment: string): Promise<void> {
+    if (!id || id <= 0) {
+      ToastManager.toastBad("Invalid ticket ID!");
+      return;
+    }
+
+    if (!comment?.trim()) {
+      ToastManager.toastBad("Comment text cannot be empty!");
+      return;
+    }
+
+    try {
+      console.log(`[TicketService] Adding comment to ticket with id: ${id}`);
+      await this.postRaw<void>(`/${encodeURIComponent(id)}/comment`, comment);
+      ToastManager.toastGood("Comment added successfully.");
+    } catch (error) {
+      console.error(
+        `[TicketService] Error adding comment to ticket #${id}:`,
+        error,
+      );
+      ToastManager.toastBad(`Could not add comment to ticket #${id}.`);
+      throw error;
+    }
+  }
+
+  public async createMergeRequest(
+    id: number,
+    mergeRequestData: QaProtocolData,
+  ): Promise<void> {
+    if (!id || id <= 0) {
+      ToastManager.toastBad("Invalid ticket ID!");
+      return;
+    }
+
+    try {
+      console.log(
+        `[TicketService] Creating merge request for ticket with id: ${id}`,
+      );
+      await this.post<void>(
+        `/${encodeURIComponent(id)}/merge-request`,
+        mergeRequestData,
+      );
+      ToastManager.toastGood(
+        `Merge request for ticket #${id} created successfully.`,
+      );
+    } catch (error) {
+      console.error(
+        `[TicketService] Error creating merge request for ticket #${id}:`,
+        error,
+      );
+      ToastManager.toastBad(
+        `Could not create merge request for ticket #${id}.`,
+      );
+      throw error;
+    }
+  }
+
+  public async logTime(id: number, data: LogTimePayload): Promise<void> {
+    if (!id || id <= 0) {
+      ToastManager.toastBad("Invalid ticket ID!");
+      return;
+    }
+
+    try {
+      console.log(`[TicketService] Logging time for ticket with id: ${id}`);
+      await this.post<void>(`/${encodeURIComponent(id)}/time-entries`, data);
+      ToastManager.toastGood(`Time logged successfully for ticket #${id}.`);
+    } catch (error) {
+      console.error(
         `[TicketService] Error logging time for ticket with id: ${id}`,
         error,
       );
-      ToastManager.toastBad(`Error logging time for ticket #${id}`);
+      ToastManager.toastBad(`Error logging time for ticket #${id}.`);
+      throw error;
     }
   }
 }

@@ -2,12 +2,13 @@ import { PipelineStatus } from "../types/vcs.type.ts";
 
 export interface MergeRequestModel {
   id: string | number;
-  iid: number;
+  iid: string | number;
   title: string;
   author: {
     name: string;
     avatarUrl?: string;
   };
+  description: string;
   sourceBranch: string;
   targetBranch: string;
   webUrl: string;
@@ -28,4 +29,14 @@ export interface ProtectedBranchPipeline {
   commitMessage: string;
   webUrl: string;
   updatedAt: string;
+}
+
+export interface GitLabRepository {
+  id: number;
+  webUrl: string;
+  name: string;
+  lastPipelineStatus: string;
+  path: string;
+  openMRCount: number;
+  mergeRequests: MergeRequestModel[];
 }

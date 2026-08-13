@@ -1,6 +1,7 @@
 import { NetworkService } from "./network.service.ts";
 import { QaProtocolData } from "../../models/ticket.model.ts";
 import {
+  GitLabRepository,
   MergeRequestModel,
   ProtectedBranchPipeline,
 } from "../../models/vcs.model.ts";
@@ -32,6 +33,10 @@ export class VcsService extends NetworkService {
   public fetchPipelines = async (): Promise<ProtectedBranchPipeline[]> => {
     return await this.get<ProtectedBranchPipeline[]>(`/pipelines`);
   };
+
+  async fetchRepos() {
+    return await this.get<GitLabRepository[]>(`/repositories`);
+  }
 }
 
 export const vcsService = new VcsService();

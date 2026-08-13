@@ -1,6 +1,7 @@
 import React, {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -67,29 +68,29 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  }, []);
 
-  const addToast = (
-    message: string,
-    type: ToastType = "info",
-    options?: ToastOptions,
-  ) => {
-    const id = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-    const newToast: ToastItem = {
-      id,
-      message,
-      type,
-      title: options?.title,
-    };
+  const addToast = useCallback(
+    (message: string, type: ToastType = "info", options?: ToastOptions) => {
+      const id = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      const newToast: ToastItem = {
+        id,
+        message,
+        type,
+        title: options?.title,
+      };
 
-    setToasts((prev) => [newToast, ...prev].slice(0, 5));
+      setToasts((prev) => [newToast, ...prev].slice(0, 5));
 
-    setTimeout(() => {
-      removeToast(id);
-    }, options?.duration || 5000);
-  };
+      setTimeout(() => {
+        removeToast(id);
+      }, options?.duration || 5000);
+    },
+    [removeToast],
+  );
+
   useEffect(() => {
     ToastManager.register((message, type, options) => {
       addToast(message, type, options);
@@ -98,25 +99,37 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
     return () => {
       ToastManager.unregister();
     };
-  }, []);
+  }, [addToast]);
 
-  const toast = (
-    message: string,
-    type: ToastType = "info",
-    options?: ToastOptions,
-  ) => addToast(message, type, options);
+  const toast = useCallback(
+    (message: string, type: ToastType = "info", options?: ToastOptions) =>
+      addToast(message, type, options),
+    [addToast],
+  );
 
-  const toastGood = (message: string, options?: ToastOptions) =>
-    addToast(message, "success", options);
+  const toastGood = useCallback(
+    (message: string, options?: ToastOptions) =>
+      addToast(message, "success", options),
+    [addToast],
+  );
 
-  const toastBad = (message: string, options?: ToastOptions) =>
-    addToast(message, "error", options);
+  const toastBad = useCallback(
+    (message: string, options?: ToastOptions) =>
+      addToast(message, "error", options),
+    [addToast],
+  );
 
-  const toastWarn = (message: string, options?: ToastOptions) =>
-    addToast(message, "warn", options);
+  const toastWarn = useCallback(
+    (message: string, options?: ToastOptions) =>
+      addToast(message, "warn", options),
+    [addToast],
+  );
 
-  const toastInfo = (message: string, options?: ToastOptions) =>
-    addToast(message, "info", options);
+  const toastInfo = useCallback(
+    (message: string, options?: ToastOptions) =>
+      addToast(message, "info", options),
+    [addToast],
+  );
 
   return (
     <ToastContext.Provider

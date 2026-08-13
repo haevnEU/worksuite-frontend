@@ -19,8 +19,8 @@ export class DatabaseService extends NetworkService {
 
   public async fetchAll(params?: DatabaseSearchParams): Promise<DatabaseMap> {
     console.log("[DatabaseService] Fetching all records...");
-    const queryParams = this.buildQueryParams(params);
-    return this.get<DatabaseMap>(`?${queryParams.toString()}`);
+    const queryString = this.buildQueryString(params);
+    return this.get<DatabaseMap>(queryString);
   }
 
   public async fetchByTable(
@@ -28,21 +28,25 @@ export class DatabaseService extends NetworkService {
     params?: DatabaseSearchParams,
   ): Promise<DatabaseRecord[]> {
     console.log("[DatabaseService] Fetching records for table:", tableName);
-    const queryParams = this.buildQueryParams(params);
+    const queryString = this.buildQueryString(params);
     return this.get<DatabaseRecord[]>(
-      `/tables/${tableName}?${queryParams.toString()}`,
+      `/tables/${encodeURIComponent(tableName)}${queryString}`,
     );
   }
 
-  private buildQueryParams(params?: DatabaseSearchParams): URLSearchParams {
+  private buildQueryString(params?: DatabaseSearchParams): string {
+    if (!params) return "";
+
     const queryParams = new URLSearchParams();
-    if (params?.searchParam) {
+    if (params.searchParam) {
       queryParams.append("searchParam", params.searchParam);
     }
-    if (params?.value) {
+    if (params.value) {
       queryParams.append("value", params.value);
     }
-    return queryParams;
+
+    const queryStr = queryParams.toString();
+    return queryStr ? `?${queryStr}` : "";
   }
 }
 

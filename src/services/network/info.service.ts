@@ -6,9 +6,9 @@ export class InfoService extends NetworkService {
     super("/info");
   }
 
-  public fetchRedmineMeta = async (): Promise<RedmineInfoMap> => {
+  public async fetchRedmineMeta(): Promise<RedmineInfoMap> {
     return this.get<RedmineInfoMap>("/redmine");
-  };
+  }
 }
 
 export const infoService = new InfoService();

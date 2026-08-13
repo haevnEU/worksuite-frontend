@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { UserModel } from "../models/user.model.ts";
 
 interface AuthContextType {
@@ -47,61 +53,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(false);
   }, []);
 
-  const login = (newToken: string, newUser: UserModel) => {
+  const login = useCallback((newToken: string, newUser: UserModel) => {
     setToken(newToken);
     setUser(newUser);
     localStorage.setItem("access_token", newToken);
     localStorage.setItem("auth_user", JSON.stringify(newUser));
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setToken(null);
     setUser(null);
     localStorage.removeItem("access_token");
     localStorage.removeItem("auth_user");
-  };
+  }, []);
 
-  const changePassword = async (
-    currentPassword: string,
-    newPassword: string,
-  ) => {
-    await fetch("/api/v1/user-service/change-password", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        userId: user?.id,
-        currentPassword,
-        newPassword,
-      }),
-    });
-  };
+  const changePassword = useCallback(
+    async (currentPassword: string, newPassword: string) => {
+      await fetch("/api/v1/user-service/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: user?.id,
+          currentPassword,
+          newPassword,
+        }),
+      });
+    },
+    [token, user?.id],
+  );
 
-  const register = async (
-    username: string,
-    password: string,
-    firstname: string,
-    lastname: string,
-  ): Promise<void> => {
-    const response = await fetch("/api/v1/user-service/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        username,
-        password,
-        firstname,
-        lastname,
-      }),
-    });
+  const register = useCallback(
+    async (
+      username: string,
+      password: string,
+      firstname: string,
+      lastname: string,
+    ): Promise<void> => {
+      const response = await fetch("/api/v1/user-service/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+          firstname,
+          lastname,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error("Registration failed");
-    }
-  };
+      if (!response.ok) {
+        throw new Error("Registration failed");
+      }
+    },
+    [],
+  );
 
   return (
     <AuthContext.Provider

@@ -1,10 +1,13 @@
 import React, {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
+import { GitLabRepository } from "../models/vcs.model.ts";
+import { vcsService } from "../services/network/vcs.service.ts";
 
 interface VcsContextType {
   vcsLink: string;
@@ -21,78 +24,22 @@ export const VcsProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const vcsLink: string = "git/";
   const [repos, setRepos] = useState<GitLabRepository[]>([]);
-  const fetchRepos = async () => {};
 
-  const fetchPipeline = async () => {};
+  const fetchRepos = useCallback(async () => {
+    try {
+      const data = await vcsService.fetchRepos();
+      setRepos(data || []);
+    } catch (error) {
+      console.error("Failed to fetch repos:", error);
+    }
+  }, []);
 
-  const fetchMergeRequests = async () => {};
+  const fetchPipeline = useCallback(async () => {}, []);
+  const fetchMergeRequests = useCallback(async () => {}, []);
 
   useEffect(() => {
-    setRepos([
-      {
-        id: Date.now(),
-        name: "REPO#" + Date.now(),
-        webUrl: "url",
-        lastPipelineStatus: "failed",
-        openMRCount: 1,
-        mergeRequests: [
-          {
-            id: "id",
-            webUrl: "...",
-            iid: "iid",
-            title: "Demo",
-            description: "DEMO",
-          },
-        ],
-      },
-      {
-        id: Date.now() * 2,
-        name: "REPO#" + Date.now() * 2,
-        webUrl: "url",
-        lastPipelineStatus: "running",
-        openMRCount: 1,
-        mergeRequests: [
-          {
-            id: "id",
-            webUrl: "...",
-            iid: "iid",
-            title: "Demo",
-            description: "DEMO",
-          },
-          {
-            id: "id",
-            webUrl: "...",
-            iid: "iid",
-            title: "Demo",
-            description: "DEMO",
-          },
-          {
-            id: "id",
-            webUrl: "...",
-            iid: "iid",
-            title: "Demo",
-            description: "DEMO",
-          },
-        ],
-      },
-      {
-        id: Date.now() * 3,
-        name: "REPO#" + Date.now() * 3,
-        webUrl: "url",
-        lastPipelineStatus: "success",
-        openMRCount: 1,
-        mergeRequests: [
-          {
-            id: "id",
-            webUrl: "...",
-            iid: "iid",
-            title: "Demo",
-            description: "DEMO",
-          },
-        ],
-      },
-    ]);
-  }, []);
+    fetchRepos();
+  }, [fetchRepos]);
 
   return (
     <VcsContext.Provider

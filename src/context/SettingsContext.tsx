@@ -1,4 +1,10 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { UserModel } from "../models/user.model.ts";
 import { settingsService } from "../services/network/settings.service.ts";
 import { DaysRange } from "../types/kpi.type.ts";
@@ -65,10 +71,10 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     return 7;
   });
 
-  const setDaysRange = (value: DaysRange) => {
+  const setDaysRange = useCallback((value: DaysRange) => {
     setDaysRangeState(value);
     localStorage.setItem(STORAGE_KEY_KPI_DAYS_RANGE, JSON.stringify(value));
-  };
+  }, []);
 
   const [chartType, setChartTypeState] = useState<ChartType>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_KPI_CHART_TYPE);
@@ -78,10 +84,10 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     return "both";
   });
 
-  const setChartType = (value: ChartType) => {
+  const setChartType = useCallback((value: ChartType) => {
     setChartTypeState(value);
     localStorage.setItem(STORAGE_KEY_KPI_CHART_TYPE, value);
-  };
+  }, []);
 
   const [enabledKpis, setEnabledKpis] = useState<KpiSettings>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_KPI_SETTINGS);
@@ -106,30 +112,47 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     return saved !== null ? JSON.parse(saved) : true;
   });
 
-  const setIsDraft = (value: boolean) => {
+  const setIsDraft = useCallback((value: boolean) => {
     setIsDraftState(value);
     localStorage.setItem(STORAGE_KEY_IS_DRAFT, JSON.stringify(value));
-  };
+  }, []);
 
-  const setSelectedUser = (userToSelect: UserModel) => {
+  const setSelectedUser = useCallback((userToSelect: UserModel) => {
     console.log("[SettingsContext] setSelectedUser called with:", userToSelect);
-  };
+  }, []);
 
-  const updateVcsKey = async (key: string) => {
-    await settingsService.setVcsKey(currentUser, key);
-    setHasVcsKey(true);
-  };
+  const [hasVcsKey, setHasVcsKey] = useState<boolean>(
+    !!currentUser.vcsKey && currentUser.vcsKey !== "",
+  );
 
-  const updateRedmineKey = async (key: string) => {
-    await settingsService.setRedmineKey(currentUser, key);
-    setHasRedmineKey(true);
-  };
+  const [hasRedmineKey, setHasRedmineKey] = useState<boolean>(
+    !!currentUser.redmineKey && currentUser.redmineKey !== "",
+  );
 
-  const updateAvatar = async (file: File) => {
-    await settingsService.setAvatar(currentUser, file);
-  };
+  const updateVcsKey = useCallback(
+    async (key: string) => {
+      await settingsService.setVcsKey(currentUser, key);
+      setHasVcsKey(true);
+    },
+    [currentUser],
+  );
 
-  const getAvatarUrl = (): string | undefined => {
+  const updateRedmineKey = useCallback(
+    async (key: string) => {
+      await settingsService.setRedmineKey(currentUser, key);
+      setHasRedmineKey(true);
+    },
+    [currentUser],
+  );
+
+  const updateAvatar = useCallback(
+    async (file: File) => {
+      await settingsService.setAvatar(currentUser, file);
+    },
+    [currentUser],
+  );
+
+  const getAvatarUrl = useCallback((): string | undefined => {
     const avatarUrl = currentUser.avatarUrl || undefined;
     if (!avatarUrl) {
       return undefined;
@@ -139,22 +162,23 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     }
     const host = window.location.hostname;
     return `http://${host}/api/v1/settings/users/${currentUser.id}/avatar`;
-  };
+  }, [currentUser.avatarUrl, currentUser.id]);
 
-  const enableKpi = async (key: string) => {
-    if (key in enabledKpis) {
-      setEnabledKpis((prev) => {
+  const enableKpi = useCallback(async (key: string) => {
+    setEnabledKpis((prev) => {
+      if (key in prev) {
         const updated = {
           ...prev,
           [key as keyof KpiSettings]: !prev[key as keyof KpiSettings],
         };
         localStorage.setItem(STORAGE_KEY_KPI_SETTINGS, JSON.stringify(updated));
         return updated;
-      });
-    }
-  };
+      }
+      return prev;
+    });
+  }, []);
 
-  const setAllKpis = (value: boolean) => {
+  const setAllKpis = useCallback((value: boolean) => {
     const updated: KpiSettings = {
       spentHours: value,
       movedQa: value,
@@ -164,15 +188,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     };
     setEnabledKpis(updated);
     localStorage.setItem(STORAGE_KEY_KPI_SETTINGS, JSON.stringify(updated));
-  };
-
-  const [hasVcsKey, setHasVcsKey] = useState<boolean>(
-    !!currentUser.vcsKey && currentUser.vcsKey !== "",
-  );
-
-  const [hasRedmineKey, setHasRedmineKey] = useState<boolean>(
-    !!currentUser.redmineKey && currentUser.redmineKey !== "",
-  );
+  }, []);
 
   return (
     <SettingsContext.Provider

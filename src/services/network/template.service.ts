@@ -7,11 +7,15 @@ export class TemplateService extends NetworkService {
     super("/share/templates");
   }
 
-  public async fetch(id: string): Promise<TemplateResource> {
+  public async fetch(id: string): Promise<TemplateResource | null> {
+    if (!id) {
+      ToastManager.toastBad("The ID is missing!");
+      return null;
+    }
+
     try {
       console.log(`[TemplateService] Fetching template with id: ${id}`);
-      const data = await this.get<TemplateResource>(`/${id}`);
-      return data;
+      return await this.get<TemplateResource>(`/${encodeURIComponent(id)}`);
     } catch (error) {
       console.error(
         `[TemplateService] Error occurred during fetch template with id ${id}:`,
@@ -25,8 +29,7 @@ export class TemplateService extends NetworkService {
   public async fetchAll(): Promise<TemplateResource[]> {
     try {
       console.log("[TemplateService] Fetching all templates...");
-      const data = await this.get<TemplateResource[]>("");
-      return data;
+      return await this.get<TemplateResource[]>("");
     } catch (error) {
       console.error(
         "[TemplateService] Error occurred during fetchAll templates:",
@@ -41,8 +44,11 @@ export class TemplateService extends NetworkService {
     templateResource: TemplateResource,
   ): Promise<TemplateResource> {
     try {
-      console.log("[TemplateService] Creating new template...");
-      const data = await this.post<TemplateResource>(``, templateResource);
+      console.log(
+        "[TemplateService] Creating new template...",
+        templateResource,
+      );
+      const data = await this.post<TemplateResource>("", templateResource);
       ToastManager.toastGood("Template created successfully!");
       return data;
     } catch (error) {
@@ -59,9 +65,20 @@ export class TemplateService extends NetworkService {
     id: string,
     templateResource: TemplateResource,
   ): Promise<TemplateResource> {
+    if (!id) {
+      ToastManager.toastBad("The ID is missing!");
+      throw new Error("Template ID is missing");
+    }
+
     try {
-      console.log("[TemplateService] Updating template with id:", id);
-      const data = await this.put<TemplateResource>(`/${id}`, templateResource);
+      console.log(
+        `[TemplateService] Updating template with id: ${id}`,
+        templateResource,
+      );
+      const data = await this.put<TemplateResource>(
+        `/${encodeURIComponent(id)}`,
+        templateResource,
+      );
       ToastManager.toastGood("Template updated successfully!");
       return data;
     } catch (error) {
@@ -75,13 +92,14 @@ export class TemplateService extends NetworkService {
   }
 
   public async deleteById(id?: string): Promise<void> {
+    if (!id) {
+      ToastManager.toastBad("The ID is missing!");
+      return;
+    }
+
     try {
-      console.log("[TemplateService] Deleting template with id:", id);
-      if (!id) {
-        ToastManager.toastBad("Id is missing!");
-        return;
-      }
-      await this.delete<void>(`/${id}`);
+      console.log(`[TemplateService] Deleting template with id: ${id}`);
+      await this.delete<void>(`/${encodeURIComponent(id)}`);
       ToastManager.toastGood("Template deleted successfully!");
     } catch (error) {
       console.error(
