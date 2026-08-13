@@ -1,5 +1,5 @@
-import { NetworkService } from "./network.service.ts";
 import { RedmineInfoMap } from "../../models/info.model.ts";
+import { NetworkService } from "./network.service.ts";
 
 export class InfoService extends NetworkService {
   constructor() {
@@ -7,7 +7,11 @@ export class InfoService extends NetworkService {
   }
 
   public async fetchRedmineMeta(): Promise<RedmineInfoMap> {
-    return this.get<RedmineInfoMap>("/redmine");
+    try {
+      return await this.get<RedmineInfoMap>("/redmine");
+    } catch {
+      return {} as RedmineInfoMap;
+    }
   }
 }
 

@@ -1,6 +1,6 @@
-import { NetworkService } from "./network.service.ts";
 import { TemplateResource } from "../../models/templateResource.model.ts";
 import { ToastManager } from "../../toaster/ToastManager.ts";
+import { NetworkService } from "./network.service.ts";
 
 export class TemplateService extends NetworkService {
   constructor() {
@@ -14,81 +14,26 @@ export class TemplateService extends NetworkService {
     }
 
     try {
-      console.log(`[TemplateService] Fetching template with id: ${id}`);
       return await this.get<TemplateResource>(`/${encodeURIComponent(id)}`);
-    } catch (error) {
-      console.error(
-        `[TemplateService] Error occurred during fetch template with id ${id}:`,
-        error,
-      );
-      ToastManager.toastBad("Failed to load template.");
-      throw error;
+    } catch {
+      return null;
     }
   }
 
   public async fetchAll(): Promise<TemplateResource[]> {
     try {
-      console.log("[TemplateService] Fetching all templates...");
       return await this.get<TemplateResource[]>("");
-    } catch (error) {
-      console.error(
-        "[TemplateService] Error occurred during fetchAll templates:",
-        error,
-      );
-      ToastManager.toastBad("Failed to load templates.");
-      throw error;
+    } catch {
+      return [];
     }
   }
 
   public async create(
     templateResource: TemplateResource,
   ): Promise<TemplateResource> {
-    try {
-      console.log(
-        "[TemplateService] Creating new template...",
-        templateResource,
-      );
-      const data = await this.post<TemplateResource>("", templateResource);
-      ToastManager.toastGood("Template created successfully!");
-      return data;
-    } catch (error) {
-      console.error(
-        "[TemplateService] Error occurred during create template:",
-        error,
-      );
-      ToastManager.toastBad("Failed to create template.");
-      throw error;
-    }
-  }
-
-  public async update(
-    id: string,
-    templateResource: TemplateResource,
-  ): Promise<TemplateResource> {
-    if (!id) {
-      ToastManager.toastBad("The ID is missing!");
-      throw new Error("Template ID is missing");
-    }
-
-    try {
-      console.log(
-        `[TemplateService] Updating template with id: ${id}`,
-        templateResource,
-      );
-      const data = await this.put<TemplateResource>(
-        `/${encodeURIComponent(id)}`,
-        templateResource,
-      );
-      ToastManager.toastGood("Template updated successfully!");
-      return data;
-    } catch (error) {
-      console.error(
-        `[TemplateService] Error occurred during update template with id ${id}:`,
-        error,
-      );
-      ToastManager.toastBad("Failed to update template.");
-      throw error;
-    }
+    const data = await this.post<TemplateResource>("", templateResource);
+    ToastManager.toastGood("Template created successfully!");
+    return data;
   }
 
   public async deleteById(id?: string): Promise<void> {
@@ -97,18 +42,8 @@ export class TemplateService extends NetworkService {
       return;
     }
 
-    try {
-      console.log(`[TemplateService] Deleting template with id: ${id}`);
-      await this.delete<void>(`/${encodeURIComponent(id)}`);
-      ToastManager.toastGood("Template deleted successfully!");
-    } catch (error) {
-      console.error(
-        `[TemplateService] Error occurred during deleteById template with id ${id}:`,
-        error,
-      );
-      ToastManager.toastBad("Failed to delete template.");
-      throw error;
-    }
+    await this.delete<void>(`/${encodeURIComponent(id)}`);
+    ToastManager.toastGood("Template deleted successfully!");
   }
 }
 

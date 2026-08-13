@@ -1,41 +1,45 @@
-import { NetworkService } from "./network.service.ts";
-import { QaProtocolData } from "../../models/ticket.model.ts";
 import {
   GitLabRepository,
   MergeRequestModel,
   ProtectedBranchPipeline,
 } from "../../models/vcs.model.ts";
+import { NetworkService } from "./network.service.ts";
 
 export class VcsService extends NetworkService {
   constructor() {
     super("/vcs");
-    console.log(
-      "[VcsService] Initialized VcsService with base URL:",
-      this.baseUrl,
-    );
   }
 
-  public async createMergeRequest(
-    id: number,
-    mergeRequestData: QaProtocolData,
-  ) {
-    await this.post<void>(`/${id}/merge-request`, mergeRequestData);
+  public async fetchMergeRequests(): Promise<MergeRequestModel[]> {
+    try {
+      return await this.get<MergeRequestModel[]>("/merge-requests/my");
+    } catch {
+      return [];
+    }
   }
 
-  public fetchMergeRequests = async (): Promise<MergeRequestModel[]> => {
-    return await this.get<MergeRequestModel[]>(`/merge-requests/my`);
-  };
+  public async fetchPendingReviews(): Promise<MergeRequestModel[]> {
+    try {
+      return await this.get<MergeRequestModel[]>("/merge-requests/reviews");
+    } catch {
+      return [];
+    }
+  }
 
-  public fetchPendingReviews = async (): Promise<MergeRequestModel[]> => {
-    return await this.get<MergeRequestModel[]>(`/merge-requests/reviews`);
-  };
+  public async fetchPipelines(): Promise<ProtectedBranchPipeline[]> {
+    try {
+      return await this.get<ProtectedBranchPipeline[]>("/pipelines");
+    } catch {
+      return [];
+    }
+  }
 
-  public fetchPipelines = async (): Promise<ProtectedBranchPipeline[]> => {
-    return await this.get<ProtectedBranchPipeline[]>(`/pipelines`);
-  };
-
-  async fetchRepos() {
-    return await this.get<GitLabRepository[]>(`/repositories`);
+  public async fetchRepos(): Promise<GitLabRepository[]> {
+    try {
+      return await this.get<GitLabRepository[]>("/repositories");
+    } catch {
+      return [];
+    }
   }
 }
 

@@ -1,6 +1,7 @@
-import { NetworkService } from "./network.service.ts";
 import { DatabaseRecord } from "../../models/databaseRecord.model.ts";
 import { DatabaseMap } from "../../types/databaseRecord.type.ts";
+import { ToastManager } from "../../toaster/ToastManager.ts";
+import { NetworkService } from "./network.service.ts";
 
 export interface DatabaseSearchParams {
   searchParam?: string;
@@ -13,40 +14,39 @@ export class DatabaseService extends NetworkService {
   }
 
   public async fetchTables(): Promise<string[]> {
-    console.log("[DatabaseService] Fetching tables...");
-    return this.get<string[]>("/tables");
+    try {
+      return await this.get<string[]>("/tables");
+    } catch {
+      return [];
+    }
   }
 
   public async fetchAll(params?: DatabaseSearchParams): Promise<DatabaseMap> {
-    console.log("[DatabaseService] Fetching all records...");
-    const queryString = this.buildQueryString(params);
-    return this.get<DatabaseMap>(queryString);
+    try {
+      const queryString = this.buildParams(params as Record<string, any>);
+      return await this.get<DatabaseMap>(queryString);
+    } catch {
+      return {} as DatabaseMap;
+    }
   }
 
   public async fetchByTable(
     tableName: string,
     params?: DatabaseSearchParams,
   ): Promise<DatabaseRecord[]> {
-    console.log("[DatabaseService] Fetching records for table:", tableName);
-    const queryString = this.buildQueryString(params);
-    return this.get<DatabaseRecord[]>(
-      `/tables/${encodeURIComponent(tableName)}${queryString}`,
-    );
-  }
-
-  private buildQueryString(params?: DatabaseSearchParams): string {
-    if (!params) return "";
-
-    const queryParams = new URLSearchParams();
-    if (params.searchParam) {
-      queryParams.append("searchParam", params.searchParam);
-    }
-    if (params.value) {
-      queryParams.append("value", params.value);
+    if (!tableName) {
+      ToastManager.toastBad("Table name is missing!");
+      return [];
     }
 
-    const queryStr = queryParams.toString();
-    return queryStr ? `?${queryStr}` : "";
+    try {
+      const queryString = this.buildParams(params as Record<string, any>);
+      return await this.get<DatabaseRecord[]>(
+        `/tables/${encodeURIComponent(tableName)}${queryString}`,
+      );
+    } catch {
+      return [];
+    }
   }
 }
 

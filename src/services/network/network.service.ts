@@ -1,41 +1,29 @@
-import { downloadString, triggerBlobDownload } from "../../utils/file.util.ts";
-import { STORAGE_KEY_IS_DRAFT } from "../../constants/settings.constant.ts";
 import { RequestOptions } from "../../models/http.model.ts";
 import { getHost, getProtocol } from "../../utils/network.util.ts";
+import {
+  Interceptor,
+  RequestContext,
+  ResponseContext,
+} from "./internal/interceptor.interface.ts";
+import { ErrorToastInterceptor } from "./internal/ErrorInterceptor.ts";
+import { AuthInterceptor } from "./internal/AuthInterceptor.ts";
 
 export class NetworkService {
   protected baseUrl: string;
-  protected defaultHeaders: Record<string, string>;
+  private readonly interceptors: Interceptor[] = [];
+  private readonly defaultTimeout: number = 15_000;
 
   constructor(endpoint: string) {
     this.baseUrl = `${getProtocol("http")}//${getHost()}/api/v1${endpoint}`;
-    this.defaultHeaders = {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
+
+    this.use(new AuthInterceptor());
+    this.use(new ErrorToastInterceptor());
+
     console.log(`[NetworkService] Initialized with base URL: ${this.baseUrl}`);
   }
 
-  private getIsDraftHeader(): string {
-    const saved = localStorage.getItem(STORAGE_KEY_IS_DRAFT);
-    return saved !== null ? String(JSON.parse(saved)) : "true";
-  }
-
-  /**
-   * Holt das Token direkt aus dem localStorage.
-   */
-  private getAuthToken(): string | null {
-    return localStorage.getItem("access_token");
-  }
-
-  public setAuthToken(token: string | null): void {
-    if (token) {
-      this.defaultHeaders["Authorization"] = `Bearer ${token}`;
-      localStorage.setItem("access_token", token);
-    } else {
-      delete this.defaultHeaders["Authorization"];
-      localStorage.removeItem("access_token");
-    }
+  public use(interceptor: Interceptor): void {
+    this.interceptors.push(interceptor);
   }
 
   public buildParams(params?: Record<string, any>): string {
@@ -55,66 +43,192 @@ export class NetworkService {
     return queryString ? `?${queryString}` : "";
   }
 
+  public async executeRequest<T>(
+    endpoint: string,
+    options: RequestOptions = {},
+  ): Promise<T> {
+    const url = `${this.baseUrl}${endpoint}`;
+
+    const headers = new Headers();
+    headers.set("Accept", "application/json");
+
+    if (options.headers) {
+      new Headers(options.headers).forEach((value, key) => {
+        headers.set(key, value);
+      });
+    }
+
+    const body = this.prepareRequestBody(options.body, headers);
+
+    const timeout = options.timeout ?? this.defaultTimeout;
+    const timeoutController = new AbortController();
+    const timeoutId = setTimeout(() => timeoutController.abort(), timeout);
+
+    let signal = timeoutController.signal;
+    if (options.signal) {
+      if ("any" in AbortSignal && typeof AbortSignal.any === "function") {
+        signal = AbortSignal.any([options.signal, timeoutController.signal]);
+      } else {
+        options.signal.addEventListener("abort", () =>
+          timeoutController.abort(),
+        );
+      }
+    }
+
+    const { timeout: _, headers: __, body: ___, ...fetchOptions } = options;
+
+    let context: RequestContext = {
+      url,
+      options: {
+        ...fetchOptions,
+        headers,
+        body,
+        signal,
+      },
+    };
+
+    try {
+      for (const interceptor of this.interceptors) {
+        if (interceptor.onRequest) {
+          context = await interceptor.onRequest(context);
+        }
+      }
+
+      console.log(
+        `[NetworkService] Executing ${context.options.method || "GET"} request to: ${context.url}`,
+      );
+
+      const response = await fetch(context.url, context.options);
+
+      if (!response.ok) {
+        const errorBody = await response.text().catch(() => "");
+        throw new Error(
+          `HTTP Error ${response.status}: ${response.statusText}${
+            errorBody ? ` - ${errorBody}` : ""
+          }`,
+        );
+      }
+
+      let data: T = undefined as T;
+      if (response.status !== 204) {
+        const contentType = response.headers.get("content-type") || "";
+        const text = await response.text();
+
+        if (text) {
+          if (contentType.includes("application/json")) {
+            data = JSON.parse(text) as T;
+          } else {
+            data = text as unknown as T;
+          }
+        }
+      }
+
+      let responseContext: ResponseContext<T> = {
+        response,
+        data,
+        request: context,
+      };
+
+      for (const interceptor of this.interceptors) {
+        if (interceptor.onResponse) {
+          responseContext = await interceptor.onResponse(responseContext);
+        }
+      }
+
+      return responseContext.data as T;
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        console.warn(
+          `[NetworkService] Request aborted or timed out (${timeout}ms) for: ${context.url}`,
+        );
+      }
+
+      for (const interceptor of this.interceptors) {
+        if (interceptor.onError) {
+          await interceptor.onError(error, context);
+        }
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  private prepareRequestBody(
+    body: unknown,
+    headers: Headers,
+  ): BodyInit | null | undefined {
+    if (body === undefined || body === null) {
+      return undefined;
+    }
+
+    if (typeof body === "string") {
+      if (!headers.has("Content-Type")) {
+        headers.set("Content-Type", "text/plain");
+      }
+      return body;
+    }
+
+    if (
+      body instanceof FormData ||
+      body instanceof Blob ||
+      body instanceof ArrayBuffer
+    ) {
+      headers.delete("Content-Type");
+      headers.delete("content-type");
+      return body as BodyInit;
+    }
+
+    if (body instanceof URLSearchParams) {
+      if (!headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/x-www-form-urlencoded");
+      }
+      return body.toString();
+    }
+
+    if (!headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
+    }
+    return JSON.stringify(body);
+  }
+
   public async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-    return this.executeRequest<T>(endpoint, {
-      ...options,
-      method: "GET",
-    });
+    return this.executeRequest<T>(endpoint, { ...options, method: "GET" });
   }
 
   public async post<T, B = unknown>(
     endpoint: string,
-    body: B,
+    body?: B,
     options?: RequestOptions,
   ): Promise<T> {
     return this.executeRequest<T>(endpoint, {
       ...options,
       method: "POST",
-      body: JSON.stringify(body),
-    });
-  }
-
-  public async postRaw<T>(
-    endpoint: string,
-    rawBody: string | undefined,
-    options?: RequestOptions,
-  ): Promise<T> {
-    return this.executeRequest<T>(endpoint, {
-      ...options,
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain",
-        ...(options?.headers as Record<string, string>),
-      },
-      body: rawBody,
+      body,
     });
   }
 
   public async put<T, B = unknown>(
     endpoint: string,
-    body: B,
+    body?: B,
     options?: RequestOptions,
   ): Promise<T> {
     return this.executeRequest<T>(endpoint, {
       ...options,
       method: "PUT",
-      body: JSON.stringify(body),
+      body,
     });
   }
 
-  public async putRaw<T>(
+  public async patch<T, B = unknown>(
     endpoint: string,
-    rawBody: string | undefined,
+    body?: B,
     options?: RequestOptions,
   ): Promise<T> {
     return this.executeRequest<T>(endpoint, {
       ...options,
-      method: "PUT",
-      headers: {
-        "Content-Type": "text/plain",
-        ...(options?.headers as Record<string, string>),
-      },
-      body: rawBody,
+      method: "PATCH",
+      body,
     });
   }
 
@@ -122,141 +236,6 @@ export class NetworkService {
     endpoint: string,
     options?: RequestOptions,
   ): Promise<T> {
-    return this.executeRequest<T>(endpoint, {
-      ...options,
-      method: "DELETE",
-    });
-  }
-
-  public async formUpload<T>(
-    method: "POST" | "PUT",
-    endpoint: string,
-    formData: FormData,
-    options?: RequestOptions,
-  ): Promise<T> {
-    return this.executeRequest<T>(endpoint, {
-      ...options,
-      method,
-      body: formData,
-    });
-  }
-
-  public async executeRequest<T>(
-    endpoint: string,
-    options: RequestInit = {},
-  ): Promise<T> {
-    console.log(
-      `[NetworkService] Executing ${options.method || "GET"} request to: ${this.baseUrl}${endpoint}`,
-    );
-    const url = `${this.baseUrl}${endpoint}`;
-
-    // Token dynamisch vor jedem Request anhängen, falls vorhanden
-    const token = this.getAuthToken();
-    const authHeaders: Record<string, string> = {};
-    if (token) {
-      authHeaders["Authorization"] = `Bearer ${token}`;
-    }
-
-    const headers: Record<string, string> = {
-      ...this.defaultHeaders,
-      ...authHeaders,
-      ...(options.headers as Record<string, string>),
-    };
-
-    if (options.body instanceof FormData) {
-      delete headers["Content-Type"];
-      delete headers["content-type"];
-    }
-
-    const config: RequestInit = {
-      ...options,
-      headers,
-    };
-
-    const response = await fetch(url, config);
-    if (!response.ok) {
-      const errorBody = await response.text().catch(() => "");
-      throw new Error(
-        `HTTP Error ${response.status}: ${response.statusText}${
-          errorBody ? ` - ${errorBody}` : ""
-        }`,
-      );
-    }
-
-    if (response.status === 204) {
-      return undefined as T;
-    }
-
-    const text = await response.text();
-    if (!text) {
-      return undefined as T;
-    }
-
-    try {
-      return JSON.parse(text) as T;
-    } catch {
-      return text as unknown as T;
-    }
-  }
-
-  /**
-   * Re-export als Instanz-Methode für Kompatibilität
-   */
-  public downloadString(
-    content: string,
-    filename: string,
-    contentType: string = "text/plain",
-  ): void {
-    downloadString(content, filename, contentType);
-  }
-
-  public async downloadFile(
-    endpoint: string,
-    defaultFilename: string = `downloaded_${Date.now()}`,
-    options?: RequestOptions,
-  ): Promise<void> {
-    const url = `${this.baseUrl}${endpoint}`;
-    const isDraft = this.getIsDraftHeader();
-    const token = this.getAuthToken();
-
-    const headers: Record<string, string> = {
-      ...this.defaultHeaders,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      isDraft,
-      ...options?.headers,
-      Accept: "*/*",
-    };
-    delete headers["Content-Type"];
-    delete headers["content-type"];
-
-    const response = await fetch(url, {
-      ...options,
-      method: options?.method || "GET",
-      headers,
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text().catch(() => "");
-      throw new Error(
-        `HTTP Error ${response.status}: ${response.statusText}${
-          errorBody ? ` - ${errorBody}` : ""
-        }`,
-      );
-    }
-
-    let filename = (isDraft ? "DRAFT_" : "") + defaultFilename;
-    const contentDisposition = response.headers.get("Content-Disposition");
-    if (contentDisposition) {
-      const filenameMatch =
-        contentDisposition.match(/filename\*=UTF-8''([^;]+)/i) ||
-        contentDisposition.match(/filename="?([^";]+)"?/i);
-
-      if (filenameMatch && filenameMatch[1]) {
-        filename = decodeURIComponent(filenameMatch[1]);
-      }
-    }
-
-    const blob = await response.blob();
-    triggerBlobDownload(blob, filename);
+    return this.executeRequest<T>(endpoint, { ...options, method: "DELETE" });
   }
 }

@@ -1,6 +1,7 @@
-import { NetworkService } from "./network.service.ts";
 import { ToastManager } from "../../toaster/ToastManager.ts";
 import { WeeklyMeetingDTO } from "../../models/weeklyMeeting.model.ts";
+import { NetworkService } from "./network.service.ts";
+import { fileDownloadService } from "./fileDownload.service.ts";
 
 export class WeeklyMeetingService extends NetworkService {
   constructor() {
@@ -9,53 +10,15 @@ export class WeeklyMeetingService extends NetworkService {
 
   public async fetchAll(): Promise<WeeklyMeetingDTO[]> {
     try {
-      console.log("[WeeklyMeetingService] Fetching all weekly meetings...");
       return await this.get<WeeklyMeetingDTO[]>("");
-    } catch (error) {
-      ToastManager.toastBad("Could not fetch weekly meetings");
-      console.error(
-        "[WeeklyMeetingService] Error occurred while fetching all weekly meetings:",
-        error,
-      );
+    } catch {
       return [];
     }
   }
 
-  public async fetchById(id: string): Promise<WeeklyMeetingDTO | null> {
-    if (!id) {
-      ToastManager.toastBad("The Meeting ID is missing!");
-      return null;
-    }
-
-    try {
-      console.log(
-        "[WeeklyMeetingService] Fetching meeting details for id:",
-        id,
-      );
-      return await this.get<WeeklyMeetingDTO>(`/${encodeURIComponent(id)}`);
-    } catch (error) {
-      ToastManager.toastBad("Could not fetch meeting details");
-      console.error(
-        "[WeeklyMeetingService] Error occurred while fetching meeting details:",
-        error,
-      );
-      return null;
-    }
-  }
-
   public async generateNextWeek(): Promise<void> {
-    try {
-      console.log("[WeeklyMeetingService] Generating next week's meeting...");
-      await this.post<void>("/generate", {});
-      ToastManager.toastGood("Weekly meeting generated successfully.");
-    } catch (error) {
-      ToastManager.toastBad("Could not generate weekly meeting");
-      console.error(
-        "[WeeklyMeetingService] Error occurred while generating next week's meeting:",
-        error,
-      );
-      throw error;
-    }
+    await this.post<void>("/generate");
+    ToastManager.toastGood("Weekly meeting generated successfully.");
   }
 
   public async addTaskToDay(
@@ -63,35 +26,16 @@ export class WeeklyMeetingService extends NetworkService {
     day: string,
     task: string,
   ): Promise<void> {
-    if (!meetingId) {
-      ToastManager.toastBad("The Meeting ID is missing!");
-      return;
-    }
+    if (!meetingId) return ToastManager.toastBad("The Meeting ID is missing!");
+    if (!day) return ToastManager.toastBad("The Day parameter is missing!");
 
-    if (!day) {
-      ToastManager.toastBad("The Day parameter is missing!");
-      return;
-    }
+    const formattedDate = day.split("T")[0];
+    const params = this.buildParams({ day: formattedDate });
 
-    try {
-      const formattedDate: string = day.split("T")[0];
-      console.log(
-        `[WeeklyMeetingService] Adding task to day for meeting ${meetingId}:`,
-      );
-      const params = this.buildParams({ day: formattedDate });
-      await this.post<void>(
-        `/${encodeURIComponent(meetingId)}/tasks${params}`,
-        { task },
-      );
-      ToastManager.toastGood("Task added successfully.");
-    } catch (error) {
-      ToastManager.toastBad("Could not add task to day");
-      console.error(
-        `[WeeklyMeetingService] Error occurred while adding task to day for meeting ${meetingId}:`,
-        error,
-      );
-      throw error;
-    }
+    await this.post<void>(`/${encodeURIComponent(meetingId)}/tasks${params}`, {
+      task,
+    });
+    ToastManager.toastGood("Task added successfully.");
   }
 
   public async updateDaySummary(
@@ -99,84 +43,38 @@ export class WeeklyMeetingService extends NetworkService {
     day: string,
     summary: string,
   ): Promise<void> {
-    if (!meetingId) {
-      ToastManager.toastBad("The Meeting ID is missing!");
-      return;
-    }
+    if (!meetingId) return ToastManager.toastBad("The Meeting ID is missing!");
+    if (!day) return ToastManager.toastBad("The Day parameter is missing!");
 
-    if (!day) {
-      ToastManager.toastBad("The Day parameter is missing!");
-      return;
-    }
+    const formattedDate = day.split("T")[0];
+    const params = this.buildParams({ day: formattedDate });
 
-    try {
-      const formattedDate: string = day.split("T")[0];
-      console.log(
-        `[WeeklyMeetingService] Updating day summary for meeting ${meetingId}:`,
-      );
-      const params = this.buildParams({ day: formattedDate });
-      await this.put<void>(
-        `/${encodeURIComponent(meetingId)}/day-summary${params}`,
-        { summary },
-      );
-      ToastManager.toastGood("Day summary updated.");
-    } catch (error) {
-      ToastManager.toastBad("Could not update day summary");
-      console.error(
-        `[WeeklyMeetingService] Error occurred while updating day summary for meeting ${meetingId}:`,
-        error,
-      );
-      throw error;
-    }
+    await this.put<void>(
+      `/${encodeURIComponent(meetingId)}/day-summary${params}`,
+      { summary },
+    );
+    ToastManager.toastGood("Day summary updated.");
   }
 
   public async updateWeeklySummary(
     meetingId: string,
     summary: string,
   ): Promise<void> {
-    if (!meetingId) {
-      ToastManager.toastBad("The Meeting ID is missing!");
-      return;
-    }
+    if (!meetingId) return ToastManager.toastBad("The Meeting ID is missing!");
 
-    try {
-      console.log(
-        `[WeeklyMeetingService] Updating weekly summary for meeting ${meetingId}:`,
-      );
-      await this.put<void>(`/${encodeURIComponent(meetingId)}/summary`, {
-        summary,
-      });
-      ToastManager.toastGood("Weekly summary updated.");
-    } catch (error) {
-      ToastManager.toastBad("Could not update weekly summary");
-      console.error(
-        `[WeeklyMeetingService] Error occurred while updating weekly summary for meeting ${meetingId}:`,
-        error,
-      );
-      throw error;
-    }
+    await this.put<void>(`/${encodeURIComponent(meetingId)}/summary`, {
+      summary,
+    });
+    ToastManager.toastGood("Weekly summary updated.");
   }
 
   public async exportPdf(meetingId: string): Promise<void> {
-    if (!meetingId) {
-      ToastManager.toastBad("The Meeting ID is missing!");
-      return;
-    }
+    if (!meetingId) return ToastManager.toastBad("The Meeting ID is missing!");
 
-    try {
-      console.log(
-        `[WeeklyMeetingService] Exporting PDF for meeting ${meetingId}...`,
-      );
-      await this.downloadFile(`/${encodeURIComponent(meetingId)}/export`);
-      ToastManager.toastGood("PDF exported successfully.");
-    } catch (error) {
-      ToastManager.toastBad("Could not export meeting PDF");
-      console.error(
-        "[WeeklyMeetingService] Error occurred while exporting PDF:",
-        error,
-      );
-      throw error;
-    }
+    await fileDownloadService.downloadFromEndpoint(
+      `/weekly-meetings/${encodeURIComponent(meetingId)}/export`,
+    );
+    ToastManager.toastGood("PDF exported successfully.");
   }
 }
 
