@@ -114,8 +114,7 @@ export function useProcessedTickets() {
 
   const hasActiveMetrics =
     enabledKpis &&
-    (enabledKpis.spentHours ||
-      enabledKpis.movedQa ||
+    (enabledKpis.movedQa ||
       enabledKpis.fromQa ||
       enabledKpis.movedReview ||
       enabledKpis.fromReview);

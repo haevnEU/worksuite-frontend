@@ -3,6 +3,7 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -104,7 +105,6 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
       }
     }
     return {
-      spentHours: true,
       movedQa: true,
       fromQa: true,
       movedReview: true,
@@ -126,18 +126,33 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     console.log("[SettingsContext] setSelectedUser called with:", userToSelect);
   }, []);
 
-  const [hasVcsKey, setHasVcsKey] = useState<boolean>(
-    !!currentUser.vcsKey && currentUser.vcsKey !== "",
-  );
+  // Lokaler State für sofortiges UI-Feedback nach dem Speichern
+  const [localVcsSaved, setLocalVcsSaved] = useState<boolean>(false);
+  const [localRedmineSaved, setLocalRedmineSaved] = useState<boolean>(false);
 
-  const [hasRedmineKey, setHasRedmineKey] = useState<boolean>(
-    !!currentUser.redmineKey && currentUser.redmineKey !== "",
-  );
+  // 🛡️ Prüft sowohl den authUser-Objektstatus als auch eventuelle Booleans oder Strings
+  const hasVcsKey = useMemo(() => {
+    if (localVcsSaved) return true;
+    const key = currentUser.vcsKey as unknown;
+    return Boolean(key && key !== "" && key !== "false");
+  }, [currentUser.vcsKey, localVcsSaved]);
+
+  const hasRedmineKey = useMemo(() => {
+    if (localRedmineSaved) return true;
+    const key = currentUser.redmineKey as unknown;
+    return Boolean(key && key !== "" && key !== "false");
+  }, [currentUser.redmineKey, localRedmineSaved]);
+
+  // Reset lokalen State wenn der User wechselt
+  useEffect(() => {
+    setLocalVcsSaved(false);
+    setLocalRedmineSaved(false);
+  }, [currentUser.id]);
 
   const updateVcsKey = useCallback(
     async (key: string) => {
       await settingsService.setVcsKey(currentUser, key);
-      setHasVcsKey(true);
+      setLocalVcsSaved(Boolean(key && key.trim() !== ""));
     },
     [currentUser],
   );
@@ -145,7 +160,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
   const updateRedmineKey = useCallback(
     async (key: string) => {
       await settingsService.setRedmineKey(currentUser, key);
-      setHasRedmineKey(true);
+      setLocalRedmineSaved(Boolean(key && key.trim() !== ""));
     },
     [currentUser],
   );
@@ -185,7 +200,6 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
 
   const setAllKpis = useCallback((value: boolean) => {
     const updated: KpiSettings = {
-      spentHours: value,
       movedQa: value,
       fromQa: value,
       movedReview: value,
