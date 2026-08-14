@@ -9,6 +9,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { formatKpiDayShort } from "../../../utils/data.util";
+import { formatKpiDay } from "../../../utils/data.util.ts";
 
 interface KpiChartProps {
   data: any[];
@@ -23,7 +25,7 @@ export const KpiChart: React.FC<KpiChartProps> = ({
   enabledKpis,
   chartType,
 }) => {
-  if (!data.length) {
+  if (!data || !data.length) {
     return (
       <div className="h-full flex items-center justify-center text-slate-500 text-xs font-semibold">
         No KPI data available.
@@ -46,34 +48,36 @@ export const KpiChart: React.FC<KpiChartProps> = ({
           stroke="#334155"
           vertical={false}
         />
-        <XAxis dataKey="day" stroke="#94a3b8" fontSize={11} tickLine={false} />
+
+        <XAxis
+          dataKey="day"
+          stroke="#94a3b8"
+          fontSize={11}
+          tickLine={false}
+          tickFormatter={(value) => formatKpiDayShort(value)}
+        />
+
         <YAxis
           stroke="#94a3b8"
           fontSize={11}
           tickLine={false}
           axisLine={false}
+          allowDecimals={false}
         />
+
         <Tooltip
+          labelFormatter={(label) => formatKpiDay(label)}
           contentStyle={{
             backgroundColor: "#0f172a",
             borderColor: "#334155",
             borderRadius: "0.75rem",
             fontSize: "12px",
             color: "#fff",
+            boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.5)",
           }}
-          itemStyle={{ color: "#fff" }}
+          itemStyle={{ color: "#fff", padding: "2px 0" }}
         />
 
-        {/* Bar Series */}
-        {showBars && enabledKpis?.spentHours && (
-          <Bar
-            dataKey="hoursSpent"
-            name="Worked hours"
-            fill={colors.hoursSpent}
-            radius={[4, 4, 0, 0]}
-            opacity={barOpacity}
-          />
-        )}
         {showBars && enabledKpis?.movedQa && (
           <Bar
             dataKey="movedToQa"
@@ -111,20 +115,6 @@ export const KpiChart: React.FC<KpiChartProps> = ({
           />
         )}
 
-        {/* Line Series */}
-        {showLines && enabledKpis?.spentHours && (
-          <Line
-            type="monotone"
-            dataKey="hoursSpent"
-            name={
-              chartType === "both" ? "Worked hours (Trend)" : "Worked hours"
-            }
-            stroke={colors.hoursSpent}
-            strokeWidth={2}
-            dot={{ r: 3, fill: colors.hoursSpent }}
-            activeDot={{ r: 5 }}
-          />
-        )}
         {showLines && enabledKpis?.movedQa && (
           <Line
             type="monotone"

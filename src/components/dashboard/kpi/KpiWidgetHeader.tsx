@@ -1,6 +1,6 @@
 import React from "react";
 import { RefreshCw, TrendingUp } from "lucide-react";
-import { DaysRange } from "../../types/kpi.type.ts";
+import { DaysRange } from "../../../types/kpi.type.ts";
 
 interface KpiWidgetHeaderProps {
   selectedRange: DaysRange;

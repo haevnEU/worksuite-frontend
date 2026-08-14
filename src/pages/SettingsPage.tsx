@@ -19,10 +19,10 @@ export const SettingsPage: React.FC = () => {
       <div className="space-y-6">
         <GeneralProfileSection />
         <AvatarSection />
+        <AppearanceSection />
         <PasswordSection />
         <PdfExportPreferencesSection />
         <KpiSettingsSection />
-        <AppearanceSection />
         <VcsKeySection />
         <RedmineKeySection />
       </div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   Clock,
   Code2,
+  CodeXml,
   Database,
   FileCode,
   FileTerminal,
@@ -77,9 +78,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { label: "Backend Table Query", path: "/database", icon: Database },
         { label: "CSV Viewer", path: "/csv-viewer", icon: FileCode },
-        { label: "Tools", path: "/tools", icon: FileTerminal },
+        { label: "Mock Data", path: "/mock-data", icon: Database },
         { label: "Share & Export", path: "/share", icon: Share2 },
         { label: "Log Inspect", path: "/log", icon: FileTerminal },
+        { label: "Tools", path: "/tools", icon: FileTerminal },
+        { label: "Rule Generator", path: "/rule-generator", icon: CodeXml },
       ],
     },
     {

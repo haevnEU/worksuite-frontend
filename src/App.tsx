@@ -43,6 +43,8 @@ import { NoConnectionPage } from "./components/overlays/no-connection/NoConnecti
 import { GlobalErrorOverlay } from "./components/overlays/error/ErrorOverlay.tsx";
 import LogViewerPage from "./pages/LogViewerPage.tsx";
 import ToolsPage from "./pages/ToolsPage.tsx";
+import MockDataPage from "./pages/MockDataPage.tsx";
+import RuleGeneratorPage from "./pages/RuleGeneratorPage.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -101,6 +103,8 @@ const AuthenticatedLayout: React.FC = () => {
               <Route path="/share" element={<SharePage />} />
               <Route path="/log" element={<LogViewerPage />} />
               <Route path="/tools" element={<ToolsPage />} />
+              <Route path="/mock-data" element={<MockDataPage />} />
+              <Route path="/rule-generator" element={<RuleGeneratorPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           )}

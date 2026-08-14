@@ -34,9 +34,13 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
   const fetchTickets = useCallback(async () => {
     try {
       const fetchedTickets = await ticketService.fetch();
-      const safeTickets = fetchedTickets || [];
+      const rawTickets = Array.isArray(fetchedTickets) ? fetchedTickets : [];
+      const safeTickets = Array.from(
+        new Map(rawTickets.map((issue) => [issue.id, issue])).values(),
+      );
 
       setTickets(safeTickets);
+
       const projectsMap = new Map<number, Project>();
       const statusMap = new Map<number, RedmineStatus>();
 

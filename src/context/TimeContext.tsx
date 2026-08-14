@@ -7,95 +7,81 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { LogTimePayload, TimeDTO } from "../models/timeEntry.model.ts";
+import { TimeDTO } from "../models/timeEntry.model.ts";
 import { timeService } from "../services/network/time.service.ts";
-import { ticketService } from "../services/network/ticket.service.ts";
 
-interface TodayTotal {
+interface TimeTotal {
   hours: number;
   minutes: number;
-  formatted: string;
 }
 
 interface TimeContextType {
   entries: TimeDTO[];
-  isLoading: boolean;
-  todayTotal: TodayTotal;
+  todayTotal: TimeTotal;
   fetchTimeEntries: () => Promise<void>;
-  logTime: (ticketId: number, data: LogTimePayload) => Promise<void>;
+  isLoading: boolean;
 }
 
 const TimeContext = createContext<TimeContextType | undefined>(undefined);
+
+// Helper: Berechnet die Gesamtsumme absolut aus einer Liste (ohne Abhängigkeit von altem State)
+const calculateTotalTime = (entriesList: TimeDTO[]): TimeTotal => {
+  let totalMinutes = 0;
+
+  for (const entry of entriesList) {
+    totalMinutes +=
+      (Number(entry.hours) || 0) * 60 + (Number(entry.minutes) || 0);
+  }
+
+  return {
+    hours: Math.floor(totalMinutes / 60),
+    minutes: totalMinutes % 60,
+  };
+};
 
 export const TimeProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [entries, setEntries] = useState<TimeDTO[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [todayTotal, setTodayTotal] = useState<TimeTotal>({
+    hours: 0,
+    minutes: 0,
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const fetchTimeEntries = useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await timeService.fetch();
-      setEntries(data);
+      const rawEntries = Array.isArray(data) ? data : [];
+      const uniqueEntries = Array.from(
+        new Map(rawEntries.map((item) => [item.id, item])).values(),
+      );
+      setEntries(uniqueEntries);
+      const computedTotal = calculateTotalTime(uniqueEntries);
+      setTodayTotal(computedTotal);
     } catch (error) {
-      console.error("Failed to fetch time entries:", error);
+      console.error("Error fetching time entries:", error);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const logTime = useCallback(
-    async (ticketId: number, data: LogTimePayload) => {
-      await ticketService.logTime(ticketId, data);
-      await fetchTimeEntries();
-    },
-    [fetchTimeEntries],
-  );
-
   useEffect(() => {
     fetchTimeEntries();
   }, [fetchTimeEntries]);
 
-  const todayTotal = useMemo<TodayTotal>(() => {
-    const todayIso = new Date().toISOString().split("T")[0];
-
-    const todayMinutes = entries.reduce((acc, entry) => {
-      if (!entry.date) return acc;
-      const entryDateFormatted = new Date(entry.date)
-        .toISOString()
-        .split("T")[0];
-
-      if (entryDateFormatted === todayIso) {
-        return acc + entry.hours * 60 + entry.minutes;
-      }
-      return acc;
-    }, 0);
-
-    const hours = Math.floor(todayMinutes / 60);
-    const minutes = todayMinutes % 60;
-
-    return {
-      hours,
-      minutes,
-      formatted: `${hours}h ${minutes}m`,
-    };
-  }, [entries]);
-
-  const contextValue = useMemo<TimeContextType>(
+  const value = useMemo(
     () => ({
       entries,
-      isLoading,
       todayTotal,
       fetchTimeEntries,
-      logTime,
+      isLoading,
     }),
-    [entries, isLoading, todayTotal, fetchTimeEntries, logTime],
+    [entries, todayTotal, fetchTimeEntries, isLoading],
   );
 
-  return (
-    <TimeContext.Provider value={contextValue}>{children}</TimeContext.Provider>
-  );
+  return <TimeContext.Provider value={value}>{children}</TimeContext.Provider>;
 };
 
 export const useTime = (): TimeContextType => {

@@ -10,14 +10,15 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.tsx";
 
-const LAST_USERNAME_KEY = "last_username";
+const RECENT_USERS_KEY = "recent_usernames";
+const MAX_RECENT_USERS = 2;
 
 export const LoginPage: React.FC = () => {
   const { login, register } = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
 
-  const [lastUsername, setLastUsername] = useState<string | null>(null);
-  const [isSelectingLastUser, setIsSelectingLastUser] =
+  const [recentUsers, setRecentUsers] = useState<string[]>([]);
+  const [isSelectingRecentUser, setIsSelectingRecentUser] =
     useState<boolean>(false);
 
   const [username, setUsername] = useState("");
@@ -30,21 +31,51 @@ export const LoginPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem(LAST_USERNAME_KEY);
-    if (saved) {
-      setLastUsername(saved);
-      setUsername(saved);
-      setIsSelectingLastUser(true);
+    try {
+      const saved = localStorage.getItem(RECENT_USERS_KEY);
+      if (saved) {
+        const parsed: string[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setRecentUsers(parsed);
+          setUsername(parsed[0]);
+          setIsSelectingRecentUser(true);
+          return;
+        }
+      }
+
+      // Abwärtskompatibilität: Falls noch der alte Einzelschlüssel "last_username" existiert
+      const legacyLastUser = localStorage.getItem("last_username");
+      if (legacyLastUser) {
+        setRecentUsers([legacyLastUser]);
+        setUsername(legacyLastUser);
+        setIsSelectingRecentUser(true);
+      }
+    } catch {
+      // Ignorieren falls JSON fehlerhaft war
     }
   }, []);
+
+  const saveRecentUser = (userToSave: string) => {
+    const trimmed = userToSave.trim();
+    if (!trimmed) return;
+
+    // Den aktuellen User an den Anfang setzen, Duplikate entfernen und auf 2 begrenzen
+    const updated = [
+      trimmed,
+      ...recentUsers.filter((u) => u.toLowerCase() !== trimmed.toLowerCase()),
+    ].slice(0, MAX_RECENT_USERS);
+
+    setRecentUsers(updated);
+    localStorage.setItem(RECENT_USERS_KEY, JSON.stringify(updated));
+  };
 
   const handleSelectUserChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     if (val === "__NEW__") {
-      setIsSelectingLastUser(false);
+      setIsSelectingRecentUser(false);
       setUsername("");
     } else {
-      setIsSelectingLastUser(true);
+      setIsSelectingRecentUser(true);
       setUsername(val);
     }
   };
@@ -76,7 +107,10 @@ export const LoginPage: React.FC = () => {
           throw new Error("Invalid username or password");
         }
         const data = await response.json();
-        localStorage.setItem(LAST_USERNAME_KEY, username);
+
+        // Letzte 2 Benutzer aktualisieren
+        saveRecentUser(username);
+
         login(data.token, data.user);
       }
     } catch (err: any) {
@@ -175,22 +209,43 @@ export const LoginPage: React.FC = () => {
           )}
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
-              Username
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                Username
+              </label>
+              {!isRegistering &&
+                !isSelectingRecentUser &&
+                recentUsers.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSelectingRecentUser(true);
+                      setUsername(recentUsers[0]);
+                    }}
+                    className="text-[11px] text-blue-400 hover:text-blue-300 transition-colors"
+                  >
+                    Choose recent user
+                  </button>
+                )}
+            </div>
+
             <div className="relative">
               <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
 
-              {!isRegistering && lastUsername && isSelectingLastUser ? (
+              {!isRegistering &&
+              recentUsers.length > 0 &&
+              isSelectingRecentUser ? (
                 <div className="relative">
                   <select
                     value={username}
                     onChange={handleSelectUserChange}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-10 pr-10 text-xs text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none cursor-pointer"
                   >
-                    <option value={lastUsername}>
-                      {lastUsername} (Last login)
-                    </option>
+                    {recentUsers.map((userItem, index) => (
+                      <option key={userItem} value={userItem}>
+                        {userItem} {index === 0 ? "(Last login)" : "(Previous)"}
+                      </option>
+                    ))}
                     <option value="__NEW__">+ Another user...</option>
                   </select>
                   <ChevronDown className="w-4 h-4 text-slate-500 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
