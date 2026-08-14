@@ -82,18 +82,19 @@ export const TimeProvider: React.FC<{ children: ReactNode }> = ({
     };
   }, [entries]);
 
+  const contextValue = useMemo<TimeContextType>(
+    () => ({
+      entries,
+      isLoading,
+      todayTotal,
+      fetchTimeEntries,
+      logTime,
+    }),
+    [entries, isLoading, todayTotal, fetchTimeEntries, logTime],
+  );
+
   return (
-    <TimeContext.Provider
-      value={{
-        entries,
-        isLoading,
-        todayTotal,
-        fetchTimeEntries,
-        logTime,
-      }}
-    >
-      {children}
-    </TimeContext.Provider>
+    <TimeContext.Provider value={contextValue}>{children}</TimeContext.Provider>
   );
 };
 

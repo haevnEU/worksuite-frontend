@@ -24,31 +24,53 @@ export const RetroHeader: React.FC<RetroHeaderProps> = ({
   onCreateSprint,
 }) => {
   return (
-    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-sm font-sans">
-      <div className="space-y-1">
-        <div className="flex items-center space-x-2 text-blue-400 font-semibold text-xs uppercase tracking-wider">
-          <RotateCcw className="w-4 h-4" />
-          <span>Continuous Team Improvement</span>
+    <div className="bg-[#10192c]/80 border border-slate-800 rounded-xl p-6 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur shadow-lg">
+      {/* Linke Seite: Icon, Titel, Badge & Beschreibung */}
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shadow-inner shrink-0">
+          <RotateCcw className="w-6 h-6" />
         </div>
-        <h1 className="text-2xl font-bold text-white">Sprint Retrospective</h1>
-        <p className="text-slate-400 text-sm">
-          Gather feedback on what went well, what needs improvement, and new
-          action items.
-        </p>
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold text-white tracking-wide">
+              Sprint Retrospective
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+              Team Review
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Gather feedback on what went well, what needs improvement, and new
+            action items
+          </p>
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 text-xs">
-        <div className="flex items-center space-x-2">
-          <span className="text-slate-400">Active Sprint:</span>
+      {/* Rechte Seite: Controls, Total Pill & Actions */}
+      <div className="flex flex-wrap items-center gap-3 self-start md:self-center text-xs">
+        {/* Retros Count Pill */}
+        <div className="flex items-center gap-2 bg-[#0b111e] border border-slate-800 px-3.5 py-2 rounded-xl">
+          <span className="text-slate-400 font-medium">Retros:</span>
+          <span className="bg-blue-600 text-white font-bold px-2 py-0.5 rounded-full text-[11px]">
+            {retros.length}
+          </span>
+        </div>
+
+        {/* Sprint Selector */}
+        <div className="flex items-center gap-2 bg-[#0b111e] border border-slate-800 p-1 rounded-xl">
+          <span className="text-slate-400 font-semibold text-[11px] pl-2">
+            Sprint:
+          </span>
           <select
             value={selectedRetro?.sprintName || ""}
             onChange={(e) => onSelectSprint(e.target.value)}
-            className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-white font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="bg-transparent text-white font-semibold text-xs pr-2 py-1 outline-none cursor-pointer border-none"
           >
             {retros.map((retro) => (
               <option
                 key={retro.id || retro.sprintName}
                 value={retro.sprintName}
+                className="bg-[#0b111e] text-white"
               >
                 {retro.sprintName}
               </option>
@@ -56,39 +78,45 @@ export const RetroHeader: React.FC<RetroHeaderProps> = ({
           </select>
         </div>
 
+        {/* Selected Retro Actions (Export & Delete) */}
         {selectedRetro && (
-          <div className="flex items-center space-x-1.5">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={onExportSprint}
               title="Export Sprint as JSON"
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer flex items-center justify-center"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 border border-blue-500/30 transition shadow-sm cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5 text-blue-400" />
+              <Download className="w-3.5 h-3.5" />
+              <span>Export</span>
             </button>
             <button
               type="button"
               onClick={onDeleteSprint}
               title="Delete Active Sprint"
-              className="p-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 transition-colors cursor-pointer flex items-center justify-center"
+              className="p-2 rounded-xl bg-rose-600/20 text-rose-400 hover:bg-rose-600/30 border border-rose-500/30 transition shadow-sm cursor-pointer"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        <form onSubmit={onCreateSprint} className="flex items-center gap-1.5">
+        {/* Create Sprint Form */}
+        <form
+          onSubmit={onCreateSprint}
+          className="flex items-center gap-1.5 bg-[#0b111e] border border-slate-800 p-1 rounded-xl"
+        >
           <input
             type="text"
             value={newSprintName}
             onChange={(e) => onNewSprintNameChange(e.target.value)}
-            placeholder="New sprint name..."
-            className="bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 w-32 sm:w-40"
+            placeholder="New sprint..."
+            className="bg-transparent pl-2.5 pr-2 py-1 text-slate-200 placeholder-slate-500 outline-none text-xs w-28 sm:w-32"
           />
           <button
             type="submit"
             title="Create Sprint"
-            className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-xl transition-colors cursor-pointer flex items-center justify-center shrink-0"
+            className="bg-blue-600 hover:bg-blue-500 text-white p-1.5 rounded-lg transition-all shadow-md shadow-blue-600/20 cursor-pointer shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
           </button>

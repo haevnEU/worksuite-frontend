@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useLocalStorageDraft } from "../hooks/useLocalStorageDraft.ts";
 import { ShareableResource } from "../models/shareableResource.model.ts";
 import { snippetService } from "../services/network/snippet.service.ts";
-import { SnippetCard } from "../components/snippets/SnippetCard.tsx";
-import { SnippetModal } from "../components/snippets/SnippetModal.tsx";
-import { SnippetsHeader } from "../components/snippets/SnippetsHeader.tsx";
+import {
+  SnippetCard,
+  SnippetModal,
+  SnippetsHeader,
+} from "../components/snippets";
 import { SnippetLanguage } from "../types/snippet.type.ts";
 import { SnippetFormDraft } from "../models/snippet.model.ts";
 
@@ -102,6 +104,7 @@ export const SnippetsPage: React.FC = () => {
     <div className="space-y-6 pb-12 font-sans">
       <SnippetsHeader
         searchQuery={searchQuery}
+        totalSnippets={snippets.length}
         onSearchChange={setSearchQuery}
         onOpenCreateModal={openCreateModal}
       />

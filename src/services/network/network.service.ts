@@ -5,8 +5,9 @@ import {
   RequestContext,
   ResponseContext,
 } from "./internal/interceptor.interface.ts";
-import { ErrorToastInterceptor } from "./internal/ErrorInterceptor.ts";
+import { ErrorToastInterceptor } from "./internal/ErrorToast.interceptor.ts";
 import { AuthInterceptor } from "./internal/AuthInterceptor.ts";
+import { HttpError } from "../../exception/http.error.ts";
 
 export class NetworkService {
   protected baseUrl: string;
@@ -102,10 +103,11 @@ export class NetworkService {
 
       if (!response.ok) {
         const errorBody = await response.text().catch(() => "");
-        throw new Error(
-          `HTTP Error ${response.status}: ${response.statusText}${
-            errorBody ? ` - ${errorBody}` : ""
-          }`,
+        throw new HttpError(
+          response.status,
+          response.statusText,
+          errorBody,
+          response.headers,
         );
       }
 
@@ -154,44 +156,6 @@ export class NetworkService {
     }
   }
 
-  private prepareRequestBody(
-    body: unknown,
-    headers: Headers,
-  ): BodyInit | null | undefined {
-    if (body === undefined || body === null) {
-      return undefined;
-    }
-
-    if (typeof body === "string") {
-      if (!headers.has("Content-Type")) {
-        headers.set("Content-Type", "text/plain");
-      }
-      return body;
-    }
-
-    if (
-      body instanceof FormData ||
-      body instanceof Blob ||
-      body instanceof ArrayBuffer
-    ) {
-      headers.delete("Content-Type");
-      headers.delete("content-type");
-      return body as BodyInit;
-    }
-
-    if (body instanceof URLSearchParams) {
-      if (!headers.has("Content-Type")) {
-        headers.set("Content-Type", "application/x-www-form-urlencoded");
-      }
-      return body.toString();
-    }
-
-    if (!headers.has("Content-Type")) {
-      headers.set("Content-Type", "application/json");
-    }
-    return JSON.stringify(body);
-  }
-
   public async get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
     return this.executeRequest<T>(endpoint, { ...options, method: "GET" });
   }
@@ -237,5 +201,43 @@ export class NetworkService {
     options?: RequestOptions,
   ): Promise<T> {
     return this.executeRequest<T>(endpoint, { ...options, method: "DELETE" });
+  }
+
+  private prepareRequestBody(
+    body: unknown,
+    headers: Headers,
+  ): BodyInit | null | undefined {
+    if (body === undefined || body === null) {
+      return undefined;
+    }
+
+    if (typeof body === "string") {
+      if (!headers.has("Content-Type")) {
+        headers.set("Content-Type", "text/plain");
+      }
+      return body;
+    }
+
+    if (
+      body instanceof FormData ||
+      body instanceof Blob ||
+      body instanceof ArrayBuffer
+    ) {
+      headers.delete("Content-Type");
+      headers.delete("content-type");
+      return body as BodyInit;
+    }
+
+    if (body instanceof URLSearchParams) {
+      if (!headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/x-www-form-urlencoded");
+      }
+      return body.toString();
+    }
+
+    if (!headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
+    }
+    return JSON.stringify(body);
   }
 }

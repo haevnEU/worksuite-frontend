@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { GitLabRepository } from "../models/vcs.model.ts";
@@ -41,18 +42,19 @@ export const VcsProvider: React.FC<{ children: ReactNode }> = ({
     fetchRepos();
   }, [fetchRepos]);
 
+  const contextValue = useMemo<VcsContextType>(
+    () => ({
+      vcsLink,
+      repos,
+      fetchRepos,
+      fetchMergeRequests,
+      fetchPipeline,
+    }),
+    [vcsLink, repos, fetchRepos, fetchMergeRequests, fetchPipeline],
+  );
+
   return (
-    <VcsContext.Provider
-      value={{
-        vcsLink,
-        repos,
-        fetchRepos,
-        fetchMergeRequests,
-        fetchPipeline,
-      }}
-    >
-      {children}
-    </VcsContext.Provider>
+    <VcsContext.Provider value={contextValue}>{children}</VcsContext.Provider>
   );
 };
 

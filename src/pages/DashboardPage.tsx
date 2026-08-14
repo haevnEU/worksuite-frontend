@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { DashboardHeader } from "../components/dashboard/DashboardHeader.tsx";
-import { QuickStatsGrid } from "../components/dashboard/QuickStatsGrid.tsx";
-import { ProcessedTicketsWidget } from "../components/dashboard/ProcessedTicketsWidget.tsx";
-import { VcsRepositoriesSection } from "../components/dashboard/VcsRepositoriesSection.tsx";
-import { TimeLogModal } from "../components/dashboard/TimeLogModal.tsx";
+import {
+  DashboardHeader,
+  ProcessedTicketsWidget,
+  QuickStatsGrid,
+  TimeLogModal,
+  VcsRepositoriesSection,
+} from "../components/dashboard";
 
 export const DashboardPage: React.FC = () => {
   const [isTimeLogModalOpen, setIsTimeLogModalOpen] = useState(false);

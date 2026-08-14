@@ -4,9 +4,11 @@ import { RetroResource } from "../models/retroResource.model.ts";
 import { retroService } from "../services/network/retro.service.ts";
 import { useToast } from "../toaster/ToastContext.tsx";
 import { CategoryType } from "../types/retro.type.ts";
-import { RetroHeader } from "../components/retro/RetroHeader.tsx";
-import { RetroItemForm } from "../components/retro/RetroItemForm.tsx";
-import { RetroColumnsGrid } from "../components/retro/RetroColumnsGrid.tsx";
+import {
+  RetroColumnsGrid,
+  RetroHeader,
+  RetroItemForm,
+} from "../components/retro";
 import { useSettings } from "../context/SettingsContext.tsx";
 
 export const RetroPage: React.FC = () => {

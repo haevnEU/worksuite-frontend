@@ -15,7 +15,8 @@ type DownloadModule =
   | "WEEKLY_MEETING_PROTOCOL"
   | "NOTEBOOK_EXPORT"
   | "RETROSPECTIVE_PROTOCOL"
-  | "TICKET_ATTACHMENT";
+  | "TICKET_ATTACHMENT"
+  | "FILE_SHARE";
 
 export class FileDownloadService extends NetworkService {
   constructor() {
@@ -76,6 +77,16 @@ export class FileDownloadService extends NetworkService {
       "NOTEBOOK_EXPORT",
       { id: noteId, isDraft: isDraft },
       `notebook_export_${noteId}.pdf`,
+    );
+  }
+
+  public async downloadSharedFile(id: string, filename: string): Promise<void> {
+    if (!id) return ToastManager.toastBad("File ID is missing!");
+
+    await this.executeDownload(
+      "FILE_SHARE",
+      { id, filename },
+      filename || `shared_file_${Date.now()}`,
     );
   }
 

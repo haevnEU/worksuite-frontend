@@ -4,6 +4,7 @@ import { LogTimePayload } from "../../models/timeEntry.model.ts";
 import { ToastManager } from "../../toaster/ToastManager.ts";
 import { NetworkService } from "./network.service.ts";
 import { fileDownloadService } from "./fileDownload.service.ts";
+import { getHost } from "../../utils/network.util.ts";
 
 export class TicketService extends NetworkService {
   constructor() {
@@ -25,7 +26,7 @@ export class TicketService extends NetworkService {
     if (!url?.trim())
       return ToastManager.toastBad("Attachment URL is missing!");
     await fileDownloadService.downloadTicketAttachment(
-      `http://localhost/api/v1/ticket/download/attachments`,
+      `/api/v1/ticket/download/attachments`,
       filename,
       url,
     );

@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useTime } from "../context/TimeContext.tsx";
-import { TimeHeader } from "../components/time/TimeHeader.tsx";
-import { TimeFilterBar } from "../components/time/TimeFilterBar.tsx";
-import { TimeTable } from "../components/time/TiemTable.tsx";
+import { TimeFilterBar, TimeHeader, TimeTable } from "../components/time";
 
 export const TimeTrackingPage: React.FC = () => {
   const { entries, isLoading, fetchTimeEntries } = useTime();
@@ -64,7 +62,7 @@ export const TimeTrackingPage: React.FC = () => {
   const totalDisplayMinutes = totalFilteredMinutes % 60;
 
   return (
-    <div className="flex flex-col h-full min-h-0 w-full space-y-4 font-sans text-xs text-slate-200 overflow-hidden">
+    <div className="space-y-6 pb-12 font-sans">
       <TimeHeader
         totalHours={totalDisplayHours}
         totalMinutes={totalDisplayMinutes}

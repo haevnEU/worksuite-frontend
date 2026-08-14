@@ -115,7 +115,6 @@ export function useCsvViewerState() {
     pageSize,
   ]);
 
-  // Handlers
   const handleFilesSelect = async (selectedFiles: File[]) => {
     const availableSlots = MAX_FILES - files.length;
     if (availableSlots <= 0) return;

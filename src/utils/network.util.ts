@@ -1,7 +1,7 @@
 import { Protocol } from "../types/network.type.ts";
 
 export const getHost = (): string => {
-  return "localhost";
+  return window.location.host;
 };
 
 export const getProtocol = (requiredProtocolType: Protocol): string => {

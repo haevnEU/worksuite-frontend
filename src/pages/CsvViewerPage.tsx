@@ -1,15 +1,13 @@
 import React from "react";
 import { FileText } from "lucide-react";
-import { CsvHeaderSection } from "../components/csv/CsvHeaderSection.tsx";
-import { CsvTable } from "../components/csv/CsvTable.tsx";
-import { CsvDetailDrawer } from "../components/csv/CsvDetailDrawer.tsx";
-import { useCsvViewerState } from "../hooks/useCsvViewer.ts";
+import { CsvDetailDrawer, CsvHeaderSection, CsvTable } from "../components/csv";
+import { useCsvViewerState } from "../hooks/useCsvViewer";
 
 export const CsvViewerPage: React.FC = () => {
   const state = useCsvViewerState();
 
   return (
-    <div className="relative space-y-6 pb-16 font-sans w-full">
+    <div className="relative space-y-6 pb-12 font-sans">
       <CsvHeaderSection
         filesCount={state.files.length}
         maxFiles={state.MAX_FILES}
@@ -17,14 +15,14 @@ export const CsvViewerPage: React.FC = () => {
       />
 
       {state.isLoading && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center text-slate-400 text-xs font-semibold">
+        <div className="bg-[#10192c]/80 border border-slate-800 rounded-xl p-12 text-center text-slate-400 text-xs font-semibold backdrop-blur shadow-lg">
           Processing CSV files...
         </div>
       )}
 
       {!state.isLoading && state.files.length === 0 && (
-        <div className="border-2 border-dashed border-slate-800 hover:border-indigo-500/50 rounded-2xl p-12 bg-slate-900/40 text-center space-y-4 transition-colors">
-          <div className="w-12 h-12 rounded-2xl bg-slate-800/80 text-slate-400 flex items-center justify-center mx-auto border border-slate-700">
+        <div className="border-2 border-dashed border-slate-800 hover:border-blue-500/50 rounded-xl p-12 bg-[#10192c]/80 text-center space-y-4 transition-colors backdrop-blur shadow-lg">
+          <div className="w-12 h-12 rounded-xl bg-slate-800/80 text-slate-400 flex items-center justify-center mx-auto border border-slate-700">
             <FileText className="w-6 h-6" />
           </div>
           <div className="space-y-1">

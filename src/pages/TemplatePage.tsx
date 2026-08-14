@@ -5,9 +5,11 @@ import {
   TemplateTags,
 } from "../models/templateResource.model.ts";
 import { templateService } from "../services/network/template.service.ts";
-import { TemplatesHeader } from "../components/template/TemplatesHeader.tsx";
-import { TemplateCard } from "../components/template/TemplateCard.tsx";
-import { CreateTemplateModal } from "../components/template/CreateTemplateModal.tsx";
+import {
+  CreateTemplateModal,
+  TemplateCard,
+  TemplatesHeader,
+} from "../components/template";
 import { TemplatePlatform } from "../types/templateResource.type.ts";
 
 export const TemplatePage: React.FC = () => {
@@ -106,7 +108,7 @@ export const TemplatePage: React.FC = () => {
         onOpenModal={() => setIsModalOpen(true)}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {filteredTemplates.map((template) => (
           <TemplateCard
             key={template.id}

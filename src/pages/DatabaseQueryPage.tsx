@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useLocalStorageDraft } from "../hooks/useLocalStorageDraft.ts";
 import { databaseService } from "../services/network/database.service.ts";
 import { DatabaseRecord } from "../models/databaseRecord.model.ts";
-import { DatabaseQueryHeader } from "../components/database/DatabaseQueryHeader.tsx";
-import { QueryFilterSection } from "../components/database/QueryFilterSection.tsx";
-import { QueryResultsSection } from "../components/database/QueryResultsSection.tsx";
+import {
+  DatabaseQueryHeader,
+  QueryFilterSection,
+  QueryResultsSection,
+} from "../components/database";
 import { DatabaseMap } from "../types/databaseRecord.type.ts";
 
 export const DatabaseQueryPage: React.FC = () => {
@@ -109,7 +111,7 @@ export const DatabaseQueryPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12 font-sans">
+    <div className="space-y-6 pb-12 font-sans">
       <DatabaseQueryHeader />
 
       <QueryFilterSection

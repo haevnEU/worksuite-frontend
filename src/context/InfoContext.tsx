@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -25,6 +26,7 @@ export const InfoProvider: React.FC<{ children: ReactNode }> = ({
   const [redmineStatus, setRedmineStatus] = useState<InfoRecord[]>([]);
   const [redminePriority, setRedminePriority] = useState<InfoRecord[]>([]);
   const [redmineActivity, setRedmineActivity] = useState<InfoRecord[]>([]);
+
   const fetchInfo = useCallback(async () => {
     const redmineData: RedmineInfoMap = await infoService.fetchRedmineMeta();
     setRedminePriority(redmineData.priority || []);
@@ -36,17 +38,18 @@ export const InfoProvider: React.FC<{ children: ReactNode }> = ({
     fetchInfo();
   }, [fetchInfo]);
 
+  const contextValue = useMemo<InfoContextType>(
+    () => ({
+      redmineStatus,
+      redminePriority,
+      redmineActivity,
+      fetchInfo,
+    }),
+    [redmineStatus, redminePriority, redmineActivity, fetchInfo],
+  );
+
   return (
-    <InfoContext.Provider
-      value={{
-        redmineStatus,
-        redminePriority,
-        redmineActivity,
-        fetchInfo,
-      }}
-    >
-      {children}
-    </InfoContext.Provider>
+    <InfoContext.Provider value={contextValue}>{children}</InfoContext.Provider>
   );
 };
 

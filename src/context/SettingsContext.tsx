@@ -3,6 +3,7 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useMemo,
   useState,
 } from "react";
 import { UserModel } from "../models/user.model.ts";
@@ -48,13 +49,17 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const { user: authUser } = useAuth();
 
-  const currentUser: UserModel = authUser || {
-    id: "",
-    firstName: "",
-    lastName: "",
-    role: "DEVELOPER",
-    createdAt: "",
-  };
+  const currentUser: UserModel = useMemo(
+    () =>
+      authUser || {
+        id: "",
+        firstName: "",
+        lastName: "",
+        role: "DEVELOPER",
+        createdAt: "",
+      },
+    [authUser],
+  );
 
   const [daysRange, setDaysRangeState] = useState<DaysRange>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_KPI_DAYS_RANGE);
@@ -190,28 +195,49 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     localStorage.setItem(STORAGE_KEY_KPI_SETTINGS, JSON.stringify(updated));
   }, []);
 
+  const contextValue = useMemo<SettingsContextType>(
+    () => ({
+      user: currentUser,
+      isDraft,
+      setIsDraft,
+      setSelectedUser,
+      updateVcsKey,
+      updateRedmineKey,
+      hasVcsKey,
+      hasRedmineKey,
+      updateAvatar,
+      getAvatarUrl,
+      enabledKpis,
+      enableKpi,
+      setAllKpis,
+      daysRange,
+      setDaysRange,
+      chartType,
+      setChartType,
+    }),
+    [
+      currentUser,
+      isDraft,
+      setIsDraft,
+      setSelectedUser,
+      updateVcsKey,
+      updateRedmineKey,
+      hasVcsKey,
+      hasRedmineKey,
+      updateAvatar,
+      getAvatarUrl,
+      enabledKpis,
+      enableKpi,
+      setAllKpis,
+      daysRange,
+      setDaysRange,
+      chartType,
+      setChartType,
+    ],
+  );
+
   return (
-    <SettingsContext.Provider
-      value={{
-        user: currentUser,
-        isDraft,
-        setIsDraft,
-        setSelectedUser,
-        updateVcsKey,
-        updateRedmineKey,
-        hasVcsKey,
-        hasRedmineKey,
-        updateAvatar,
-        getAvatarUrl,
-        enabledKpis,
-        enableKpi,
-        setAllKpis,
-        daysRange,
-        setDaysRange,
-        chartType,
-        setChartType,
-      }}
-    >
+    <SettingsContext.Provider value={contextValue}>
       {children}
     </SettingsContext.Provider>
   );

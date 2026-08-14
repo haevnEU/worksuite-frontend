@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { ConnectionStatus } from "../types/PushService.type";
@@ -39,10 +40,17 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     pushService.connect();
   }, []);
 
+  const contextValue = useMemo<ConnectionContextType>(
+    () => ({
+      isConnected,
+      pushStatus,
+      retryConnection,
+    }),
+    [isConnected, pushStatus, retryConnection],
+  );
+
   return (
-    <ConnectionContext.Provider
-      value={{ isConnected, pushStatus, retryConnection }}
-    >
+    <ConnectionContext.Provider value={contextValue}>
       {children}
     </ConnectionContext.Provider>
   );

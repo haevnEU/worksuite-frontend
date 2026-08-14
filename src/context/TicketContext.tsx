@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -102,18 +103,29 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
     fetchTickets();
   }, [fetchTickets]);
 
+  const contextValue = useMemo<TicketContextType>(
+    () => ({
+      tickets,
+      fetchTickets,
+      projects,
+      status,
+      openTickets,
+      getAmountStatus,
+      getAmountPriority,
+    }),
+    [
+      tickets,
+      fetchTickets,
+      projects,
+      status,
+      openTickets,
+      getAmountStatus,
+      getAmountPriority,
+    ],
+  );
+
   return (
-    <TicketContext.Provider
-      value={{
-        tickets,
-        fetchTickets,
-        projects,
-        status,
-        openTickets,
-        getAmountStatus,
-        getAmountPriority,
-      }}
-    >
+    <TicketContext.Provider value={contextValue}>
       {children}
     </TicketContext.Provider>
   );

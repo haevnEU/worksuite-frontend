@@ -5,19 +5,17 @@ import { Issue } from "../models/ticketModel.model.ts";
 import { LogTimePayload } from "../models/timeEntry.model.ts";
 import { ticketService } from "../services/network/ticket.service.ts";
 
-import { TicketHeader } from "../components/ticket/TicketHeader.tsx";
-import { TicketFilterBar } from "../components/ticket/TicketFilterBar.tsx";
 import {
-  SortDirection,
-  SortField,
-  TicketTable,
-} from "../components/ticket/TicketTable.tsx";
-import { MrLinkModal } from "../components/ticket/MrLinkModal.tsx";
-import {
+  MrLinkModal,
   QaProtocolData,
   QaProtocolModal,
-} from "../components/ticket/QaProtocolModal.tsx";
-import { TicketDetailModal } from "../components/ticket/TicketDetailModal.tsx";
+  SortDirection,
+  SortField,
+  TicketDetailModal,
+  TicketFilterBar,
+  TicketHeader,
+  TicketTable,
+} from "../components/ticket";
 import { useToast } from "../toaster/ToastContext.tsx";
 
 export const TicketsPage: React.FC = () => {
@@ -187,7 +185,7 @@ export const TicketsPage: React.FC = () => {
     });
 
   return (
-    <div className="flex flex-col h-full min-h-0 w-full space-y-4 font-sans overflow-hidden">
+    <div className="space-y-6 pb-12 font-sans">
       <TicketHeader
         openTicketsCount={calculateOpenTickets()}
         totalTicketsCount={tickets.length}

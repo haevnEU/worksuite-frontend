@@ -5,8 +5,8 @@ import {
   Route,
   Routes,
 } from "react-router-dom";
-import { Sidebar } from "./components/sidebar/Sidebar.tsx";
-import { Header } from "./components/header/Header.tsx";
+import { Sidebar } from "./components/sidebar";
+import { Header } from "./components/header";
 import { DashboardSkeleton } from "./components/SkeletonLoader.tsx";
 import { DashboardPage } from "./pages/DashboardPage.tsx";
 import { TicketsPage } from "./pages/TicketsPage.tsx";
@@ -21,9 +21,7 @@ import { SnippetsPage } from "./pages/SnippetsPage.tsx";
 import { VcsPage } from "./pages/VcsPage.tsx";
 import { SettingsPage } from "./pages/SettingsPage.tsx";
 import { DatabaseQueryPage } from "./pages/DatabaseQueryPage.tsx";
-import { WeeklyMeetingPage } from "./pages/WeeklyMeetingPage.tsx";
 import { CsvViewerPage } from "./pages/CsvViewerPage.tsx";
-import { NoConnectionPage } from "./pages/NoConnection.tsx";
 
 import { ToastProvider } from "./toaster/ToastContext.tsx";
 import { SettingsProvider } from "./context/SettingsContext.tsx";
@@ -41,6 +39,10 @@ import {
 import { pushService } from "./services/push/push.service.ts";
 import { LoginPage } from "./components/auth/LoginPage.tsx";
 import { ProtectedRoute } from "./ProtectedRoute.tsx";
+import { NoConnectionPage } from "./components/overlays/no-connection/NoConnection.tsx";
+import { GlobalErrorOverlay } from "./components/overlays/error/ErrorOverlay.tsx";
+import LogViewerPage from "./pages/LogViewerPage.tsx";
+import ToolsPage from "./pages/ToolsPage.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -90,13 +92,15 @@ const AuthenticatedLayout: React.FC = () => {
               <Route path="/database" element={<DatabaseQueryPage />} />
               <Route path="/retro" element={<RetroPage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/wm" element={<WeeklyMeetingPage />} />
               <Route path="/redmine" element={<TicketsPage />} />
               <Route path="/teammeeting" element={<TeamMeetingPage />} />
               <Route path="/csv-viewer" element={<CsvViewerPage />} />
               <Route path="/vcs" element={<VcsPage />} />
               <Route path="/time-log" element={<TimeTrackingPage />} />
               <Route path="/review" element={<ReviewPage />} />
+              <Route path="/share" element={<SharePage />} />
+              <Route path="/log" element={<LogViewerPage />} />
+              <Route path="/tools" element={<ToolsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           )}
@@ -127,6 +131,7 @@ const AppRoutes: React.FC = () => {
                 <VcsProvider>
                   <TicketProvider>
                     <KPIProvider>
+                      <GlobalErrorOverlay />
                       <AuthenticatedLayout />
                     </KPIProvider>
                   </TicketProvider>

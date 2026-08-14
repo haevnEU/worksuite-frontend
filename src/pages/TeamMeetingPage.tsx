@@ -6,11 +6,13 @@ import {
 } from "../models/weeklyMeeting.model.ts";
 import { weeklyMeetingService } from "../services/network/weeklyMeeting.service.ts";
 import { isWeekend } from "../utils/teamMeeting.util.ts";
-import { TeamMeetingHeader } from "../components/teamMeeting/TeamMeetingHeader.tsx";
-import { MeetingSelectionBar } from "../components/teamMeeting/MeetingSelectionBar.tsx";
-import { WeeklySummaryCard } from "../components/teamMeeting/WeeklySummaryCard.tsx";
-import { DailyLogSection } from "../components/teamMeeting/DailyLogSection.tsx";
-import { MeetingArchiveModal } from "../components/teamMeeting/MeetingArchiveModal.tsx";
+import {
+  DailyLogSection,
+  MeetingArchiveModal,
+  MeetingSelectionBar,
+  TeamMeetingHeader,
+  WeeklySummaryCard,
+} from "../components/teamMeeting";
 import { useSettings } from "../context/SettingsContext.tsx";
 
 export const TeamMeetingPage: React.FC = () => {
@@ -192,7 +194,7 @@ export const TeamMeetingPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-16 font-sans w-full max-w-5xl mx-auto">
+    <div className="space-y-6 pb-12 font-sans">
       <TeamMeetingHeader
         activeMeeting={activeMeeting}
         isGenerating={isGenerating}
@@ -211,17 +213,23 @@ export const TeamMeetingPage: React.FC = () => {
       />
 
       {!activeMeeting && !isLoading ? (
-        <div className="p-8 text-center bg-slate-900 border border-slate-800 rounded-2xl space-y-3">
-          <AlertCircle className="w-8 h-8 text-slate-500 mx-auto" />
-          <p className="text-sm text-slate-400">
-            No weekly meetings available.
+        <div className="p-12 text-center bg-[#10192c]/80 border border-slate-800 rounded-xl space-y-3 shadow-lg backdrop-blur">
+          <AlertCircle className="w-10 h-10 text-slate-500 mx-auto" />
+          <h3 className="text-base font-semibold text-white">
+            No weekly meetings available
+          </h3>
+          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            Get started by generating your first weekly team sync meeting
+            template.
           </p>
-          <button
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs rounded-xl transition-colors cursor-pointer"
-            onClick={handleGenerateNextWeek}
-          >
-            Generate First Meeting
-          </button>
+          <div className="pt-2">
+            <button
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-blue-600/20 transition-all cursor-pointer"
+              onClick={handleGenerateNextWeek}
+            >
+              Generate First Meeting
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-6">

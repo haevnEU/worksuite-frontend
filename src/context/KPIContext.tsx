@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
 import { kpiService } from "../services/network/kpi.service.ts";
@@ -36,10 +37,16 @@ export const KPIProvider: React.FC<{ children: ReactNode }> = ({
     refresh();
   }, [refresh]);
 
+  const contextValue = useMemo<KPIContextType>(
+    () => ({
+      data,
+      refresh,
+    }),
+    [data, refresh],
+  );
+
   return (
-    <KPIContext.Provider value={{ data, refresh }}>
-      {children}
-    </KPIContext.Provider>
+    <KPIContext.Provider value={contextValue}>{children}</KPIContext.Provider>
   );
 };
 

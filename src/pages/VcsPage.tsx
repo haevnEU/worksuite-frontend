@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { VcsHeader } from "../components/vcs/VcsHeader.tsx";
-import { VcsKpiCards } from "../components/vcs/VcsKpiCards.tsx";
-import { MergeRequestList } from "../components/vcs/MergeRequestList.tsx";
-import { PipelineMonitorWidget } from "../components/vcs/PipelineMonitorWidget.tsx";
+import {
+  MergeRequestList,
+  PipelineMonitorWidget,
+  VcsHeader,
+  VcsKpiCards,
+} from "../components/vcs";
 import {
   MergeRequestModel,
   ProtectedBranchPipeline,
@@ -43,7 +45,7 @@ export const VcsPage: React.FC = () => {
   ).length;
 
   return (
-    <div className="space-y-4 font-sans text-slate-100 max-w-full">
+    <div className="space-y-6 pb-12 font-sans">
       <VcsHeader onRefresh={fetchVscData} isLoading={isLoading} />
 
       <VcsKpiCards
@@ -52,17 +54,15 @@ export const VcsPage: React.FC = () => {
         failedPipelinesCount={failedPipelinesCount}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
         <div className="lg:col-span-2">
           <MergeRequestList pendingReviews={pendingReviews} myMrs={myMrs} />
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <PipelineMonitorWidget pipelines={pipelines} />
         </div>
       </div>
     </div>
   );
 };
-
-export default VcsPage;

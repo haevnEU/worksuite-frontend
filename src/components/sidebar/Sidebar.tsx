@@ -4,9 +4,11 @@ import {
   Code2,
   Database,
   FileCode,
+  FileTerminal,
   GitBranch,
   LayoutDashboard,
   RotateCcw,
+  ScrollText,
   Settings,
   Share2,
   Sparkles,
@@ -75,6 +77,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { label: "Backend Table Query", path: "/database", icon: Database },
         { label: "CSV Viewer", path: "/csv-viewer", icon: FileCode },
+        { label: "Tools", path: "/tools", icon: FileTerminal },
+        { label: "Share & Export", path: "/share", icon: Share2 },
+        { label: "Log Inspect", path: "/log", icon: FileTerminal },
       ],
     },
     {
@@ -88,10 +93,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: "Settings",
       items: [{ label: "Settings", path: "/settings", icon: Settings }],
-    },
-    {
-      title: "Legacy / Dev Tools",
-      items: [{ label: "Share & Export", path: "/share", icon: Share2 }],
     },
   ];
 

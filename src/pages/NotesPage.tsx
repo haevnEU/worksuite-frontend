@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocalStorageDraft } from "../hooks/useLocalStorageDraft.ts";
 import { NoteResource } from "../models/noteResource.model.ts";
 import { noteService } from "../services/network/note.service.ts";
-import { NotesHeader } from "../components/notes/NotesHeader.tsx";
-import { NoteCard } from "../components/notes/NoteCard.tsx";
-import { NoteModal } from "../components/notes/NoteModal.tsx";
+import { NoteCard, NoteModal, NotesHeader } from "../components/notes";
 import { NoteFormDraft } from "../models/note.model.ts";
 
 export const NotesPage: React.FC = () => {
