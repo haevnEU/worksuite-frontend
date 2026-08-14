@@ -47,6 +47,7 @@ import ToolsPage from "./pages/ToolsPage.tsx";
 import MockDataPage from "./pages/MockDataPage.tsx";
 import RuleGeneratorPage from "./pages/RuleGeneratorPage.tsx";
 import { LicenseRenewPage } from "./pages/public/LicenseRenewPage.tsx";
+import { LicenseProvider } from "./context/LicenseContext.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -158,13 +159,15 @@ export const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
-        <ConnectionProvider>
-          <ToastProvider>
-            <SettingsProvider>
-              <AppRoutes />
-            </SettingsProvider>
-          </ToastProvider>
-        </ConnectionProvider>
+        <LicenseProvider>
+          <ConnectionProvider>
+            <ToastProvider>
+              <SettingsProvider>
+                <AppRoutes />
+              </SettingsProvider>
+            </ToastProvider>
+          </ConnectionProvider>
+        </LicenseProvider>
       </AuthProvider>
     </Router>
   );

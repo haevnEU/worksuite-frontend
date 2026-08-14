@@ -1,46 +1,33 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-  ShieldCheck,
-  ShieldAlert,
-  KeyRound,
-  Calendar,
-  RefreshCw,
-  Sparkles,
-  CheckCircle2,
   AlertCircle,
+  Calendar,
+  CheckCircle2,
+  KeyRound,
+  RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
-import { licenseService } from "../../services/network/license.service.ts";
-import { LicenseStatusResponse } from "../../models/license.model.ts";
+import { useLicense } from "../../context/LicenseContext.tsx";
 import { useToast } from "../../toaster/ToastContext.tsx";
+import { getPlanBadge } from "../../utils/license.util.ts";
 
 const LICENSE_KEY_REGEX =
   /^WS-[A-Z0-9]{3,4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 
 export const LicenseSettingsSection: React.FC = () => {
   const { toastGood, toastWarn, toastBad } = useToast();
+  const {
+    license,
+    isLoading,
+    error: contextError,
+    refreshLicense,
+    renewLicense,
+  } = useLicense();
 
-  const [license, setLicense] = useState<LicenseStatusResponse | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [newKey, setNewKey] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
-  const fetchLicenseStatus = async () => {
-    setIsLoading(true);
-    setErrorMsg(null);
-    try {
-      const response = await licenseService.getStatus();
-      setLicense(response);
-    } catch (err: any) {
-      setErrorMsg(err.message || "Failed to load license details.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchLicenseStatus();
-  }, []);
 
   const handleKeyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewKey(e.target.value.toUpperCase().trim());
@@ -57,8 +44,7 @@ export const LicenseSettingsSection: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const updated = await licenseService.renewLicense(newKey);
-      setLicense(updated);
+      await renewLicense(newKey);
       setNewKey("");
       toastGood("License successfully renewed.");
     } catch (err: any) {
@@ -79,18 +65,7 @@ export const LicenseSettingsSection: React.FC = () => {
     });
   };
 
-  const getPlanBadge = (plan: string) => {
-    switch (plan?.toUpperCase()) {
-      case "ENTERPRISE":
-        return "bg-purple-500/10 text-purple-400 border-purple-500/30";
-      case "PRO":
-        return "bg-cyan-500/10 text-cyan-400 border-cyan-500/30";
-      default:
-        return "bg-slate-800 text-slate-300 border-slate-700";
-    }
-  };
-
-  if (isLoading) {
+  if (isLoading && !license) {
     return (
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 animate-pulse">
         <div className="h-6 w-48 bg-slate-800 rounded mb-4" />
@@ -102,7 +77,6 @@ export const LicenseSettingsSection: React.FC = () => {
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-800 pb-4">
         <div className="flex items-center space-x-3">
           <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
@@ -118,18 +92,19 @@ export const LicenseSettingsSection: React.FC = () => {
           </div>
         </div>
         <button
-          onClick={fetchLicenseStatus}
-          className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+          onClick={refreshLicense}
+          disabled={isLoading}
+          className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
           title="Refresh status"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
-      {errorMsg && (
+      {contextError && (
         <div className="flex items-center space-x-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-4 rounded-lg">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          <span>{errorMsg}</span>
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <span>{contextError}</span>
         </div>
       )}
 

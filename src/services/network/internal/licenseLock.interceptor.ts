@@ -1,4 +1,3 @@
-// src/services/network/internal/LicenseLock.interceptor.ts
 import { Interceptor, RequestContext } from "./interceptor.interface.ts";
 import { HttpError } from "../../../exception/http.error.ts";
 import { LicenseStateManagerInstance } from "../../../state/license.state.ts";
