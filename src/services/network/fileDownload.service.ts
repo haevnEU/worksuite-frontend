@@ -1,69 +1,105 @@
-import { RequestOptions } from "../../models/http.model.ts";
-import { ToastManager } from "../../toaster/ToastManager.ts";
-import { downloadString, triggerBlobDownload } from "../../utils/file.util.ts";
 import { NetworkService } from "./network.service.ts";
+import { ToastManager } from "../../toaster/ToastManager.ts";
+import { triggerBlobDownload } from "../../utils/file.util.ts";
+
+interface RequestDTO {
+  apiKey?: string;
+  filename?: string;
+  id?: string;
+  isDraft?: boolean;
+  url?: string;
+  webUrl?: string;
+}
+
+type DownloadModule =
+  | "WEEKLY_MEETING_PROTOCOL"
+  | "NOTEBOOK_EXPORT"
+  | "RETROSPECTIVE_PROTOCOL"
+  | "TICKET_ATTACHMENT";
 
 export class FileDownloadService extends NetworkService {
   constructor() {
-    super("");
+    super("/download");
   }
-  public async downloadFromEndpoint(
-    endpoint: string,
-    defaultFilename: string = `downloaded_${Date.now()}`,
-    options?: RequestOptions,
+
+  public async downloadTicketAttachment(
+    url: string,
+    filename: string,
+    webUrl: string,
   ): Promise<void> {
-    if (!endpoint) {
-      ToastManager.toastBad("Download URL is missing!");
-      return;
-    }
+    if (!url?.trim())
+      return ToastManager.toastBad("Attachment URL is missing!");
 
+    await this.executeDownload(
+      "TICKET_ATTACHMENT",
+      { url, filename, isDraft: false, webUrl: webUrl },
+      filename || `attachment_${Date.now()}`,
+    );
+  }
+
+  /* ========================================================================= */
+  /* DOMAIN DOWNLOAD METHODS                                                   */
+  /* ========================================================================= */
+
+  public async downloadWeeklyMeetingProtocol(
+    meetingId: string,
+    isDraft: boolean,
+  ): Promise<void> {
+    if (!meetingId) return ToastManager.toastBad("Meeting ID is missing!");
+
+    await this.executeDownload(
+      "WEEKLY_MEETING_PROTOCOL",
+      { id: meetingId, isDraft: isDraft },
+      `weekly_meeting_${meetingId}.pdf`,
+    );
+  }
+
+  public async downloadRetrospectiveProtocol(
+    id: string,
+    isDraft: boolean,
+  ): Promise<void> {
+    if (!id) return ToastManager.toastBad("Retro ID is missing!");
+
+    await this.executeDownload(
+      "RETROSPECTIVE_PROTOCOL",
+      { id, isDraft },
+      `retrospective_${id}.pdf`,
+    );
+  }
+
+  public async downloadNotebookExport(
+    noteId: string,
+    isDraft: boolean,
+  ): Promise<void> {
+    if (!noteId) return ToastManager.toastBad("Note ID is missing!");
+    await this.executeDownload(
+      "NOTEBOOK_EXPORT",
+      { id: noteId, isDraft: isDraft },
+      `notebook_export_${noteId}.pdf`,
+    );
+  }
+
+  private async executeDownload(
+    moduleType: DownloadModule,
+    dto: RequestDTO,
+    fallbackFilename: string,
+  ): Promise<void> {
     try {
-      const headers = new Headers();
-      headers.set("Accept", "*/*");
+      const url = `${this.baseUrl}/${moduleType}`;
 
-      if (options?.headers) {
-        new Headers(options.headers).forEach((value, key) => {
-          headers.set(key, value);
-        });
-      }
-
-      const token = localStorage.getItem("token");
-      if (token && !headers.has("Authorization")) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-
-      let body: BodyInit | null | undefined = undefined;
-      if (options?.body) {
-        if (typeof options.body === "string") {
-          body = options.body;
-          if (!headers.has("Content-Type")) {
-            headers.set("Content-Type", "text/plain");
-          }
-        } else if (
-          options.body instanceof FormData ||
-          options.body instanceof Blob ||
-          options.body instanceof ArrayBuffer
-        ) {
-          body = options.body as BodyInit;
-        } else {
-          body = JSON.stringify(options.body);
-          if (!headers.has("Content-Type")) {
-            headers.set("Content-Type", "application/json");
-          }
-        }
-      }
-
-      const fetchInit: RequestInit = {
-        method: options?.method || "GET",
-        headers,
-        body,
-        signal: options?.signal,
-      };
-
-      console.log(
-        `[FileDownloadService] Executing download request to: ${endpoint}`,
-      );
-      const response = await fetch(endpoint, fetchInit);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/pdf, application/octet-stream, */*",
+          ...(localStorage.getItem("access_token")
+            ? {
+                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+              }
+            : {}),
+        },
+        body: JSON.stringify(dto),
+      });
 
       if (!response.ok) {
         const errorBody = await response.text().catch(() => "");
@@ -74,7 +110,8 @@ export class FileDownloadService extends NetworkService {
         );
       }
 
-      let filename = defaultFilename;
+      // Filename aus dem Content-Disposition Header parsen (falls vom Backend mitgegeben)
+      let filename = dto.filename || fallbackFilename;
       const contentDisposition = response.headers.get("Content-Disposition");
       if (contentDisposition) {
         const filenameMatch =
@@ -86,29 +123,15 @@ export class FileDownloadService extends NetworkService {
         }
       }
 
+      // Resource als Binary Blob einlesen und im Browser auslösen
       const blob = await response.blob();
       triggerBlobDownload(blob, filename);
     } catch (error) {
-      console.error("[FileDownloadService] Error downloading file:", error);
+      console.error(
+        `[FileDownloadService] Error downloading ${moduleType}:`,
+        error,
+      );
       ToastManager.toastBad("Failed to download file.");
-      throw error;
-    }
-  }
-
-  public downloadRawString(
-    content: string,
-    filename: string,
-    contentType: string = "text/plain",
-  ): void {
-    if (!content) {
-      ToastManager.toastBad("No content provided for download!");
-      return;
-    }
-
-    try {
-      downloadString(content, filename, contentType);
-    } catch (error) {
-      ToastManager.toastBad("Failed to generate file download.");
       throw error;
     }
   }

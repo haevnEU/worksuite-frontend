@@ -7,6 +7,7 @@ import { CategoryType } from "../types/retro.type.ts";
 import { RetroHeader } from "../components/retro/RetroHeader.tsx";
 import { RetroItemForm } from "../components/retro/RetroItemForm.tsx";
 import { RetroColumnsGrid } from "../components/retro/RetroColumnsGrid.tsx";
+import { useSettings } from "../context/SettingsContext.tsx";
 
 export const RetroPage: React.FC = () => {
   const { toastInfo } = useToast();
@@ -68,9 +69,11 @@ export const RetroPage: React.FC = () => {
     }
   };
 
+  const { isDraft } = useSettings();
+
   const handleExportSprint = async () => {
     if (!selectedRetro?.sprintName) return;
-    await retroService.exportPdf(selectedRetro.id);
+    await retroService.exportPdf(selectedRetro.id, isDraft);
   };
 
   const removeFromList = async (listName: CategoryType, item: string) => {

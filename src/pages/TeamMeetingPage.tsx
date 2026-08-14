@@ -11,12 +11,14 @@ import { MeetingSelectionBar } from "../components/teamMeeting/MeetingSelectionB
 import { WeeklySummaryCard } from "../components/teamMeeting/WeeklySummaryCard.tsx";
 import { DailyLogSection } from "../components/teamMeeting/DailyLogSection.tsx";
 import { MeetingArchiveModal } from "../components/teamMeeting/MeetingArchiveModal.tsx";
+import { useSettings } from "../context/SettingsContext.tsx";
 
 export const TeamMeetingPage: React.FC = () => {
   const [allMeetings, setAllMeetings] = useState<WeeklyMeetingDTO[]>([]);
   const [selectedMeetingId, setSelectedMeetingId] = useState<string | null>(
     null,
   );
+  const { isDraft } = useSettings();
   const [selectedDayDate, setSelectedDayDate] = useState<string>("");
 
   const [weeklySummaryInput, setWeeklySummaryInput] = useState("");
@@ -185,7 +187,7 @@ export const TeamMeetingPage: React.FC = () => {
   const handleExportPdf = async () => {
     if (!activeMeeting) return;
     setIsExporting(true);
-    await weeklyMeetingService.exportPdf(activeMeeting.id);
+    await weeklyMeetingService.exportPdf(activeMeeting.id, isDraft);
     setIsExporting(false);
   };
 

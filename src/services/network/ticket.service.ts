@@ -24,16 +24,10 @@ export class TicketService extends NetworkService {
   ): Promise<void> {
     if (!url?.trim())
       return ToastManager.toastBad("Attachment URL is missing!");
-
-    const options = {
-      body: url,
-      method: "POST",
-    };
-
-    await fileDownloadService.downloadFromEndpoint(
+    await fileDownloadService.downloadTicketAttachment(
       `http://localhost/api/v1/ticket/download/attachments`,
       filename,
-      options,
+      url,
     );
     ToastManager.toastGood("Attachment downloaded successfully.");
   }

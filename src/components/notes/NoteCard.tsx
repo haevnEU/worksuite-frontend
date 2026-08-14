@@ -4,6 +4,7 @@ import { NoteResource } from "../../models/noteResource.model.ts";
 import { noteService } from "../../services/network/note.service.ts";
 import { useToast } from "../../toaster/ToastContext.tsx";
 import { TICKET_URL } from "../../constants/url.constant.ts";
+import { useSettings } from "../../context/SettingsContext.tsx";
 
 interface NoteCardProps {
   note: NoteResource;
@@ -17,6 +18,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({
   onDelete,
 }) => {
   const { toastInfo } = useToast();
+  const { isDraft } = useSettings();
 
   const copyNote = async () => {
     await navigator.clipboard.writeText(note.content);
@@ -24,7 +26,7 @@ export const NoteCard: React.FC<NoteCardProps> = ({
   };
 
   const exportNote = async () => {
-    await noteService.exportPdf(note.id);
+    await noteService.exportPdf(note.id, isDraft);
   };
 
   const renderNoteLink = () => {

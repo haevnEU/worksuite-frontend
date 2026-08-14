@@ -404,9 +404,9 @@ export const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                       <div className="shrink-0 self-end sm:self-center">
                         <button
                           type="button"
-                          onClick={() =>
-                            onDownloadFile(file.contentUrl, file.filename)
-                          }
+                          onClick={() => {
+                            onDownloadFile(file.contentUrl, file.filename);
+                          }}
                           className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-colors text-xs flex items-center space-x-1.5 cursor-pointer shadow-md"
                         >
                           <Download className="w-3.5 h-3.5" />

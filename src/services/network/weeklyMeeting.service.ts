@@ -68,12 +68,10 @@ export class WeeklyMeetingService extends NetworkService {
     ToastManager.toastGood("Weekly summary updated.");
   }
 
-  public async exportPdf(meetingId: string): Promise<void> {
+  public async exportPdf(meetingId: string, isDraft: boolean): Promise<void> {
     if (!meetingId) return ToastManager.toastBad("The Meeting ID is missing!");
 
-    await fileDownloadService.downloadFromEndpoint(
-      `/weekly-meetings/${encodeURIComponent(meetingId)}/export`,
-    );
+    await fileDownloadService.downloadWeeklyMeetingProtocol(meetingId, isDraft);
     ToastManager.toastGood("PDF exported successfully.");
   }
 }

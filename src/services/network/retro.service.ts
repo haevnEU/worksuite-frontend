@@ -58,12 +58,10 @@ export class RetroService extends NetworkService {
     ToastManager.toastGood("Retro deleted successfully!");
   }
 
-  public async exportPdf(id: string): Promise<void> {
+  public async exportPdf(id: string, isDraft: boolean): Promise<void> {
     if (!id) return ToastManager.toastBad("The ID is missing!");
 
-    await fileDownloadService.downloadFromEndpoint(
-      `/retros/${encodeURIComponent(id)}/export`,
-    );
+    await fileDownloadService.downloadRetrospectiveProtocol(id, isDraft);
     ToastManager.toastGood("PDF exported successfully.");
   }
 }

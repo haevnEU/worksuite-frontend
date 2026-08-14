@@ -23,6 +23,7 @@ import {
   WeeklyMeetingDTO,
 } from "../models/weeklyMeeting.model.ts";
 import { weeklyMeetingService } from "../services/network/weeklyMeeting.service.ts";
+import { useSettings } from "../context/SettingsContext.tsx";
 
 export const WeeklyMeetingPage: React.FC = () => {
   const [allMeetings, setAllMeetings] = useState<WeeklyMeetingDTO[]>([]);
@@ -46,6 +47,8 @@ export const WeeklyMeetingPage: React.FC = () => {
     const dayOfWeek = date.getUTCDay();
     return dayOfWeek === 0 || dayOfWeek === 6;
   };
+
+  const { isDraft } = useSettings();
 
   const formatDayLabel = (
     dateStr: string,
@@ -230,7 +233,7 @@ export const WeeklyMeetingPage: React.FC = () => {
   const handleExportPdf = async () => {
     if (!activeMeeting) return;
     setIsExporting(true);
-    await weeklyMeetingService.exportPdf(activeMeeting.id);
+    await weeklyMeetingService.exportPdf(activeMeeting.id, isDraft);
     setIsExporting(false);
   };
 

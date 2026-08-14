@@ -36,12 +36,10 @@ export class NoteService extends NetworkService {
     ToastManager.toastGood(`Note deleted successfully.`);
   }
 
-  public async exportPdf(noteId?: string): Promise<void> {
+  public async exportPdf(noteId: string, isDraft: boolean): Promise<void> {
     if (!noteId) return ToastManager.toastBad("The ID is missing!");
 
-    await fileDownloadService.downloadFromEndpoint(
-      `/notes/${encodeURIComponent(noteId)}/export`,
-    );
+    await fileDownloadService.downloadNotebookExport(noteId, isDraft);
     ToastManager.toastGood("PDF exported successfully.");
   }
 }
