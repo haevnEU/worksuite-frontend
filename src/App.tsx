@@ -48,6 +48,7 @@ import MockDataPage from "./pages/MockDataPage.tsx";
 import RuleGeneratorPage from "./pages/RuleGeneratorPage.tsx";
 import { LicenseRenewPage } from "./pages/public/LicenseRenewPage.tsx";
 import { LicenseProvider } from "./context/LicenseContext.tsx";
+import { InsufficientLicenseGuard } from "./components/license/InssuficientLicense.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -90,24 +91,147 @@ const AuthenticatedLayout: React.FC = () => {
             <DashboardSkeleton />
           ) : (
             <Routes>
-              <Route path="/" element={<DashboardPage />} />
-              <Route path="/snippets" element={<SnippetsPage />} />
-              <Route path="/templates" element={<TemplatePage />} />
-              <Route path="/notes" element={<NotesPage />} />
-              <Route path="/database" element={<DatabaseQueryPage />} />
-              <Route path="/retro" element={<RetroPage />} />
+              <Route
+                path="/"
+                element={
+                  <InsufficientLicenseGuard minPlan="COMMUNITY">
+                    <DashboardPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/vcs"
+                element={
+                  <InsufficientLicenseGuard minPlan="COMMUNITY">
+                    <VcsPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/redmine"
+                element={
+                  <InsufficientLicenseGuard minPlan="COMMUNITY">
+                    <TicketsPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/redmine" element={<TicketsPage />} />
-              <Route path="/teammeeting" element={<TeamMeetingPage />} />
-              <Route path="/csv-viewer" element={<CsvViewerPage />} />
-              <Route path="/vcs" element={<VcsPage />} />
-              <Route path="/time-log" element={<TimeTrackingPage />} />
-              <Route path="/review" element={<ReviewPage />} />
-              <Route path="/share" element={<SharePage />} />
-              <Route path="/log" element={<LogViewerPage />} />
-              <Route path="/tools" element={<ToolsPage />} />
-              <Route path="/mock-data" element={<MockDataPage />} />
-              <Route path="/rule-generator" element={<RuleGeneratorPage />} />
+
+              <Route
+                path="/notes"
+                element={
+                  <InsufficientLicenseGuard minPlan="PRO">
+                    <NotesPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/snippets"
+                element={
+                  <InsufficientLicenseGuard minPlan="PRO">
+                    <SnippetsPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/templates"
+                element={
+                  <InsufficientLicenseGuard minPlan="PRO">
+                    <TemplatePage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/time-log"
+                element={
+                  <InsufficientLicenseGuard minPlan="PRO">
+                    <TimeTrackingPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/share"
+                element={
+                  <InsufficientLicenseGuard minPlan="PRO">
+                    <SharePage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/log"
+                element={
+                  <InsufficientLicenseGuard minPlan="PRO">
+                    <LogViewerPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/tools"
+                element={
+                  <InsufficientLicenseGuard minPlan="PRO">
+                    <ToolsPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/retro"
+                element={
+                  <InsufficientLicenseGuard minPlan="PRO">
+                    <RetroPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/teammeeting"
+                element={
+                  <InsufficientLicenseGuard minPlan="PRO">
+                    <TeamMeetingPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/review"
+                element={
+                  <InsufficientLicenseGuard minPlan="PRO">
+                    <ReviewPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+
+              {/* --- ENTERPRISE TIER --- */}
+              <Route
+                path="/database"
+                element={
+                  <InsufficientLicenseGuard minPlan="ENTERPRISE">
+                    <DatabaseQueryPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/csv-viewer"
+                element={
+                  <InsufficientLicenseGuard minPlan="ENTERPRISE">
+                    <CsvViewerPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/mock-data"
+                element={
+                  <InsufficientLicenseGuard minPlan="ENTERPRISE">
+                    <MockDataPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/rule-generator"
+                element={
+                  <InsufficientLicenseGuard minPlan="ENTERPRISE">
+                    <RuleGeneratorPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           )}
