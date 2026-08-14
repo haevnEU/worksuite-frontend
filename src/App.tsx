@@ -41,10 +41,12 @@ import { LoginPage } from "./components/auth/LoginPage.tsx";
 import { ProtectedRoute } from "./ProtectedRoute.tsx";
 import { NoConnectionPage } from "./components/overlays/no-connection/NoConnection.tsx";
 import { GlobalErrorOverlay } from "./components/overlays/error/ErrorOverlay.tsx";
+import { LicenseGuard } from "./components/license/LicenseGuard.tsx";
 import LogViewerPage from "./pages/LogViewerPage.tsx";
 import ToolsPage from "./pages/ToolsPage.tsx";
 import MockDataPage from "./pages/MockDataPage.tsx";
 import RuleGeneratorPage from "./pages/RuleGeneratorPage.tsx";
+import { LicenseRenewPage } from "./pages/public/LicenseRenewPage.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -124,24 +126,27 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/public/share/*" element={<SharePage />} />
+      <Route path="/license/renew" element={<LicenseRenewPage />} />
       <Route path="/login" element={<LoginPage />} />
 
       <Route
         path="/*"
         element={
           <ProtectedRoute>
-            <InfoProvider>
-              <TimeProvider>
-                <VcsProvider>
-                  <TicketProvider>
-                    <KPIProvider>
-                      <GlobalErrorOverlay />
-                      <AuthenticatedLayout />
-                    </KPIProvider>
-                  </TicketProvider>
-                </VcsProvider>
-              </TimeProvider>
-            </InfoProvider>
+            <LicenseGuard renewUrl="/license/renew">
+              <InfoProvider>
+                <TimeProvider>
+                  <VcsProvider>
+                    <TicketProvider>
+                      <KPIProvider>
+                        <GlobalErrorOverlay />
+                        <AuthenticatedLayout />
+                      </KPIProvider>
+                    </TicketProvider>
+                  </VcsProvider>
+                </TimeProvider>
+              </InfoProvider>
+            </LicenseGuard>
           </ProtectedRoute>
         }
       />

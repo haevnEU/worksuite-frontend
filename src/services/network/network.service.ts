@@ -8,6 +8,7 @@ import {
 import { ErrorToastInterceptor } from "./internal/ErrorToast.interceptor.ts";
 import { AuthInterceptor } from "./internal/AuthInterceptor.ts";
 import { HttpError } from "../../exception/http.error.ts";
+import { LicenseLockInterceptor } from "./internal/licenseLock.interceptor.ts";
 
 export class NetworkService {
   protected baseUrl: string;
@@ -17,6 +18,7 @@ export class NetworkService {
   constructor(endpoint: string) {
     this.baseUrl = `${getProtocol("http")}//${getHost()}/api/v1${endpoint}`;
 
+    this.use(new LicenseLockInterceptor());
     this.use(new AuthInterceptor());
     this.use(new ErrorToastInterceptor());
 

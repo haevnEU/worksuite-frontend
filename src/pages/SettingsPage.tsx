@@ -10,6 +10,7 @@ import {
   SettingsHeader,
   VcsKeySection,
 } from "../components/settings";
+import { LicenseSettingsSection } from "../components/settings/LicenseSettingsSection.tsx";
 
 export const SettingsPage: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ export const SettingsPage: React.FC = () => {
       <div className="space-y-6">
         <GeneralProfileSection />
         <AvatarSection />
+        <LicenseSettingsSection />
         <AppearanceSection />
         <PasswordSection />
         <PdfExportPreferencesSection />

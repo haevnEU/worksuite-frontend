@@ -97,7 +97,9 @@ export function useProcessedTickets() {
   };
 
   const handleUpdateKpi = async (type: KpiType) => {
-    if (!processedData.length) return;
+    if (!processedData.length) {
+      await kpiService.create(new Date().toISOString());
+    }
 
     setActiveAction(type);
     const latestItem = processedData[processedData.length - 1];
