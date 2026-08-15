@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import { aboutService } from "../services/network/about.service.ts";
-import { AboutSystemInfo } from "../models/about,model.ts";
+import { AboutSystemInfo } from "../models/about.model.ts";
 
 interface AboutContextType {
   systemInfo: AboutSystemInfo | null;
