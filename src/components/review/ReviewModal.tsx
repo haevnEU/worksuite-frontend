@@ -1,5 +1,16 @@
 import React, { useState } from "react";
-import { Monitor, Plus, Presentation, Trash2, X } from "lucide-react";
+import {
+  Monitor,
+  Plus,
+  Presentation,
+  Trash2,
+  X,
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  Info,
+  Sparkles,
+} from "lucide-react";
 import { ReviewModel } from "../../models/review.model.ts";
 import { ReviewType } from "../../types/review.type.ts";
 
@@ -36,6 +47,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   const handleAddKeyFact = () => setKeyFacts([...keyFacts, ""]);
 
@@ -75,6 +87,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xs p-4 font-sans text-xs">
       <div className="w-[85vw] max-w-3xl max-h-[85vh] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        {/* Modal Header */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 shrink-0">
           <div className="flex items-center space-x-2.5 text-white font-extrabold text-base">
             <div className="p-2 rounded-xl bg-indigo-950/80 border border-indigo-800 text-indigo-400">
@@ -93,13 +106,36 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+
+          <div className="flex items-center space-x-2">
+            {/* Guide Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setShowGuide((prev) => !prev)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors cursor-pointer ${
+                showGuide
+                  ? "bg-indigo-600/20 border-indigo-500/40 text-indigo-300"
+                  : "bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border-slate-700"
+              }`}
+              title="Toggle format guide"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Guide</span>
+              {showGuide ? (
+                <ChevronUp className="w-3 h-3 ml-0.5" />
+              ) : (
+                <ChevronDown className="w-3 h-3 ml-0.5" />
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         <form
@@ -107,6 +143,48 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
           className="flex-1 flex flex-col min-h-0 overflow-hidden"
         >
           <div className="flex-1 overflow-y-auto p-6 space-y-5">
+            {/* Collapsible Guide Section */}
+            {showGuide && (
+              <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 text-slate-300 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center gap-2 text-indigo-400 font-bold border-b border-slate-800/80 pb-2 text-xs">
+                  <Info className="w-4 h-4 shrink-0" />
+                  <span>Review Formats & Best Practices</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-slate-900/60 p-3 rounded-lg border border-indigo-900/40 space-y-1">
+                    <div className="flex items-center space-x-1.5 text-indigo-400 font-bold">
+                      <Monitor className="w-3.5 h-3.5" />
+                      <span>Live Demo Mode</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Use this for step-by-step feature walkthroughs. Write down
+                      credentials, preparation steps, and UI click paths.
+                    </p>
+                    <p className="text-[10px] text-indigo-300 font-mono pt-1">
+                      Target: Hands-on feature demo & bug validation
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-900/60 p-3 rounded-lg border border-purple-900/40 space-y-1">
+                    <div className="flex items-center space-x-1.5 text-purple-400 font-bold">
+                      <Presentation className="w-3.5 h-3.5" />
+                      <span>Presentation Mode</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Use this for high-level summaries and key achievements.
+                      Each keyfact becomes a clean slide with zoom and remote
+                      control.
+                    </p>
+                    <p className="text-[10px] text-purple-300 font-mono pt-1">
+                      Target: Stakeholder meetings & slide decks
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Inputs: Ticket & Title */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5 p-3.5 bg-slate-800/30 rounded-xl border border-slate-800">
                 <label className="block font-bold text-slate-200">
@@ -137,6 +215,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               </div>
             </div>
 
+            {/* Format Switcher */}
             <div className="p-4 bg-slate-800/40 rounded-xl border border-slate-800 flex items-center justify-between">
               <div>
                 <span className="font-bold text-slate-200 text-sm block">
@@ -177,6 +256,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               </div>
             </div>
 
+            {/* Description */}
             <div className="space-y-1.5 p-3.5 bg-slate-800/30 rounded-xl border border-slate-800">
               <label className="block font-bold text-slate-200">
                 Description
@@ -190,6 +270,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               />
             </div>
 
+            {/* Demo Format: Notes */}
             {reviewType === "DEMO" && (
               <div className="space-y-1.5 p-3.5 bg-indigo-950/20 rounded-xl border border-indigo-900/40 animate-in fade-in duration-200">
                 <label className="flex items-center space-x-2 font-bold text-indigo-300">
@@ -206,6 +287,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
               </div>
             )}
 
+            {/* Presentation Format: Keyfacts */}
             {reviewType === "PRESENTATION" && (
               <div className="space-y-3 p-4 bg-purple-950/20 rounded-xl border border-purple-900/40 animate-in fade-in duration-200">
                 <div className="flex items-center justify-between">
@@ -254,6 +336,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
             )}
           </div>
 
+          {/* Footer Actions */}
           <div className="p-4 border-t border-slate-800 flex items-center justify-end space-x-3 bg-slate-900/90 shrink-0">
             <button
               type="button"

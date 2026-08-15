@@ -1,5 +1,14 @@
-import React from "react";
-import { Archive, ChevronRight, Search, X } from "lucide-react";
+import React, { useState } from "react";
+import {
+  Archive,
+  Calendar,
+  ChevronRight,
+  FileText,
+  HelpCircle,
+  Info,
+  Search,
+  X,
+} from "lucide-react";
 import { WeeklyMeetingDTO } from "../../models/weeklyMeeting.model.ts";
 import { isWeekend } from "../../utils/teamMeeting.util.ts";
 
@@ -24,6 +33,8 @@ export const MeetingArchiveModal: React.FC<MeetingArchiveModalProps> = ({
   activeMeetingId,
   onSelectMeeting,
 }) => {
+  const [showGuide, setShowGuide] = useState<boolean>(false);
+
   if (!isOpen) return null;
 
   return (
@@ -43,31 +54,74 @@ export const MeetingArchiveModal: React.FC<MeetingArchiveModalProps> = ({
               </p>
             </div>
           </div>
-          <button
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 cursor-pointer"
-            onClick={onClose}
-          >
-            <X className="w-5 h-5" />
-          </button>
+
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={() => setShowGuide((prev) => !prev)}
+              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg border text-xs font-semibold transition-colors cursor-pointer ${
+                showGuide
+                  ? "bg-indigo-600/20 border-indigo-500/40 text-indigo-300"
+                  : "bg-slate-800 text-slate-400 hover:text-white border-slate-700"
+              }`}
+              title="Archive guide"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Guide</span>
+            </button>
+
+            <button
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 cursor-pointer"
+              onClick={onClose}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
+
+        {showGuide && (
+          <div className="p-3.5 bg-slate-950/70 border border-slate-800 rounded-xl text-xs text-slate-300 space-y-2 animate-in fade-in duration-150">
+            <div className="flex items-center gap-1.5 text-indigo-400 font-bold">
+              <Info className="w-3.5 h-3.5 shrink-0" />
+              <span>Archive Navigation & History</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-400">
+              <div className="flex items-start gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+                <span>
+                  Search by meeting title, creation date (YYYY-MM-DD), or
+                  keyword.
+                </span>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                <span>
+                  Selecting a meeting loads historical notes and enables PDF
+                  re-exporting.
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
           <input
             type="text"
             value={archiveSearch}
-            placeholder="Search archive..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Search by title, date, or topics..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
             onChange={(e) => onArchiveSearchChange(e.target.value)}
           />
         </div>
 
+        {/* Archive List */}
         <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
           {archivedMeetings.map((w) => {
             const isActive = activeMeetingId === w.id;
             const filteredNotesCount = w.daySummaries
               ? w.daySummaries.filter((d) => !isWeekend(d.date)).length
-              : 0;
+              : 0; //[cite: 31]
 
             return (
               <div
@@ -80,7 +134,7 @@ export const MeetingArchiveModal: React.FC<MeetingArchiveModalProps> = ({
               >
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-700/30">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-900/40 text-blue-300 border border-blue-700/30 font-mono">
                       {w.createdAt.split("T")[0]}
                     </span>
                     {isActive && (
@@ -120,11 +174,12 @@ export const MeetingArchiveModal: React.FC<MeetingArchiveModalProps> = ({
 
           {archivedMeetings.length === 0 && (
             <div className="py-8 text-center text-xs text-slate-500">
-              No meetings found in archive.
+              No meetings found matching your search.
             </div>
           )}
         </div>
 
+        {/* Modal Footer */}
         <div className="pt-3 border-t border-slate-800 flex justify-end">
           <button
             onClick={onClose}

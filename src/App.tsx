@@ -49,6 +49,8 @@ import RuleGeneratorPage from "./pages/RuleGeneratorPage.tsx";
 import { LicenseRenewPage } from "./pages/public/LicenseRenewPage.tsx";
 import { LicenseProvider } from "./context/LicenseContext.tsx";
 import { InsufficientLicenseGuard } from "./components/license/InssuficientLicense.tsx";
+import { AboutPage } from "./pages/AboutPage.tsx";
+import { AboutProvider } from "./context/AboutContext.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -99,6 +101,7 @@ const AuthenticatedLayout: React.FC = () => {
                   </InsufficientLicenseGuard>
                 }
               />
+              <Route path="/about" element={<AboutPage />} />
               <Route
                 path="/vcs"
                 element={
@@ -287,7 +290,9 @@ export const App: React.FC = () => {
           <ConnectionProvider>
             <ToastProvider>
               <SettingsProvider>
-                <AppRoutes />
+                <AboutProvider>
+                  <AppRoutes />
+                </AboutProvider>
               </SettingsProvider>
             </ToastProvider>
           </ConnectionProvider>

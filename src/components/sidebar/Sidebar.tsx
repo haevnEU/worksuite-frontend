@@ -7,6 +7,7 @@ import {
   FileCode,
   FileTerminal,
   GitBranch,
+  Info,
   LayoutDashboard,
   RotateCcw,
   Settings,
@@ -175,7 +176,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       title: "Settings",
-      items: [{ label: "Settings", path: "/settings", icon: Settings }],
+      items: [
+        { label: "Settings", path: "/settings", icon: Settings },
+        { label: "About", path: "/about", icon: Info },
+      ],
     },
   ];
 
