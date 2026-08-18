@@ -40,3 +40,19 @@ export interface GitLabRepository {
   openMRCount: number;
   mergeRequests: MergeRequestModel[];
 }
+
+export interface MrProtocolData {
+  title: string;
+  description: string;
+  ticketId: string;
+  hasImportantChanges: boolean;
+  importantChanges: string;
+  hasTestSetup: boolean;
+  hasUnitTests: boolean;
+  unitTests: string;
+  hasManualTests: boolean;
+  manualTests: string;
+  hasBreakingChanges: boolean;
+  hasDatabaseSchemaChanges: boolean;
+  hasDatabaseViewsChanges: boolean;
+}

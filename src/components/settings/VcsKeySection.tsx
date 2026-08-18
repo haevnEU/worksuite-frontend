@@ -22,7 +22,7 @@ export const VcsKeySection: React.FC = () => {
   const provider = (vcsProvider as VcsProviderType) || "GITLAB";
   const isGitLab = provider === "GITLAB";
 
-  // Dynamische CSS-Styles je nach Provider
+  // Dynamic CSS themes based on active provider
   const theme = {
     accentText: isGitLab ? "text-orange-400" : "text-purple-400",
     badgeBg: isGitLab ? "bg-orange-950/60" : "bg-purple-950/60",
@@ -72,7 +72,7 @@ export const VcsKeySection: React.FC = () => {
         </span>
       </div>
 
-      {/* Provider-Auswahl */}
+      {/* Provider Switcher */}
       <div className="space-y-1.5">
         <label className="block text-xs font-bold text-slate-300 flex items-center space-x-1.5">
           <Server className="w-3.5 h-3.5 text-slate-400" />
@@ -123,65 +123,125 @@ export const VcsKeySection: React.FC = () => {
         </div>
       )}
 
-      {/* Dynamischer Hinweis zu benötigten Token-Scopes */}
+      {/* Dynamic Required Scopes Info Banner */}
       <div className="p-3.5 bg-slate-800/60 border border-slate-700/60 rounded-xl flex items-start space-x-3 text-xs text-slate-300">
         <Info
           className={`w-4 h-4 ${theme.accentText} shrink-0 mt-0.5 transition-colors`}
         />
         <div className="space-y-1">
           <p className="font-semibold text-slate-200">
-            Erforderliche {isGitLab ? "GitLab" : "GitHub"} Scopes
+            Required {isGitLab ? "GitLab" : "GitHub"} Scopes & Permissions
           </p>
+
           {isGitLab ? (
-            <p className="text-slate-400 leading-relaxed">
-              Bitte erstelle in GitLab einen Personal Access Token mit folgenden
-              Scopes:{" "}
-              <code
-                className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
-              >
-                read_user
-              </code>
-              ,{" "}
-              <code
-                className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
-              >
-                read_repository
-              </code>{" "}
-              und{" "}
-              <code
-                className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
-              >
-                read_api
-              </code>
-              .
-            </p>
+            <div className="text-slate-400 leading-relaxed space-y-1.5">
+              <p>
+                <strong>Legacy PAT:</strong> requires{" "}
+                <code
+                  className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  api
+                </code>{" "}
+                (full API access for creating merge requests),{" "}
+                <code
+                  className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  read_user
+                </code>
+                ,{" "}
+                <code
+                  className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  read_repository
+                </code>{" "}
+                and{" "}
+                <code
+                  className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  read_api
+                </code>
+                .
+              </p>
+              <p>
+                <strong>Fine-grained PAT:</strong> requires{" "}
+                <em>Merge Requests</em> (
+                <code
+                  className={`px-1 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  Create, Read, Update
+                </code>
+                ), <em>Repository</em> (
+                <code
+                  className={`px-1 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  Read
+                </code>
+                ), <em>Projects</em> (
+                <code
+                  className={`px-1 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  Read
+                </code>
+                ), and <em>User details</em> (
+                <code
+                  className={`px-1 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  Read
+                </code>
+                ).
+              </p>
+            </div>
           ) : (
-            <p className="text-slate-400 leading-relaxed">
-              Bitte erstelle in GitHub einen Personal Access Token mit folgenden
-              Scopes:{" "}
-              <code
-                className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
-              >
-                repo
-              </code>
-              ,{" "}
-              <code
-                className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
-              >
-                read:user
-              </code>{" "}
-              und{" "}
-              <code
-                className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
-              >
-                workflow
-              </code>
-              .
-            </p>
+            <div className="text-slate-400 leading-relaxed space-y-1.5">
+              <p>
+                <strong>Classic PAT:</strong> requires{" "}
+                <code
+                  className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  repo
+                </code>{" "}
+                (full repository access for creating pull requests),{" "}
+                <code
+                  className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  read:user
+                </code>{" "}
+                and{" "}
+                <code
+                  className={`px-1.5 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  workflow
+                </code>
+                .
+              </p>
+              <p>
+                <strong>Fine-grained PAT:</strong> requires{" "}
+                <em>Pull requests</em> (
+                <code
+                  className={`px-1 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  Read and Write
+                </code>
+                ), <em>Contents</em> (
+                <code
+                  className={`px-1 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  Read
+                </code>
+                ) and <em>Metadata</em> (
+                <code
+                  className={`px-1 py-0.5 bg-slate-950 ${theme.codeTag} rounded text-[11px] font-mono border border-slate-700`}
+                >
+                  Read-only
+                </code>
+                ).
+              </p>
+            </div>
           )}
         </div>
       </div>
 
+      {/* Token Input Field */}
       <div className="text-xs">
         <label className="block font-bold text-slate-300 mb-1.5 flex items-center space-x-1">
           <Key className="w-3.5 h-3.5 text-slate-400" />
@@ -216,6 +276,7 @@ export const VcsKeySection: React.FC = () => {
         </div>
       </div>
 
+      {/* Footer Actions */}
       <div className="flex justify-end pt-2">
         <button
           type="submit"
@@ -223,7 +284,7 @@ export const VcsKeySection: React.FC = () => {
         >
           <Save className="w-4 h-4" />
           <span>
-            {hasVcsKey ? `Override ${provider} Key` : `Save ${provider} Key`}
+            {hasVcsKey ? `Overwrite ${provider} Key` : `Save ${provider} Key`}
           </span>
         </button>
       </div>
