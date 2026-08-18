@@ -97,7 +97,9 @@ export const useMockGeneratorState = () => {
     setIsGenerating(true);
     setError(null);
     try {
-      const csvText = await mockService.generateMockData(selectedType, amount);
+      const data = await mockService.generateMockData(selectedType, amount);
+      const csvText = data.data;
+      const timestamp = new Date(data.timestamp).toISOString();
       const currentTime = new Date()
         .toISOString()
         .replace(/[-:T.]/g, "")

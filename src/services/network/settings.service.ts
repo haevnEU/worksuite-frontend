@@ -39,20 +39,21 @@ export class SettingsService extends NetworkService {
     ToastManager.toastGood("Redmine API Key set successfully.");
   }
 
-  public async setVcsKey(user: UserModel, apiKey: string): Promise<void> {
+  public async setApiKey(user: UserModel, key: string): Promise<void> {
     if (!user?.id) {
       ToastManager.toastBad("The User ID is missing!");
       return;
     }
 
-    if (!apiKey?.trim()) {
+    if (!key?.trim()) {
       ToastManager.toastBad("The VCS API key cannot be empty!");
       return;
     }
 
     const options = {
       headers: {
-        "X-VCS-API-Key": apiKey.trim(),
+        "X-VCS-API-Key": key.trim(),
+        // "X-VCS-Provider": provider.trim(),
       },
     };
 
@@ -62,6 +63,35 @@ export class SettingsService extends NetworkService {
       options,
     );
     ToastManager.toastGood("VCS API Key set successfully.");
+  }
+
+  public async setVcsProvider(
+    user: UserModel,
+    provider: string,
+  ): Promise<void> {
+    if (!user?.id) {
+      ToastManager.toastBad("The User ID is missing!");
+      return;
+    }
+
+    if (!provider?.trim()) {
+      ToastManager.toastBad("The VCS provider cannot be empty!");
+      return;
+    }
+
+    const options = {
+      headers: {
+        "X-VCS-Provider": provider.trim(),
+      },
+    };
+
+    /*    await this.put<void>(
+      `/users/${encodeURIComponent(user.id)}/vcs-provider`,
+      undefined,
+      options,
+    );
+ */
+    ToastManager.toastGood("VCS provider set successfully.");
   }
 
   public async setAvatar(user: UserModel, file: File): Promise<void> {

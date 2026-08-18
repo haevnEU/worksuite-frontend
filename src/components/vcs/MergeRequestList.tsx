@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { GitMerge, GitPullRequest } from "lucide-react";
-import { MergeRequestCard } from "./MergeRequestCard";
+import { useSettings } from "../../context/SettingsContext.tsx";
 import { MergeRequestModel } from "../../models/vcs.model.ts";
+import { MergeRequestCard } from "./MergeRequestCard";
 
 interface MergeRequestListProps {
   pendingReviews: MergeRequestModel[];
@@ -12,9 +13,15 @@ export const MergeRequestList: React.FC<MergeRequestListProps> = ({
   pendingReviews,
   myMrs,
 }) => {
+  const { vcsProvider } = useSettings();
+  const isGitLab = (vcsProvider || "GITLAB") === "GITLAB";
   const [activeTab, setActiveTab] = useState<"reviews" | "my">("reviews");
 
   const currentList = activeTab === "reviews" ? pendingReviews : myMrs;
+
+  const activeTabClass = isGitLab
+    ? "bg-orange-600 text-white shadow-md shadow-orange-600/20"
+    : "bg-purple-600 text-white shadow-md shadow-purple-600/20";
 
   return (
     <div className="space-y-4">
@@ -24,7 +31,7 @@ export const MergeRequestList: React.FC<MergeRequestListProps> = ({
           onClick={() => setActiveTab("reviews")}
           className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === "reviews"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+              ? activeTabClass
               : "text-slate-400 hover:text-slate-200"
           }`}
         >
@@ -40,12 +47,12 @@ export const MergeRequestList: React.FC<MergeRequestListProps> = ({
           onClick={() => setActiveTab("my")}
           className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeTab === "my"
-              ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+              ? activeTabClass
               : "text-slate-400 hover:text-slate-200"
           }`}
         >
           <GitMerge className="w-3.5 h-3.5" />
-          <span>My Merge Requests</span>
+          <span>{isGitLab ? "My Merge Requests" : "My Pull Requests"}</span>
           <span className="px-1.5 py-0.2 rounded-full bg-slate-950/60 text-[10px]">
             {myMrs.length}
           </span>
@@ -57,7 +64,9 @@ export const MergeRequestList: React.FC<MergeRequestListProps> = ({
           <div className="bg-slate-900/50 border border-slate-800/60 rounded-2xl p-8 text-center text-slate-500 text-xs">
             {activeTab === "reviews"
               ? "Keine offenen Reviews ausstehend 🎉"
-              : "Keine eigenen Merge Requests offen."}
+              : isGitLab
+                ? "Keine eigenen Merge Requests offen."
+                : "Keine eigenen Pull Requests offen."}
           </div>
         ) : (
           currentList.map((mr) => <MergeRequestCard key={mr.id} mr={mr} />)

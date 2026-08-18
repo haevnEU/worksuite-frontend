@@ -10,6 +10,7 @@ import {
   MessageSquare,
   XCircle,
 } from "lucide-react";
+import { useSettings } from "../../context/SettingsContext.tsx";
 import { MergeRequestModel } from "../../models/vcs.model.ts";
 import { PipelineStatus } from "../../types/vcs.type.ts";
 
@@ -18,7 +19,16 @@ interface MergeRequestCardProps {
 }
 
 export const MergeRequestCard: React.FC<MergeRequestCardProps> = ({ mr }) => {
+  const { vcsProvider } = useSettings();
+  const isGitLab = (vcsProvider || "GITLAB") === "GITLAB";
   const [copied, setCopied] = useState(false);
+
+  const theme = {
+    projectColor: isGitLab ? "text-orange-400" : "text-purple-400",
+    idPrefix: isGitLab ? "!" : "#",
+    titleHover: isGitLab ? "hover:text-orange-400" : "hover:text-purple-400",
+    branchIconColor: isGitLab ? "text-orange-400" : "text-purple-400",
+  };
 
   const handleCopyBranch = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -61,16 +71,19 @@ export const MergeRequestCard: React.FC<MergeRequestCardProps> = ({ mr }) => {
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1 min-w-0">
           <div className="flex items-center space-x-2 text-[10px] font-bold text-slate-400">
-            <span className="text-orange-400">{mr.projectName}</span>
+            <span className={theme.projectColor}>{mr.projectName}</span>
             <span>•</span>
-            <span>#{mr.iid}</span>
+            <span>
+              {theme.idPrefix}
+              {mr.iid}
+            </span>
           </div>
 
           <a
             href={mr.webUrl}
             target="_blank"
             rel="noreferrer"
-            className="text-xs font-bold text-white hover:text-indigo-400 transition-colors flex items-center space-x-1.5 truncate"
+            className={`text-xs font-bold text-white ${theme.titleHover} transition-colors flex items-center space-x-1.5 truncate`}
           >
             <span className="truncate">{mr.title}</span>
             <ExternalLink className="w-3 h-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -129,7 +142,7 @@ export const MergeRequestCard: React.FC<MergeRequestCardProps> = ({ mr }) => {
           className="flex items-center space-x-1 px-2 py-1 bg-slate-950 hover:bg-slate-800 text-slate-300 rounded-lg border border-slate-800 transition-colors font-mono text-[10px] cursor-pointer"
           title={`Copy: git checkout ${mr.sourceBranch}`}
         >
-          <GitBranch className="w-3 h-3 text-indigo-400" />
+          <GitBranch className={`w-3 h-3 ${theme.branchIconColor}`} />
           <span className="max-w-[120px] truncate">{mr.sourceBranch}</span>
           {copied ? (
             <Check className="w-3 h-3 text-emerald-400 ml-1" />

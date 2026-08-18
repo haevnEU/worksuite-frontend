@@ -26,7 +26,6 @@ interface SettingsContextType {
   isDraft: boolean;
   setIsDraft: (isDraft: boolean) => void;
   setSelectedUser: (user: UserModel) => void;
-  updateVcsKey: (key: string) => Promise<void>;
   updateRedmineKey: (key: string) => Promise<void>;
   hasVcsKey: boolean;
   hasRedmineKey: boolean;
@@ -39,6 +38,9 @@ interface SettingsContextType {
   setDaysRange: (value: DaysRange) => void;
   chartType: ChartType;
   setChartType: (value: ChartType) => void;
+  vcsProvider: string;
+  updateVcsProvider: (provider: string) => Promise<void>;
+  updateVcsKey: (key: string) => Promise<void>;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(
@@ -49,6 +51,11 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { user: authUser } = useAuth();
+
+  const [vcsProvider, setVcsProviderState] = useState<string>(() => {
+    const saved = localStorage.getItem("vcsProvider");
+    return saved || "GITLAB";
+  });
 
   const currentUser: UserModel = useMemo(
     () =>
@@ -126,11 +133,9 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     console.log("[SettingsContext] setSelectedUser called with:", userToSelect);
   }, []);
 
-  // Lokaler State für sofortiges UI-Feedback nach dem Speichern
   const [localVcsSaved, setLocalVcsSaved] = useState<boolean>(false);
   const [localRedmineSaved, setLocalRedmineSaved] = useState<boolean>(false);
 
-  // 🛡️ Prüft sowohl den authUser-Objektstatus als auch eventuelle Booleans oder Strings
   const hasVcsKey = useMemo(() => {
     if (localVcsSaved) return true;
     const key = currentUser.vcsKey as unknown;
@@ -143,15 +148,23 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
     return Boolean(key && key !== "" && key !== "false");
   }, [currentUser.redmineKey, localRedmineSaved]);
 
-  // Reset lokalen State wenn der User wechselt
   useEffect(() => {
     setLocalVcsSaved(false);
     setLocalRedmineSaved(false);
   }, [currentUser.id]);
 
+  const updateVcsProvider = useCallback(
+    async (provider: string) => {
+      await settingsService.setVcsProvider(currentUser, provider);
+      setVcsProviderState(provider);
+      localStorage.setItem("vcsProvider", provider);
+    },
+    [currentUser],
+  );
+
   const updateVcsKey = useCallback(
     async (key: string) => {
-      await settingsService.setVcsKey(currentUser, key);
+      await settingsService.setApiKey(currentUser, key);
       setLocalVcsSaved(Boolean(key && key.trim() !== ""));
     },
     [currentUser],
@@ -215,7 +228,6 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
       isDraft,
       setIsDraft,
       setSelectedUser,
-      updateVcsKey,
       updateRedmineKey,
       hasVcsKey,
       hasRedmineKey,
@@ -228,13 +240,15 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
       setDaysRange,
       chartType,
       setChartType,
+      vcsProvider,
+      updateVcsProvider,
+      updateVcsKey,
     }),
     [
       currentUser,
       isDraft,
       setIsDraft,
       setSelectedUser,
-      updateVcsKey,
       updateRedmineKey,
       hasVcsKey,
       hasRedmineKey,
@@ -247,6 +261,9 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({
       setDaysRange,
       chartType,
       setChartType,
+      vcsProvider,
+      updateVcsProvider,
+      updateVcsKey,
     ],
   );
 

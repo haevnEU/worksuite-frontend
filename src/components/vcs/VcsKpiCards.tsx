@@ -5,6 +5,7 @@ import {
   GitMerge,
   GitPullRequest,
 } from "lucide-react";
+import { useSettings } from "../../context/SettingsContext.tsx";
 
 interface VcsKpiCardsProps {
   pendingReviewsCount: number;
@@ -17,6 +18,16 @@ export const VcsKpiCards: React.FC<VcsKpiCardsProps> = ({
   myMrCount,
   failedPipelinesCount,
 }) => {
+  const { vcsProvider } = useSettings();
+  const isGitLab = (vcsProvider || "GITLAB") === "GITLAB";
+
+  const theme = {
+    reviewIconBg: isGitLab
+      ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
+      : "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    myLabel: isGitLab ? "My Open MRs" : "My Open PRs",
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
@@ -28,7 +39,9 @@ export const VcsKpiCards: React.FC<VcsKpiCardsProps> = ({
             {pendingReviewsCount}
           </div>
         </div>
-        <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center">
+        <div
+          className={`w-9 h-9 rounded-xl border flex items-center justify-center ${theme.reviewIconBg}`}
+        >
           <GitPullRequest className="w-4 h-4" />
         </div>
       </div>
@@ -36,7 +49,7 @@ export const VcsKpiCards: React.FC<VcsKpiCardsProps> = ({
       <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
         <div>
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-            My Open MRs
+            {theme.myLabel}
           </span>
           <div className="text-xl font-black text-white mt-0.5">
             {myMrCount}

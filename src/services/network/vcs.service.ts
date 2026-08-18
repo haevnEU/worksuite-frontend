@@ -10,7 +10,9 @@ export class VcsService extends NetworkService {
     super("/vcs");
   }
 
-  public async fetchMergeRequests(): Promise<MergeRequestModel[]> {
+  public async fetchMergeRequests(
+    vcsProvider: string = "GITLAB",
+  ): Promise<MergeRequestModel[]> {
     try {
       return await this.get<MergeRequestModel[]>("/merge-requests/my");
     } catch {
@@ -18,7 +20,9 @@ export class VcsService extends NetworkService {
     }
   }
 
-  public async fetchPendingReviews(): Promise<MergeRequestModel[]> {
+  public async fetchPendingReviews(
+    vcsProvider: string = "GITLAB",
+  ): Promise<MergeRequestModel[]> {
     try {
       return await this.get<MergeRequestModel[]>("/merge-requests/reviews");
     } catch {
@@ -26,7 +30,9 @@ export class VcsService extends NetworkService {
     }
   }
 
-  public async fetchPipelines(): Promise<ProtectedBranchPipeline[]> {
+  public async fetchPipelines(
+    vcsProvider: string = "GITLAB",
+  ): Promise<ProtectedBranchPipeline[]> {
     try {
       return await this.get<ProtectedBranchPipeline[]>("/pipelines");
     } catch {
@@ -34,7 +40,9 @@ export class VcsService extends NetworkService {
     }
   }
 
-  public async fetchRepos(): Promise<GitLabRepository[]> {
+  public async fetchRepos(
+    vcsProvider: string = "GITLAB",
+  ): Promise<GitLabRepository[]> {
     try {
       return await this.get<GitLabRepository[]>("/repositories");
     } catch {

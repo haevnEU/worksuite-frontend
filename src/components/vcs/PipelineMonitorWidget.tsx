@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   XCircle,
 } from "lucide-react";
+import { useSettings } from "../../context/SettingsContext.tsx";
 import { ProtectedBranchPipeline } from "../../models/vcs.model.ts";
 
 interface PipelineMonitorWidgetProps {
@@ -15,11 +16,19 @@ interface PipelineMonitorWidgetProps {
 export const PipelineMonitorWidget: React.FC<PipelineMonitorWidgetProps> = ({
   pipelines,
 }) => {
+  const { vcsProvider } = useSettings();
+  const isGitLab = (vcsProvider || "GITLAB") === "GITLAB";
+
+  const branchBadgeColor = isGitLab ? "text-orange-300" : "text-purple-300";
+  const title = isGitLab
+    ? "Protected Branch Pipelines"
+    : "Protected Branch Actions";
+
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
       <div className="flex items-center space-x-2 text-xs font-bold text-white border-b border-slate-800 pb-2.5">
         <ShieldCheck className="w-4 h-4 text-emerald-400" />
-        <span>Protected Branch Pipelines</span>
+        <span>{title}</span>
       </div>
 
       <div className="space-y-2">
@@ -35,7 +44,9 @@ export const PipelineMonitorWidget: React.FC<PipelineMonitorWidgetProps> = ({
               <div className="space-y-0.5 min-w-0 pr-2">
                 <div className="flex items-center space-x-2 font-bold text-slate-300">
                   <span className="truncate">{p.projectName}</span>
-                  <span className="px-1.5 py-0.2 rounded text-[10px] bg-slate-800 text-indigo-300 font-mono">
+                  <span
+                    className={`px-1.5 py-0.2 rounded text-[10px] bg-slate-800 ${branchBadgeColor} font-mono`}
+                  >
                     {p.branchName}
                   </span>
                 </div>

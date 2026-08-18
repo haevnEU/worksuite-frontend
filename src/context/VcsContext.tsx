@@ -22,21 +22,20 @@ interface VcsContextType {
 const VcsContext = createContext<VcsContextType | undefined>(undefined);
 
 export const VcsProvider: React.FC<{ children: ReactNode }> = ({
-                                                                 children,
-                                                               }) => {
-  const { hasVcsKey } = useSettings();
+  children,
+}) => {
+  const { hasVcsKey, vcsProvider } = useSettings();
   const vcsLink: string = "git/";
   const [repos, setRepos] = useState<GitLabRepository[]>([]);
 
   const fetchRepos = useCallback(async () => {
-    // 🛑 Guard: Nicht fetchen, wenn kein VCS Key konfiguriert ist
     if (!hasVcsKey) {
       setRepos([]);
       return;
     }
 
     try {
-      const data = await vcsService.fetchRepos();
+      const data = await vcsService.fetchRepos(vcsProvider);
       setRepos(data || []);
     } catch (error) {
       console.error("Failed to fetch repos:", error);
@@ -51,18 +50,18 @@ export const VcsProvider: React.FC<{ children: ReactNode }> = ({
   }, [fetchRepos]);
 
   const contextValue = useMemo<VcsContextType>(
-      () => ({
-        vcsLink,
-        repos,
-        fetchRepos,
-        fetchMergeRequests,
-        fetchPipeline,
-      }),
-      [vcsLink, repos, fetchRepos, fetchMergeRequests, fetchPipeline],
+    () => ({
+      vcsLink,
+      repos,
+      fetchRepos,
+      fetchMergeRequests,
+      fetchPipeline,
+    }),
+    [vcsLink, repos, fetchRepos, fetchMergeRequests, fetchPipeline],
   );
 
   return (
-      <VcsContext.Provider value={contextValue}>{children}</VcsContext.Provider>
+    <VcsContext.Provider value={contextValue}>{children}</VcsContext.Provider>
   );
 };
 

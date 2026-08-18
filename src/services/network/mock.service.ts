@@ -1,4 +1,5 @@
 import { NetworkService } from "./network.service.ts";
+import { MockResponse } from "../../models/mock.model.ts";
 
 export interface GenerateMockPayload {
   amount: number;
@@ -18,11 +19,16 @@ export class MockService extends NetworkService {
     }
   }
 
-  public async generateMockData(type: string, amount: number): Promise<string> {
+  public async generateMockData(
+    type: string,
+    amount: number,
+  ): Promise<MockResponse> {
     try {
-      return await this.post<string, GenerateMockPayload>(
-        `/${encodeURIComponent(type)}`,
-        { amount },
+      const queryParam = new URLSearchParams({
+        amount: amount.toString(),
+      }).toString();
+      return await this.get<MockResponse>(
+        `/${encodeURIComponent(type)}?${queryParam}`,
       );
     } catch (error) {
       console.error(`Failed to generate mock data for '${type}':`, error);

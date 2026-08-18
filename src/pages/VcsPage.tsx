@@ -19,15 +19,16 @@ export const VcsPage: React.FC = () => {
   const [pendingReviews, setPendingReviews] = useState<MergeRequestModel[]>([]);
   const [myMrs, setMyMrs] = useState<MergeRequestModel[]>([]);
   const [pipelines, setPipelines] = useState<ProtectedBranchPipeline[]>([]);
+  const { vcsProvider } = useSettings();
 
   const fetchVscData = async () => {
     if (!hasVcsKey) return;
     setIsLoading(true);
     try {
       const [reviews, mrs, pipeData] = await Promise.all([
-        vcsService.fetchPendingReviews(),
-        vcsService.fetchMergeRequests(),
-        vcsService.fetchPipelines(),
+        vcsService.fetchPendingReviews(vcsProvider),
+        vcsService.fetchMergeRequests(vcsProvider),
+        vcsService.fetchPipelines(vcsProvider),
       ]);
 
       setPendingReviews(reviews || []);
@@ -46,41 +47,41 @@ export const VcsPage: React.FC = () => {
 
   if (!hasVcsKey) {
     return (
-        <div className="space-y-6 pb-12 font-sans">
-          <VcsHeader onRefresh={() => {}} isLoading={false} />
-          <MissingApiKeyCard
-              title="VCS API Key Not Found"
-              serviceName="GitLab / VCS"
-              description="Your VCS workspace cannot fetch merge requests or pipeline status because no API key is configured."
-              accentColor="orange"
-          />
-        </div>
+      <div className="space-y-6 pb-12 font-sans">
+        <VcsHeader onRefresh={() => {}} isLoading={false} />
+        <MissingApiKeyCard
+          title="VCS API Key Not Found"
+          serviceName="GitLab / VCS"
+          description="Your VCS workspace cannot fetch merge requests or pipeline status because no API key is configured."
+          accentColor="orange"
+        />
+      </div>
     );
   }
 
   const failedPipelinesCount = pipelines.filter(
-      (p) => p.status === "failed",
+    (p) => p.status === "failed",
   ).length;
 
   return (
-      <div className="space-y-6 pb-12 font-sans">
-        <VcsHeader onRefresh={fetchVscData} isLoading={isLoading} />
+    <div className="space-y-6 pb-12 font-sans">
+      <VcsHeader onRefresh={fetchVscData} isLoading={isLoading} />
 
-        <VcsKpiCards
-            pendingReviewsCount={pendingReviews.length}
-            myMrCount={myMrs.length}
-            failedPipelinesCount={failedPipelinesCount}
-        />
+      <VcsKpiCards
+        pendingReviewsCount={pendingReviews.length}
+        myMrCount={myMrs.length}
+        failedPipelinesCount={failedPipelinesCount}
+      />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-          <div className="lg:col-span-2">
-            <MergeRequestList pendingReviews={pendingReviews} myMrs={myMrs} />
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+        <div className="lg:col-span-2">
+          <MergeRequestList pendingReviews={pendingReviews} myMrs={myMrs} />
+        </div>
 
-          <div className="space-y-5">
-            <PipelineMonitorWidget pipelines={pipelines} />
-          </div>
+        <div className="space-y-5">
+          <PipelineMonitorWidget pipelines={pipelines} />
         </div>
       </div>
+    </div>
   );
 };
