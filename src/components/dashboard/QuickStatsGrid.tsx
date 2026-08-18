@@ -29,14 +29,18 @@ export const QuickStatsGrid: React.FC<QuickStatsGridProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="md:col-span-2 bg-gradient-to-br from-blue-900 via-slate-900 to-slate-900 text-white p-6 rounded-xl border border-blue-800/60 shadow-md relative overflow-hidden flex flex-col justify-between">
+      {/* Gesamte Karte fungiert als interaktiver Link zur Ticket-Seite */}
+      <Link
+        to="/redmine"
+        className="md:col-span-2 bg-gradient-to-br from-blue-900 via-slate-900 to-slate-900 text-white p-6 rounded-xl border border-blue-800/60 shadow-md relative overflow-hidden flex flex-col justify-between transition-all duration-200 hover:border-blue-500 hover:shadow-lg hover:from-blue-900/90 group cursor-pointer"
+      >
         <div className="flex items-start justify-between">
           <div className="space-y-1">
-            <h2 className="text-lg font-bold text-white">
+            <h2 className="text-lg font-bold text-white group-hover:text-blue-200 transition-colors">
               Number of Open Tickets
             </h2>
           </div>
-          <div className="w-12 h-12 rounded-xl bg-blue-600/30 border border-blue-500/30 text-blue-300 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-blue-600/30 border border-blue-500/30 text-blue-300 flex items-center justify-center group-hover:scale-105 group-hover:bg-blue-600/40 transition-all">
             <Ticket className="w-7 h-7" />
           </div>
         </div>
@@ -77,21 +81,14 @@ export const QuickStatsGrid: React.FC<QuickStatsGridProps> = ({
               <span>{lowPriorityCount} Low</span>
             </span>
           </div>
-
-          <Link
-            to="/redmine"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2.5 rounded-lg text-sm flex items-center space-x-2 shadow-xs transition-colors cursor-pointer"
-          >
-            <Ticket className="w-4 h-4" />
-            <span>Open Tickets Page</span>
-          </Link>
         </div>
-      </div>
+      </Link>
 
+      {/* Zeiterfassungs-Karte */}
       <button
         type="button"
         onClick={onOpenTimeLogModal}
-        className="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-sm hover:border-blue-500/50 transition-all flex flex-col justify-between text-left group cursor-pointer w-full"
+        className="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-sm hover:border-blue-500/50 hover:bg-slate-800/60 transition-all flex flex-col justify-between text-left group cursor-pointer w-full"
       >
         <div className="flex items-center justify-between">
           <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">

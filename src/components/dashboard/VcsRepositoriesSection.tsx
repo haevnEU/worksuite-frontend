@@ -1,14 +1,21 @@
 import React from "react";
-import { Code2, ExternalLink, GitPullRequest, PlayCircle } from "lucide-react";
+import {
+  Code2,
+  ExternalLink,
+  GitPullRequest,
+  PlayCircle,
+  Sparkles,
+} from "lucide-react";
 import { useVCS } from "../../context/VcsContext.tsx";
 import { useSettings } from "../../context/SettingsContext.tsx";
 import { VcsRepositoryCard } from "./VcsRepositoryCard.tsx";
 
 export const VcsRepositoriesSection: React.FC = () => {
-  const { repos, vcsLink } = useVCS();
+  const { repos, vcsLink, pendingReviews } = useVCS();
   const { vcsProvider } = useSettings();
 
   const isGitLab = (vcsProvider || "GITLAB") === "GITLAB";
+  const pendingReviewsCount = pendingReviews?.length || 0;
 
   // Dynamische Styles & Labels je nach Provider
   const theme = {
@@ -22,8 +29,8 @@ export const VcsRepositoriesSection: React.FC = () => {
       : "bg-purple-950/60 hover:bg-purple-900/60 text-purple-200 border-purple-800/60",
     mrIconColor: isGitLab ? "text-orange-400" : "text-purple-400",
     mrLabel: isGitLab ? "Merge Requests" : "Pull Requests",
-    mrUrlPath: isGitLab ? "" : "/pulls",
-    pipelineUrlPath: isGitLab ? "/-/pipelines" : "/actions",
+    mrUrlPath: isGitLab ? "/dashboard/merge_requests" : "/pulls",
+    pipelineUrlPath: isGitLab ? "/dashboard/pipelines" : "/actions",
     pipelineLabel: isGitLab ? "Pipelines" : "Actions",
   };
 
@@ -56,21 +63,32 @@ export const VcsRepositoriesSection: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-2 text-xs">
+          {pendingReviewsCount > 0 && (
+            <div className="px-2.5 py-1.5 rounded-lg bg-amber-950/60 border border-amber-800/60 text-amber-300 font-semibold flex items-center space-x-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>
+                {pendingReviewsCount} Review{pendingReviewsCount > 1 ? "s" : ""}{" "}
+                open
+              </span>
+            </div>
+          )}
+
           <a
             href={`${vcsLink}${theme.mrUrlPath}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={`px-3 py-1.5 rounded-lg border font-medium transition-colors flex items-center space-x-1 ${theme.mrBtnBg}`}
+            className={`px-3 py-1.5 rounded-lg border font-medium transition-colors flex items-center space-x-1 cursor-pointer ${theme.mrBtnBg}`}
           >
             <GitPullRequest className={`w-3.5 h-3.5 ${theme.mrIconColor}`} />
             <span>{theme.mrLabel}</span>
             <ExternalLink className="w-3 h-3 opacity-70" />
           </a>
+
           <a
             href={`${vcsLink}${theme.pipelineUrlPath}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-lg bg-blue-950/60 hover:bg-blue-900/60 text-blue-200 border border-blue-800/60 font-medium transition-colors flex items-center space-x-1"
+            className="px-3 py-1.5 rounded-lg bg-blue-950/60 hover:bg-blue-900/60 text-blue-200 border border-blue-800/60 font-medium transition-colors flex items-center space-x-1 cursor-pointer"
           >
             <PlayCircle className="w-3.5 h-3.5 text-blue-400" />
             <span>{theme.pipelineLabel}</span>

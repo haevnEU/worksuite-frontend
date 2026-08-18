@@ -1,5 +1,3 @@
-// TODO When real VCS is usable edit it according
-
 import React from "react";
 import {
   AlertTriangle,
@@ -11,6 +9,7 @@ import {
 } from "lucide-react";
 import { useToast } from "../../toaster/ToastContext.tsx";
 import { GitLabRepository } from "../../models/vcs.model.ts";
+import { useSettings } from "../../context/SettingsContext.tsx";
 
 interface VcsRepositoryCardProps {
   repo: GitLabRepository;
@@ -20,6 +19,9 @@ export const VcsRepositoryCard: React.FC<VcsRepositoryCardProps> = ({
   repo,
 }) => {
   const { toastGood } = useToast();
+  const { vcsProvider } = useSettings();
+
+  const isGitLab = (vcsProvider || "GITLAB") === "GITLAB";
 
   const copyCloneCommand = (repo: GitLabRepository) => {
     const cmd = `git clone ${repo.webUrl}.git`;
@@ -27,8 +29,21 @@ export const VcsRepositoryCard: React.FC<VcsRepositoryCardProps> = ({
     toastGood(`Clone URL copied: ${cmd}`);
   };
 
-  const mrLink = `${repo.webUrl}/-/merge_requests`;
-  const pipelineLink = `${repo.webUrl}/-/pipelines`;
+  // Dynamische Links & Formatierung je nach Provider
+  const mrLink = isGitLab
+    ? `${repo.webUrl}/-/merge_requests`
+    : `${repo.webUrl}/pulls`;
+
+  const pipelineLink = isGitLab
+    ? `${repo.webUrl}/-/pipelines`
+    : `${repo.webUrl}/actions`;
+
+  const prSymbol = isGitLab ? "!" : "#";
+  const prLabel = isGitLab ? "MRs" : "PRs";
+  const hoverAccent = isGitLab
+    ? "group-hover:text-orange-400"
+    : "group-hover:text-purple-400";
+  const iconAccent = isGitLab ? "text-orange-400" : "text-purple-400";
 
   return (
     <div className="p-5 rounded-xl border border-slate-800 bg-slate-800/40 hover:bg-slate-800 transition-all space-y-4 flex flex-col justify-between group">
@@ -38,7 +53,7 @@ export const VcsRepositoryCard: React.FC<VcsRepositoryCardProps> = ({
             href={repo.webUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-bold text-sm text-white group-hover:text-orange-400 transition-colors flex items-center space-x-1"
+            className={`font-bold text-sm text-white ${hoverAccent} transition-colors flex items-center space-x-1`}
           >
             <span>{repo.name}</span>
             <ExternalLink className="w-3 h-3 opacity-60" />
@@ -52,7 +67,7 @@ export const VcsRepositoryCard: React.FC<VcsRepositoryCardProps> = ({
               className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-950 text-emerald-300 flex items-center space-x-1 border border-emerald-800/50 hover:bg-emerald-900/60 transition-colors"
             >
               <CheckCircle2 className="w-3 h-3" />
-              <span>Pipeline Passed</span>
+              <span>{isGitLab ? "Pipeline Passed" : "Action Passed"}</span>
             </a>
           )}
           {repo.lastPipelineStatus === "running" && (
@@ -89,8 +104,10 @@ export const VcsRepositoryCard: React.FC<VcsRepositoryCardProps> = ({
             className="p-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-900 border border-slate-700/60 text-slate-300 transition-all flex items-center justify-between text-[11px]"
           >
             <span className="flex items-center space-x-1">
-              <GitPullRequest className="w-3 h-3 text-orange-400" />
-              <span className="font-semibold">{repo.openMRCount} MRs</span>
+              <GitPullRequest className={`w-3 h-3 ${iconAccent}`} />
+              <span className="font-semibold">
+                {repo.openMRCount || 0} {prLabel}
+              </span>
             </span>
             <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
           </a>
@@ -103,7 +120,9 @@ export const VcsRepositoryCard: React.FC<VcsRepositoryCardProps> = ({
           >
             <span className="flex items-center space-x-1">
               <PlayCircle className="w-3 h-3 text-blue-400" />
-              <span className="font-semibold">Pipelines</span>
+              <span className="font-semibold">
+                {isGitLab ? "Pipelines" : "Actions"}
+              </span>
             </span>
             <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
           </a>
@@ -120,8 +139,9 @@ export const VcsRepositoryCard: React.FC<VcsRepositoryCardProps> = ({
                 className="p-1.5 rounded bg-slate-900/40 hover:bg-slate-900 text-[11px] flex items-center justify-between text-slate-300 transition-colors border border-slate-800"
               >
                 <span className="truncate pr-1 text-slate-300">
-                  <strong className="text-orange-400 font-mono">
-                    !{mr.iid}
+                  <strong className={`${iconAccent} font-mono`}>
+                    {prSymbol}
+                    {mr.iid}
                   </strong>{" "}
                   {mr.title}
                 </span>
@@ -134,6 +154,7 @@ export const VcsRepositoryCard: React.FC<VcsRepositoryCardProps> = ({
 
       <div className="flex items-center justify-between pt-3 border-t border-slate-700/60 text-xs">
         <button
+          type="button"
           onClick={() => copyCloneCommand(repo)}
           className="px-2.5 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium transition-colors flex items-center space-x-1 cursor-pointer"
           title="Copy git clone command"
@@ -148,7 +169,7 @@ export const VcsRepositoryCard: React.FC<VcsRepositoryCardProps> = ({
           rel="noopener noreferrer"
           className="text-blue-400 hover:text-blue-300 font-semibold flex items-center space-x-1 text-xs"
         >
-          <span>Open VCS</span>
+          <span>Open {isGitLab ? "GitLab" : "GitHub"}</span>
           <ExternalLink className="w-3 h-3" />
         </a>
       </div>

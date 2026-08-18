@@ -1,49 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   MergeRequestList,
   PipelineMonitorWidget,
   VcsHeader,
   VcsKpiCards,
 } from "../components/vcs";
-import {
-  MergeRequestModel,
-  ProtectedBranchPipeline,
-} from "../models/vcs.model.ts";
-import { vcsService } from "../services/network/vcs.service.ts";
 import { useSettings } from "../context/SettingsContext.tsx";
+import { useVCS } from "../context/VcsContext.tsx";
 import { MissingApiKeyCard } from "../components/MissingApiKeyCard.tsx";
 
 export const VcsPage: React.FC = () => {
   const { hasVcsKey } = useSettings();
-  const [isLoading, setIsLoading] = useState(false);
-  const [pendingReviews, setPendingReviews] = useState<MergeRequestModel[]>([]);
-  const [myMrs, setMyMrs] = useState<MergeRequestModel[]>([]);
-  const [pipelines, setPipelines] = useState<ProtectedBranchPipeline[]>([]);
-  const { vcsProvider } = useSettings();
-
-  const fetchVscData = async () => {
-    if (!hasVcsKey) return;
-    setIsLoading(true);
-    try {
-      const [reviews, mrs, pipeData] = await Promise.all([
-        vcsService.fetchPendingReviews(vcsProvider),
-        vcsService.fetchMergeRequests(vcsProvider),
-        vcsService.fetchPipelines(vcsProvider),
-      ]);
-
-      setPendingReviews(reviews || []);
-      setMyMrs(mrs || []);
-      setPipelines(pipeData || []);
-    } catch (e) {
-      console.error("Failed to load Vcs data:", e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchVscData();
-  }, [hasVcsKey]);
+  const { pendingReviews, myMrs, pipelines, isLoading, fetchVscData } =
+    useVCS();
 
   if (!hasVcsKey) {
     return (
@@ -65,7 +34,7 @@ export const VcsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12 font-sans">
-      <VcsHeader onRefresh={fetchVscData} isLoading={isLoading} />
+      <VcsHeader onRefresh={() => fetchVscData(true)} isLoading={isLoading} />
 
       <VcsKpiCards
         pendingReviewsCount={pendingReviews.length}

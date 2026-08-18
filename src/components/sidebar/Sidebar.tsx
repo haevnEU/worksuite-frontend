@@ -22,6 +22,7 @@ import { SidebarHeader } from "./SidebarHeader.tsx";
 import { SidebarNavGroup } from "./SidebarNavGroup.tsx";
 import { SidebarUserProfile } from "./SidebarUserProfile.tsx";
 import { NavItem } from "../../models/sidebar.model.ts";
+import { useVCS } from "../../context/VcsContext.tsx";
 
 interface SidebarProps {
   mobileOpen?: boolean;
@@ -33,6 +34,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onClose,
 }) => {
   const { openTickets } = useTickets();
+  const { pendingReviews } = useVCS();
+  const pendingReviewsCount = pendingReviews?.length || 0;
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     Overview: true,
@@ -64,6 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label: "VCS Repositories",
           path: "/vcs",
           icon: GitBranch,
+          badge: pendingReviewsCount, // <-- Badge für zugewiesene Reviews
           requiredPlan: "COMMUNITY",
         },
         {

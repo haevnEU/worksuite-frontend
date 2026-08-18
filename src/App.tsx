@@ -58,20 +58,20 @@ const AuthenticatedLayout: React.FC = () => {
 
   const { fetchTickets } = useTickets();
   const { fetchTimeEntries } = useTime();
-  const { fetchPipeline, fetchMergeRequests, fetchRepos } = useVCS();
+  const { fetchVscData } = useVCS();
 
   const handleTriggerRefresh = async () => {
     setIsLoading(true);
 
-    await fetchTickets();
-    await fetchTimeEntries();
-    await fetchPipeline();
-    await fetchMergeRequests();
-    await fetchRepos();
+    await Promise.allSettled([
+      fetchTickets(),
+      fetchTimeEntries(),
+      fetchVscData(true),
+    ]);
 
     setTimeout(() => {
       setIsLoading(false);
-    }, 800);
+    }, 400);
   };
 
   useEffect(() => {
