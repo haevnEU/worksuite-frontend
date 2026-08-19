@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Star } from "lucide-react";
 import { NavItem } from "../../models/sidebar.model.ts";
 import { SidebarNavItem } from "./SidebarNavItem.tsx";
 
@@ -7,7 +7,11 @@ interface SidebarNavGroupProps {
   title: string;
   items: NavItem[];
   isOpen: boolean;
+  isFavoritable?: boolean;
+  favoritePaths?: string[];
+  canAddFavorite?: boolean;
   onToggle: () => void;
+  onToggleFavorite?: (e: React.MouseEvent, path: string) => void;
   onNavClick: () => void;
 }
 
@@ -15,9 +19,14 @@ export const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
   title,
   items,
   isOpen,
+  isFavoritable = true,
+  favoritePaths = [],
+  canAddFavorite = true,
   onToggle,
+  onToggleFavorite,
   onNavClick,
 }) => {
+  const isFavorites = title === "Favorites";
   const isAltGroup = title.startsWith("Alt /");
 
   return (
@@ -28,14 +37,20 @@ export const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
         className="w-full px-2 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400/90 flex items-center justify-between border-b border-slate-800/60 hover:text-white transition-colors cursor-pointer group/title mb-1"
       >
         <span
-          className={
-            isAltGroup
-              ? "text-amber-500/80 group-hover/title:text-amber-400"
-              : ""
-          }
+          className={`flex items-center gap-1.5 ${
+            isFavorites
+              ? "text-amber-400 font-black tracking-wider"
+              : isAltGroup
+                ? "text-amber-500/80 group-hover/title:text-amber-400"
+                : ""
+          }`}
         >
-          {title}
+          {isFavorites && (
+            <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
+          )}
+          <span>{title}</span>
         </span>
+
         {isOpen ? (
           <ChevronDown className="w-3.5 h-3.5 text-slate-500 group-hover/title:text-slate-300" />
         ) : (
@@ -50,6 +65,9 @@ export const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
               <SidebarNavItem
                 key={`${title}-${item.path}`}
                 item={item}
+                isFavorite={favoritePaths.includes(item.path)}
+                canFavorite={isFavoritable && canAddFavorite}
+                onToggleFavorite={isFavoritable ? onToggleFavorite : undefined}
                 onNavClick={onNavClick}
               />
             ))

@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Calendar, GitPullRequest, Server, Ticket } from "lucide-react";
 import { useSettings } from "../../context/SettingsContext.tsx";
 import { useTickets } from "../../context/TicketContext.tsx";
@@ -43,38 +44,68 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = () => {
 
           <p className="text-slate-300 text-sm max-w-2xl leading-relaxed">
             Overview of your development processes. Currently there are{" "}
-            <span className="text-blue-400 font-extrabold">
+            <Link
+              to="/redmine"
+              className="text-blue-400 font-extrabold hover:underline"
+            >
               {openTickets} open tickets
-            </span>{" "}
+            </Link>{" "}
             and{" "}
-            <span className="text-purple-400 font-extrabold">
+            <Link
+              to="/vcs?tab=reviews"
+              className="text-purple-400 font-extrabold hover:underline"
+            >
               {pendingReviewsCount} pending{" "}
               {pendingReviewsCount === 1 ? "review" : "reviews"}
-            </span>{" "}
+            </Link>{" "}
             waiting for your action.
           </p>
         </div>
 
-        {/* Quick KPI Badges auf der rechten Seite */}
+        {/* Quick KPI Badges auf der rechten Seite (Klickbar mit Tab-Parametern) */}
         <div className="flex flex-wrap items-center gap-3 shrink-0">
-          <div className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
-            <Ticket className="w-4 h-4 text-blue-400" />
-            <span className="text-slate-400">Tickets:</span>
-            <span className="font-bold text-white">{openTickets}</span>
-          </div>
+          <Link
+            to="/redmine"
+            className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-blue-500/50 text-xs transition-all duration-150 group cursor-pointer"
+            title="Open Redmine Tickets"
+          >
+            <Ticket className="w-4 h-4 text-blue-400 group-hover:scale-110 transition-transform" />
+            <span className="text-slate-400 group-hover:text-slate-200 transition-colors">
+              Tickets:
+            </span>
+            <span className="font-bold text-white group-hover:text-blue-300 transition-colors">
+              {openTickets}
+            </span>
+          </Link>
 
-          <div className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
-            <GitPullRequest className="w-4 h-4 text-purple-400" />
-            <span className="text-slate-400">Reviews:</span>
-            <span className="font-bold text-white">{pendingReviewsCount}</span>
-          </div>
+          <Link
+            to="/vcs?tab=reviews"
+            className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-purple-500/50 text-xs transition-all duration-150 group cursor-pointer"
+            title="Open Pending Reviews"
+          >
+            <GitPullRequest className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+            <span className="text-slate-400 group-hover:text-slate-200 transition-colors">
+              Reviews:
+            </span>
+            <span className="font-bold text-white group-hover:text-purple-300 transition-colors">
+              {pendingReviewsCount}
+            </span>
+          </Link>
 
           {myMrsCount > 0 && (
-            <div className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
-              <GitPullRequest className="w-4 h-4 text-orange-400" />
-              <span className="text-slate-400">My MRs:</span>
-              <span className="font-bold text-white">{myMrsCount}</span>
-            </div>
+            <Link
+              to="/vcs?tab=my-mrs"
+              className="flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-orange-500/50 text-xs transition-all duration-150 group cursor-pointer"
+              title="Open My Merge Requests"
+            >
+              <GitPullRequest className="w-4 h-4 text-orange-400 group-hover:scale-110 transition-transform" />
+              <span className="text-slate-400 group-hover:text-slate-200 transition-colors">
+                My MRs:
+              </span>
+              <span className="font-bold text-white group-hover:text-orange-300 transition-colors">
+                {myMrsCount}
+              </span>
+            </Link>
           )}
         </div>
       </div>

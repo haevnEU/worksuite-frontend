@@ -25,8 +25,8 @@ interface TicketContextType {
 const TicketContext = createContext<TicketContextType | undefined>(undefined);
 
 export const TicketProvider: React.FC<{ children: ReactNode }> = ({
-                                                                    children,
-                                                                  }) => {
+  children,
+}) => {
   const { hasRedmineKey } = useSettings();
   const [tickets, setTickets] = useState<Issue[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -47,7 +47,7 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
       const fetchedTickets = await ticketService.fetch();
       const rawTickets = Array.isArray(fetchedTickets) ? fetchedTickets : [];
       const safeTickets = Array.from(
-          new Map(rawTickets.map((issue) => [issue.id, issue])).values(),
+        new Map(rawTickets.map((issue) => [issue.id, issue])).values(),
       );
 
       setTickets(safeTickets);
@@ -74,26 +74,26 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
       });
 
       const sortedProjects = Array.from(projectsMap.values()).sort((a, b) =>
-          a.name.localeCompare(b.name),
+        a.name.localeCompare(b.name),
       );
 
       const sortedStatuses = Array.from(statusMap.values()).sort(
-          (a, b) => a.id - b.id,
+        (a, b) => a.id - b.id,
       );
 
       setProjects(sortedProjects);
       setStatus(sortedStatuses);
 
       setOpenTickets(
-          safeTickets.filter((t) => {
-            const statusName = t.status?.name?.toLowerCase() || "";
-            return (
-                !statusName.includes("closed") &&
-                !statusName.includes("resolved") &&
-                !statusName.includes("rejected") &&
-                !statusName.includes("obsolete")
-            );
-          }).length,
+        safeTickets.filter((t) => {
+          const statusName = t.status?.name?.toLowerCase() || "";
+          return (
+            !statusName.includes("closed") &&
+            !statusName.includes("resolved") &&
+            !statusName.includes("rejected") &&
+            !statusName.includes("obsolete")
+          );
+        }).length,
       );
     } catch (error) {
       console.error("Error fetching tickets:", error);
@@ -101,17 +101,17 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
   }, [hasRedmineKey]);
 
   const getAmountStatus = useCallback(
-      (name: string) => {
-        return tickets.filter((t) => t.status?.name === name).length;
-      },
-      [tickets],
+    (name: string) => {
+      return tickets.filter((t) => t.status?.name === name).length;
+    },
+    [tickets],
   );
 
   const getAmountPriority = useCallback(
-      (name: string) => {
-        return tickets.filter((t) => t.priority?.name === name).length;
-      },
-      [tickets],
+    (name: string) => {
+      return tickets.filter((t) => t.priority?.name === name).length;
+    },
+    [tickets],
   );
 
   useEffect(() => {
@@ -119,30 +119,30 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
   }, [fetchTickets]);
 
   const contextValue = useMemo<TicketContextType>(
-      () => ({
-        tickets,
-        fetchTickets,
-        projects,
-        status,
-        openTickets,
-        getAmountStatus,
-        getAmountPriority,
-      }),
-      [
-        tickets,
-        fetchTickets,
-        projects,
-        status,
-        openTickets,
-        getAmountStatus,
-        getAmountPriority,
-      ],
+    () => ({
+      tickets,
+      fetchTickets,
+      projects,
+      status,
+      openTickets,
+      getAmountStatus,
+      getAmountPriority,
+    }),
+    [
+      tickets,
+      fetchTickets,
+      projects,
+      status,
+      openTickets,
+      getAmountStatus,
+      getAmountPriority,
+    ],
   );
 
   return (
-      <TicketContext.Provider value={contextValue}>
-        {children}
-      </TicketContext.Provider>
+    <TicketContext.Provider value={contextValue}>
+      {children}
+    </TicketContext.Provider>
   );
 };
 

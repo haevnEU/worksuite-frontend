@@ -1,6 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { AlertOctagon, AlertTriangle, Clock, Ticket } from "lucide-react";
+import {
+  AlertOctagon,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Ticket,
+} from "lucide-react";
 import { useTickets } from "../../context/TicketContext.tsx";
 import { useTime } from "../../context/TimeContext.tsx";
 
@@ -8,10 +14,34 @@ interface QuickStatsGridProps {
   onOpenTimeLogModal: () => void;
 }
 
+// Berechnet die Farbe basierend auf Wochentag und erreichter Wochenarbeitszeit
+const getProgressColor = (loggedHours: number): string => {
+  const day = new Date().getDay(); // 0 = So, 1 = Mo, ..., 5 = Fr, 6 = Sa
+
+  // Zielstunden pro Tag (Mo: 8h, Di: 16h, Mi: 24h, Do: 32h, Fr-So: 40h)
+  let targetHours = 40;
+  if (day === 1) targetHours = 8;
+  else if (day === 2) targetHours = 16;
+  else if (day === 3) targetHours = 24;
+  else if (day === 4) targetHours = 32;
+
+  // Schwellenwerte relativ zum Tagesziel
+  if (loggedHours < targetHours - 2) {
+    return "bg-rose-500 shadow-rose-500/50";
+  }
+  if (loggedHours < targetHours) {
+    return "bg-amber-400 shadow-amber-400/50";
+  }
+  if (loggedHours <= targetHours + 1) {
+    return "bg-emerald-500 shadow-emerald-500/50";
+  }
+  return "bg-purple-500 shadow-purple-500/50";
+};
+
 export const QuickStatsGrid: React.FC<QuickStatsGridProps> = ({
   onOpenTimeLogModal,
 }) => {
-  const { todayTotal } = useTime();
+  const { todayTotal, weeklyTotal } = useTime();
   const { tickets, getAmountStatus, getAmountPriority } = useTickets();
 
   const totalOpenTickets =
@@ -26,6 +56,27 @@ export const QuickStatsGrid: React.FC<QuickStatsGridProps> = ({
   const urgentPriorityCount = getAmountPriority("High");
   const normalPriorityCount = getAmountPriority("Normal");
   const lowPriorityCount = getAmountPriority("Low");
+
+  // Wochenarbeitszeit & verbleibende Zeit berechnen
+  const weekHours = weeklyTotal?.hours || 0;
+  const weekMinutes = weeklyTotal?.minutes || 0;
+  const totalLoggedMinutes = weekHours * 60 + weekMinutes;
+  const targetMinutes = 40 * 60; // 2400 Minuten (40h)
+
+  const remainingMinutesTotal = targetMinutes - totalLoggedMinutes;
+  const hasReachedTarget = remainingMinutesTotal <= 0;
+
+  const remainingHours = Math.max(0, Math.floor(remainingMinutesTotal / 60));
+  const remainingMinutes = Math.max(0, remainingMinutesTotal % 60);
+
+  // Überstunden berechnen falls Ziel überschritten
+  const overtimeMinutesTotal = Math.abs(remainingMinutesTotal);
+  const overtimeHours = Math.floor(overtimeMinutesTotal / 60);
+  const overtimeMinutes = overtimeMinutesTotal % 60;
+
+  const weeklyDecimal = weekHours + weekMinutes / 60;
+  const weeklyProgress = Math.min(100, Math.round((weeklyDecimal / 40) * 100));
+  const progressBarColor = getProgressColor(weeklyDecimal);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -84,7 +135,7 @@ export const QuickStatsGrid: React.FC<QuickStatsGridProps> = ({
         </div>
       </Link>
 
-      {/* Zeiterfassungs-Karte */}
+      {/* Zeiterfassungs-Karte mit Tages-, Wochen- & verbleibender Arbeitszeit */}
       <button
         type="button"
         onClick={onOpenTimeLogModal}
@@ -92,20 +143,63 @@ export const QuickStatsGrid: React.FC<QuickStatsGridProps> = ({
       >
         <div className="flex items-center justify-between">
           <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">
-            Hours Logged Today
+            Working Time Overview
           </span>
           <div className="w-10 h-10 rounded-lg bg-blue-950/60 text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Clock className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="my-4">
-          <span className="text-3xl font-extrabold text-blue-400">
-            {todayTotal.hours}h {todayTotal.minutes}m
-          </span>
-          <span className="text-xs text-slate-400 block mt-1">
-            Logged working time for today
-          </span>
+        <div className="my-4 space-y-3">
+          {/* Heute geloggt */}
+          <div>
+            <div className="flex items-baseline justify-between">
+              <span className="text-2xl md:text-3xl font-extrabold text-blue-400">
+                {todayTotal.hours}h {todayTotal.minutes}m
+              </span>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Today
+              </span>
+            </div>
+          </div>
+
+          {/* Woche / Gesamt geloggt mit Fortschrittsbalken und verbleibender Zeit */}
+          <div className="pt-2 border-t border-slate-800/70 space-y-2">
+            <div className="flex items-baseline justify-between text-xs">
+              <span className="text-slate-400">This Week:</span>
+              <span className="font-extrabold text-white">
+                {weekHours}h {weekMinutes}m{" "}
+                <span className="text-slate-400 font-normal">/ 40h</span>
+              </span>
+            </div>
+
+            {/* Fortschrittsbalken */}
+            <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+              <div
+                className={`h-full transition-all duration-500 rounded-full shadow-xs ${progressBarColor}`}
+                style={{ width: `${weeklyProgress}%` }}
+              />
+            </div>
+
+            {/* Verbleibende Arbeitszeit unter dem Balken */}
+            <div className="flex items-center justify-between text-[11px] pt-0.5">
+              <span className="text-slate-400">Remaining:</span>
+              {hasReachedTarget ? (
+                <span className="font-bold text-emerald-400 flex items-center space-x-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>
+                    Goal reached{" "}
+                    {overtimeMinutesTotal > 0 &&
+                      `(+${overtimeHours}h ${overtimeMinutes}m)`}
+                  </span>
+                </span>
+              ) : (
+                <span className="font-semibold text-amber-300">
+                  {remainingHours}h {remainingMinutes}m left
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="text-xs text-blue-400 font-semibold flex items-center space-x-1 pt-3 border-t border-slate-800 w-full">

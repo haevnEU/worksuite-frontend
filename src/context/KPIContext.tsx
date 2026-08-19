@@ -19,13 +19,12 @@ interface KPIContextType {
 const KPIContext = createContext<KPIContextType | undefined>(undefined);
 
 export const KPIProvider: React.FC<{ children: ReactNode }> = ({
-                                                                 children,
-                                                               }) => {
+  children,
+}) => {
   const { daysRange, hasRedmineKey } = useSettings();
   const [data, setData] = useState<KpiModel[]>([]);
 
   const refresh = useCallback(async () => {
-    // 🛑 Guard: Nicht abfragen, wenn kein Redmine Key vorhanden ist
     if (!hasRedmineKey) {
       setData([]);
       return;
@@ -44,15 +43,15 @@ export const KPIProvider: React.FC<{ children: ReactNode }> = ({
   }, [refresh]);
 
   const contextValue = useMemo<KPIContextType>(
-      () => ({
-        data,
-        refresh,
-      }),
-      [data, refresh],
+    () => ({
+      data,
+      refresh,
+    }),
+    [data, refresh],
   );
 
   return (
-      <KPIContext.Provider value={contextValue}>{children}</KPIContext.Provider>
+    <KPIContext.Provider value={contextValue}>{children}</KPIContext.Provider>
   );
 };
 

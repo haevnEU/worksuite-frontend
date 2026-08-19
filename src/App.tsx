@@ -46,19 +46,25 @@ import LogViewerPage from "./pages/LogViewerPage.tsx";
 import ToolsPage from "./pages/ToolsPage.tsx";
 import MockDataPage from "./pages/MockDataPage.tsx";
 import RuleGeneratorPage from "./pages/RuleGeneratorPage.tsx";
-import { LicenseProvider } from "./context/LicenseContext.tsx";
+import { LicenseProvider, useLicense } from "./context/LicenseContext.tsx";
 import { InsufficientLicenseGuard } from "./components/license/InssuficientLicense.tsx";
 import { AboutPage } from "./pages/AboutPage.tsx";
 import { AboutProvider } from "./context/AboutContext.tsx";
 import PlanSelectionPage from "./pages/public/PlanSelectionPage.tsx";
 
+import { getAppBackgroundStyles } from "./utils/license.util.ts";
+import { WeeklyTimeWarningOverlay } from "./components/overlays/warning/WeeklyTimeWarningOverlay.tsx";
+import { TimeLogModal } from "./components/dashboard";
+
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTimeLogModalOpen, setIsTimeLogModalOpen] = useState(false);
 
+  const { plan } = useLicense();
   const { fetchTickets } = useTickets();
   const { fetchTimeEntries } = useTime();
-  const { fetchVscData } = useVCS();
+  const { fetchAll } = useVCS();
 
   const handleTriggerRefresh = async () => {
     setIsLoading(true);
@@ -66,7 +72,7 @@ const AuthenticatedLayout: React.FC = () => {
     await Promise.allSettled([
       fetchTickets(),
       fetchTimeEntries(),
-      fetchVscData(true),
+      fetchAll(true),
     ]);
 
     setTimeout(() => {
@@ -78,8 +84,12 @@ const AuthenticatedLayout: React.FC = () => {
     pushService.connect();
   }, []);
 
+  const appBgStyle = getAppBackgroundStyles(plan);
+
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div
+      className={`flex h-screen ${appBgStyle} text-slate-100 overflow-hidden font-sans transition-colors duration-500`}
+    >
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -239,15 +249,26 @@ const AuthenticatedLayout: React.FC = () => {
           )}
         </main>
       </div>
+
+      {/* Freitags-Warnung mit Snooze & Acknowledge */}
+      <WeeklyTimeWarningOverlay
+        onOpenTimeLogModal={() => setIsTimeLogModalOpen(true)}
+      />
+
+      {/* Zeiterfassungsmodal */}
+      <TimeLogModal
+        isOpen={isTimeLogModalOpen}
+        onClose={() => setIsTimeLogModalOpen(false)}
+      />
     </div>
   );
 };
 
 const AppRoutes: React.FC = () => {
-  const { isConnected, retryConnection } = useConnection();
+  const { isConnected } = useConnection();
 
   if (!isConnected) {
-    return <NoConnectionPage onRetry={retryConnection} />;
+    return <NoConnectionPage />;
   }
 
   return (

@@ -3,6 +3,7 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -22,7 +23,9 @@ interface VcsContextType {
   pipelines: ProtectedBranchPipeline[];
   isLoading: boolean;
   isRefreshing: boolean;
+  fetchRepos: () => Promise<void>;
   fetchVscData: (isBackground?: boolean) => Promise<void>;
+  fetchAll: (isBackground?: boolean) => Promise<void>;
 }
 
 const VcsContext = createContext<VcsContextType | undefined>(undefined);
@@ -55,7 +58,6 @@ export const VcsProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, [hasVcsKey, vcsProvider]);
 
-  // Lädt Reviews, MRs und Pipelines parallel
   const fetchVscData = useCallback(
     async (isBackground = false) => {
       if (!hasVcsKey) {
@@ -91,6 +93,22 @@ export const VcsProvider: React.FC<{ children: ReactNode }> = ({
     [hasVcsKey, vcsProvider],
   );
 
+  const fetchAll = useCallback(
+    async (isBackground = false) => {
+      if (!hasVcsKey) return;
+
+      await Promise.allSettled([fetchRepos(), fetchVscData(isBackground)]);
+    },
+    [hasVcsKey, fetchRepos, fetchVscData],
+  );
+
+  // WICHTIG: Reagiert dynamisch, sobald der API-Key / Provider geladen ist!
+  useEffect(() => {
+    if (hasVcsKey) {
+      fetchAll();
+    }
+  }, [hasVcsKey, vcsProvider, fetchAll]);
+
   const contextValue = useMemo<VcsContextType>(
     () => ({
       vcsLink,
@@ -100,7 +118,9 @@ export const VcsProvider: React.FC<{ children: ReactNode }> = ({
       pipelines,
       isLoading,
       isRefreshing,
+      fetchRepos,
       fetchVscData,
+      fetchAll,
     }),
     [
       vcsLink,
@@ -110,7 +130,9 @@ export const VcsProvider: React.FC<{ children: ReactNode }> = ({
       pipelines,
       isLoading,
       isRefreshing,
+      fetchRepos,
       fetchVscData,
+      fetchAll,
     ],
   );
 

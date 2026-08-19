@@ -1,4 +1,5 @@
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   MergeRequestList,
   PipelineMonitorWidget,
@@ -10,6 +11,9 @@ import { useVCS } from "../context/VcsContext.tsx";
 import { MissingApiKeyCard } from "../components/MissingApiKeyCard.tsx";
 
 export const VcsPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab"); // "reviews" | "my-mrs" | null
+
   const { hasVcsKey } = useSettings();
   const { pendingReviews, myMrs, pipelines, isLoading, fetchVscData } =
     useVCS();
@@ -44,7 +48,11 @@ export const VcsPage: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
         <div className="lg:col-span-2">
-          <MergeRequestList pendingReviews={pendingReviews} myMrs={myMrs} />
+          <MergeRequestList
+            pendingReviews={pendingReviews}
+            myMrs={myMrs}
+            initialTab={tabParam === "my-mrs" ? "MY_MRS" : "PENDING_REVIEWS"}
+          />
         </div>
 
         <div className="space-y-5">

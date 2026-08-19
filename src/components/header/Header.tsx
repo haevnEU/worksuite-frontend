@@ -4,8 +4,8 @@ import { HeaderClock } from "./HeaderClock.tsx";
 import { HeaderTargetTimer } from "./HeaderTargetTimer.tsx";
 import { HeaderStats } from "./HeaderStats.tsx";
 import { HeaderActions } from "./HeaderActions.tsx";
-import { HeaderUserAvatar } from "./HeaderUserAvatar.tsx";
 import { NotificationOverlay } from "../notification/NotificationOverlay.tsx";
+import { UserAvatar } from "../UserAvatar.tsx";
 
 interface HeaderProps {
   onToggleMobileMenu?: () => void;
@@ -62,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({
             onRefresh={onTriggerRefresh}
             onOpenNotifications={() => setIsNotificationOpen(true)}
           />
-          <HeaderUserAvatar />
+          <UserAvatar />
         </div>
       </header>
 

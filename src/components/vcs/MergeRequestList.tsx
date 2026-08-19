@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GitMerge, GitPullRequest } from "lucide-react";
 import { useSettings } from "../../context/SettingsContext.tsx";
 import { MergeRequestModel } from "../../models/vcs.model.ts";
@@ -7,15 +7,25 @@ import { MergeRequestCard } from "./MergeRequestCard";
 interface MergeRequestListProps {
   pendingReviews: MergeRequestModel[];
   myMrs: MergeRequestModel[];
+  initialTab?: "PENDING_REVIEWS" | "MY_MRS";
 }
 
 export const MergeRequestList: React.FC<MergeRequestListProps> = ({
   pendingReviews,
   myMrs,
+  initialTab = "PENDING_REVIEWS",
 }) => {
   const { vcsProvider } = useSettings();
   const isGitLab = (vcsProvider || "GITLAB") === "GITLAB";
-  const [activeTab, setActiveTab] = useState<"reviews" | "my">("reviews");
+
+  const [activeTab, setActiveTab] = useState<"reviews" | "my">(
+    initialTab === "MY_MRS" ? "my" : "reviews",
+  );
+
+  // Synchronisieren, falls der Tab über die URL gewechselt wird
+  useEffect(() => {
+    setActiveTab(initialTab === "MY_MRS" ? "my" : "reviews");
+  }, [initialTab]);
 
   const currentList = activeTab === "reviews" ? pendingReviews : myMrs;
 

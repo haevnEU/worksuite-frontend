@@ -1,7 +1,8 @@
 import React from "react";
 import { X } from "lucide-react";
 import { useLicense } from "../../context/LicenseContext.tsx";
-import { getPlanBadge } from "../../utils/license.util.ts";
+import { LicensePlan } from "../../types/license.type.ts";
+import { getLogoStyles, getPlanBadge } from "../../utils/license.util.ts";
 
 interface SidebarHeaderProps {
   onClose?: () => void;
@@ -10,11 +11,15 @@ interface SidebarHeaderProps {
 export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ onClose }) => {
   const { plan } = useLicense();
 
+  const logoStyle = getLogoStyles(plan);
+
   return (
     <div className="p-4 pb-3 border-b border-slate-800/80 shrink-0">
       <div className="flex items-center justify-between px-2">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-blue-600/20 shrink-0">
+          <div
+            className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl shadow-lg shrink-0 transition-all duration-300 ${logoStyle}`}
+          >
             W
           </div>
           <div className="flex flex-col min-w-0">
@@ -38,6 +43,7 @@ export const SidebarHeader: React.FC<SidebarHeaderProps> = ({ onClose }) => {
 
         {onClose && (
           <button
+            type="button"
             onClick={onClose}
             className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
             title="Menü einklappen"

@@ -13,6 +13,16 @@ export class TimeService extends NetworkService {
       return [];
     }
   }
+
+  async fetchWeeklyTotal() {
+    try {
+      return await this.get<{ hours: number; minutes: number }>(
+        "/weekly-total",
+      );
+    } catch {
+      return { hours: 0, minutes: 0 };
+    }
+  }
 }
 
 export const timeService = new TimeService();

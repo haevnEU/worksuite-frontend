@@ -21,6 +21,7 @@ interface TimeContextType {
   todayTotal: TimeTotal;
   fetchTimeEntries: () => Promise<void>;
   isLoading: boolean;
+  weeklyTotal?: TimeTotal;
 }
 
 const TimeContext = createContext<TimeContextType | undefined>(undefined);
@@ -30,7 +31,7 @@ const calculateTotalTime = (entriesList: TimeDTO[]): TimeTotal => {
 
   for (const entry of entriesList) {
     totalMinutes +=
-        (Number(entry.hours) || 0) * 60 + (Number(entry.minutes) || 0);
+      (Number(entry.hours) || 0) * 60 + (Number(entry.minutes) || 0);
   }
 
   return {
@@ -40,8 +41,8 @@ const calculateTotalTime = (entriesList: TimeDTO[]): TimeTotal => {
 };
 
 export const TimeProvider: React.FC<{ children: ReactNode }> = ({
-                                                                  children,
-                                                                }) => {
+  children,
+}) => {
   const { hasRedmineKey } = useSettings();
   const [entries, setEntries] = useState<TimeDTO[]>([]);
   const [todayTotal, setTodayTotal] = useState<TimeTotal>({
@@ -49,23 +50,34 @@ export const TimeProvider: React.FC<{ children: ReactNode }> = ({
     minutes: 0,
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [weeklyTotal, setWeeklyTotal] = useState<TimeTotal | undefined>(
+    undefined,
+  );
 
   const fetchTimeEntries = useCallback(async () => {
-    // 🛑 Guard: Nicht abfragen, wenn kein Redmine Key vorhanden ist
     if (!hasRedmineKey) {
       setEntries([]);
       setTodayTotal({ hours: 0, minutes: 0 });
+      setWeeklyTotal(undefined);
       return;
     }
 
     setIsLoading(true);
     try {
-      const data = await timeService.fetch();
-      const rawEntries = Array.isArray(data) ? data : [];
+      // Paralleler Abruf von Wochentotal und Einzeleinträgen
+      const [weeklyData, entriesData] = await Promise.all([
+        timeService.fetchWeeklyTotal(),
+        timeService.fetch(),
+      ]);
+
+      setWeeklyTotal(weeklyData || { hours: 0, minutes: 0 });
+
+      const rawEntries = Array.isArray(entriesData) ? entriesData : [];
       const uniqueEntries = Array.from(
-          new Map(rawEntries.map((item) => [item.id, item])).values(),
+        new Map(rawEntries.map((item) => [item.id, item])).values(),
       );
       setEntries(uniqueEntries);
+
       const computedTotal = calculateTotalTime(uniqueEntries);
       setTodayTotal(computedTotal);
     } catch (error) {
@@ -80,13 +92,14 @@ export const TimeProvider: React.FC<{ children: ReactNode }> = ({
   }, [fetchTimeEntries]);
 
   const value = useMemo(
-      () => ({
-        entries,
-        todayTotal,
-        fetchTimeEntries,
-        isLoading,
-      }),
-      [entries, todayTotal, fetchTimeEntries, isLoading],
+    () => ({
+      entries,
+      todayTotal,
+      weeklyTotal,
+      fetchTimeEntries,
+      isLoading,
+    }),
+    [entries, todayTotal, weeklyTotal, fetchTimeEntries, isLoading],
   );
 
   return <TimeContext.Provider value={value}>{children}</TimeContext.Provider>;
