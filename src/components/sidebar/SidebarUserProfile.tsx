@@ -4,7 +4,13 @@ import { useSettings } from "../../context/SettingsContext.tsx";
 import { useAuth } from "../../context/AuthContext.tsx";
 import { UserAvatar } from "../UserAvatar.tsx";
 
-export const SidebarUserProfile: React.FC = () => {
+interface SidebarUserProfileProps {
+  collapsed?: boolean;
+}
+
+export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
+  collapsed = false,
+}) => {
   const { user } = useSettings();
   const { logout } = useAuth();
 
@@ -12,6 +18,25 @@ export const SidebarUserProfile: React.FC = () => {
     if (!u.firstName && !u.lastName) return "Unknown User";
     return `${u.firstName || ""} ${u.lastName || ""}`.trim();
   };
+
+  if (collapsed) {
+    return (
+      <div className="p-2 border-t border-slate-800 bg-slate-950/40 flex flex-col items-center gap-2 shrink-0">
+        <div title={getUserFullName(user)}>
+          <UserAvatar className="w-8 h-8" />
+        </div>
+        <button
+          type="button"
+          onClick={logout}
+          title="Sign Out"
+          aria-label="Sign Out"
+          className="p-2 rounded-lg bg-slate-900 text-slate-400 hover:text-red-400 hover:bg-red-950/40 border border-slate-800 transition-colors cursor-pointer"
+        >
+          <LogOut className="w-4 h-4" />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 border-t border-slate-800 bg-slate-950/40 space-y-2.5 shrink-0">
@@ -24,9 +49,7 @@ export const SidebarUserProfile: React.FC = () => {
 
       <div className="bg-slate-800/80 border border-slate-700/80 rounded-xl p-2.5 space-y-2.5 relative">
         <div className="flex items-center space-x-2.5">
-          {/* Wiederverwendete Avatar-Komponente */}
           <UserAvatar className="w-8 h-8" />
-
           <div className="min-w-0 flex-1">
             <div className="text-xs font-bold text-white truncate">
               {getUserFullName(user)}

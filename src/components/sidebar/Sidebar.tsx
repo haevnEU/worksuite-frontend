@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Clock,
   Code2,
@@ -28,7 +28,10 @@ import {
   getPinnedFavoriteItems,
   MAX_FAVORITES,
   toggleFavoritePath,
+  triggerHapticFeedback,
 } from "../../utils/sidebar.util.ts";
+
+const COLLAPSED_STORAGE_KEY = "worktool_sidebar_desktop_collapsed";
 
 interface SidebarProps {
   mobileOpen?: boolean;
@@ -43,6 +46,166 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { pendingReviews } = useVCS();
   const pendingReviewsCount = pendingReviews?.length || 0;
 
+  // Desktop Collapse State
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem(COLLAPSED_STORAGE_KEY) === "true";
+  });
+
+  const toggleCollapse = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem(COLLAPSED_STORAGE_KEY, String(next));
+      return next;
+    });
+  };
+
+  // -------------------------------------------------------------
+  // Option 1: Konfliktfreier Shortcut (Alt + S oder Ctrl/Cmd + \)
+  // -------------------------------------------------------------
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignorieren, wenn der Fokus in einem Input, Textarea oder contentEditable liegt
+      const activeTag = document.activeElement?.tagName.toLowerCase();
+      const isInput =
+        activeTag === "input" ||
+        activeTag === "textarea" ||
+        (document.activeElement as HTMLElement)?.isContentEditable;
+
+      if (isInput) return;
+
+      // 1. Alt + S (Option + S auf Mac)
+      const isAltS = e.altKey && e.key.toLowerCase() === "s";
+      // 2. Ctrl + \ oder Cmd + \ (bekannter Standard aus VS Code / Linear)
+      const isCtrlBackslash = (e.ctrlKey || e.metaKey) && e.key === "\\";
+
+      if (isAltS || isCtrlBackslash) {
+        e.preventDefault();
+        toggleCollapse();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // -------------------------------------------------------------
+  // Option 2: Responsive Auto-Collapse bei mittleren Screens (< 1280px)
+  // -------------------------------------------------------------
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      // Bei Split-Screen / halbem Monitor (Desktop zw. 1024px und 1280px) automatisch kollabieren
+      if (width < 1280 && width >= 1024) {
+        setCollapsed(true);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // -------------------------------------------------------------
+  // Mobile Gesten: Touch Pull-Down & Snap-Up Drag State
+  // -------------------------------------------------------------
+  const [dragY, setDragY] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isAnimatingClose, setIsAnimatingClose] = useState<boolean>(false);
+
+  const touchStartY = useRef<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const lastTouchY = useRef<number | null>(null);
+  const isEligibleToDrag = useRef<boolean>(false);
+  const isSwipingUp = useRef<boolean>(false);
+  const hasTriggeredThresholdHaptic = useRef<boolean>(false);
+  const navRef = useRef<HTMLElement | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!mobileOpen || isAnimatingClose) return;
+    const isAtTop = !navRef.current || navRef.current.scrollTop <= 2;
+    if (isAtTop) {
+      isEligibleToDrag.current = true;
+      touchStartY.current = e.touches[0].clientY;
+      touchStartX.current = e.touches[0].clientX;
+      lastTouchY.current = e.touches[0].clientY;
+      isSwipingUp.current = false;
+      hasTriggeredThresholdHaptic.current = false;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (
+      !isEligibleToDrag.current ||
+      touchStartY.current === null ||
+      touchStartX.current === null ||
+      isAnimatingClose
+    )
+      return;
+
+    const currentY = e.touches[0].clientY;
+    const currentX = e.touches[0].clientX;
+
+    const diffY = currentY - touchStartY.current;
+    const diffX = currentX - touchStartX.current;
+
+    if (lastTouchY.current !== null) {
+      isSwipingUp.current = currentY < lastTouchY.current - 2;
+    }
+    lastTouchY.current = currentY;
+
+    if (diffY > 0 && diffY > Math.abs(diffX)) {
+      setIsDragging(true);
+      setDragY(diffY);
+
+      // Haptik-Impuls bei Erreichen der 45% Schwelle
+      const threshold = window.innerHeight * 0.45;
+      if (diffY >= threshold && !hasTriggeredThresholdHaptic.current) {
+        triggerHapticFeedback(12);
+        hasTriggeredThresholdHaptic.current = true;
+      } else if (diffY < threshold) {
+        hasTriggeredThresholdHaptic.current = false;
+      }
+    } else if (diffY <= 0) {
+      setDragY(0);
+      setIsDragging(false);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isEligibleToDrag.current || isAnimatingClose) return;
+
+    const threshold = window.innerHeight * 0.45;
+    const shouldClose =
+      !isSwipingUp.current && (dragY >= threshold || dragY > 160);
+
+    if (shouldClose) {
+      setIsDragging(false);
+      setIsAnimatingClose(true);
+
+      requestAnimationFrame(() => {
+        setDragY(window.innerHeight);
+      });
+
+      setTimeout(() => {
+        setIsAnimatingClose(false);
+        setDragY(0);
+        if (onClose) onClose();
+      }, 230);
+    } else {
+      setIsDragging(false);
+      setDragY(0);
+    }
+
+    touchStartY.current = null;
+    touchStartX.current = null;
+    lastTouchY.current = null;
+    isEligibleToDrag.current = false;
+    isSwipingUp.current = false;
+    hasTriggeredThresholdHaptic.current = false;
+  };
+
+  // -------------------------------------------------------------
+  // Favoriten & Navigation
+  // -------------------------------------------------------------
   const [favoritePaths, setFavoritePaths] = useState<string[]>(() =>
     getFavoritePaths(),
   );
@@ -63,7 +226,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }));
   };
 
-  // 1. Feste Overview-Gruppe (ganz oben, nicht favorisierbar)
+  // Overview (fest oben)
   const overviewGroup: { title: string; items: NavItem[] } = useMemo(
     () => ({
       title: "Overview",
@@ -79,6 +242,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           path: "/vcs",
           icon: GitBranch,
           badge: pendingReviewsCount,
+          statusDot:
+            pendingReviewsCount > 0
+              ? {
+                  variant: "blue",
+                  pulse: true,
+                  tooltip: `${pendingReviewsCount} pending review(s)`,
+                }
+              : undefined,
           requiredPlan: "COMMUNITY",
         },
         {
@@ -86,6 +257,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           path: "/redmine",
           icon: Ticket,
           badge: openTickets,
+          statusDot:
+            openTickets > 0
+              ? {
+                  variant: "amber",
+                  pulse: true,
+                  tooltip: `${openTickets} open ticket(s)`,
+                }
+              : undefined,
           requiredPlan: "COMMUNITY",
         },
       ],
@@ -93,7 +272,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     [pendingReviewsCount, openTickets],
   );
 
-  // 2. Restliche Funktionsgruppen (favorisierbar)
   const otherNavGroups: { title: string; items: NavItem[] }[] = useMemo(
     () => [
       {
@@ -121,6 +299,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             label: "Time Tracking",
             path: "/time-log",
             icon: Clock,
+            statusDot: {
+              variant: "emerald",
+              pulse: false,
+              tooltip: "Tracking Active",
+            },
             requiredPlan: "PRO",
           },
         ],
@@ -206,7 +389,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     [],
   );
 
-  // Alle favorisierbaren Items für die Suche
   const allFavoritableItems = useMemo(
     () => otherNavGroups.flatMap((group) => group.items),
     [otherNavGroups],
@@ -228,43 +410,85 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (onClose) onClose();
   };
 
+  const backdropOpacity = mobileOpen
+    ? Math.max(
+        0,
+        1 -
+          dragY /
+            (typeof window !== "undefined" ? window.innerHeight * 0.75 : 800),
+      )
+    : 1;
+
   return (
     <>
       {mobileOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-300"
+          style={{ opacity: backdropOpacity }}
+          className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-200"
           aria-label="Close menu"
         />
       )}
 
       <aside
-        className={`w-full lg:w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-screen shrink-0 text-slate-300 select-none transition-all duration-300 z-50 ${
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          transform:
+            mobileOpen && (dragY > 0 || isAnimatingClose)
+              ? `translate3d(0, ${dragY}px, 0)`
+              : undefined,
+          transition: isDragging
+            ? "none"
+            : isAnimatingClose
+              ? "transform 220ms cubic-bezier(0.32, 0.72, 0, 1)"
+              : "transform 240ms cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+        className={`bg-slate-900 border-r border-slate-800 flex flex-col h-screen lg:h-screen max-lg:h-[100dvh] max-lg:max-h-[100dvh] shrink-0 text-slate-300 select-none z-50 ${
           mobileOpen
-            ? "fixed inset-0 lg:inset-y-0 lg:left-0 shadow-2xl animate-in slide-in-from-left duration-200"
-            : "hidden lg:flex"
+            ? "fixed inset-0 shadow-2xl w-full will-change-transform pb-[env(safe-area-inset-bottom,0px)]"
+            : `hidden lg:flex transition-all duration-300 ${
+                collapsed ? "w-16" : "w-64"
+              }`
         }`}
       >
-        <SidebarHeader onClose={onClose} />
+        {/* Mobile Pull-Down Handle */}
+        {mobileOpen && (
+          <div className="lg:hidden w-full flex justify-center pt-2.5 pb-1 shrink-0 cursor-grab active:cursor-grabbing">
+            <div className="w-12 h-1.5 rounded-full bg-slate-700/90 hover:bg-slate-600 transition-colors" />
+          </div>
+        )}
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-slate-800">
-          {/* 1. Overview steht IMMER ganz oben (ohne Favoriten-Sterne) */}
+        <SidebarHeader
+          collapsed={collapsed && !mobileOpen}
+          onToggleCollapse={toggleCollapse}
+          onClose={onClose}
+        />
+
+        <nav
+          ref={navRef}
+          className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-3 scrollbar-thin scrollbar-thumb-slate-800 overscroll-contain"
+        >
+          {/* Overview */}
           <SidebarNavGroup
             title={overviewGroup.title}
             items={overviewGroup.items}
             isOpen={openGroups["Overview"] ?? true}
+            collapsed={collapsed && !mobileOpen}
             isFavoritable={false}
             onToggle={() => toggleGroup("Overview")}
             onNavClick={handleNavClick}
           />
 
-          {/* 2. Favorites-Gruppe direkt darunter (nur wenn Items markiert sind) */}
-          {favoriteItems.length > 0 && (
+          {/* Favorites */}
+          {favoriteItems.length > 0 && !(collapsed && !mobileOpen) && (
             <div className="py-2 my-2 border-y border-slate-800/80">
               <SidebarNavGroup
                 title="Favorites"
                 items={favoriteItems}
                 isOpen={openGroups["Favorites"] ?? true}
+                collapsed={false}
                 isFavoritable={true}
                 favoritePaths={favoritePaths}
                 canAddFavorite={favoritePaths.length < MAX_FAVORITES}
@@ -275,13 +499,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
 
-          {/* 3. Restliche Gruppen */}
+          {/* Andere Gruppen */}
           {otherNavGroups.map((group, idx) => (
             <SidebarNavGroup
               key={idx}
               title={group.title}
               items={group.items}
               isOpen={openGroups[group.title] ?? true}
+              collapsed={collapsed && !mobileOpen}
               isFavoritable={true}
               favoritePaths={favoritePaths}
               canAddFavorite={favoritePaths.length < MAX_FAVORITES}
@@ -292,7 +517,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ))}
         </nav>
 
-        <SidebarUserProfile />
+        {/* User Profile */}
+        <SidebarUserProfile collapsed={collapsed && !mobileOpen} />
       </aside>
     </>
   );

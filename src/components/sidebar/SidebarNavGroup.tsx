@@ -7,6 +7,7 @@ interface SidebarNavGroupProps {
   title: string;
   items: NavItem[];
   isOpen: boolean;
+  collapsed?: boolean;
   isFavoritable?: boolean;
   favoritePaths?: string[];
   canAddFavorite?: boolean;
@@ -19,6 +20,7 @@ export const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
   title,
   items,
   isOpen,
+  collapsed = false,
   isFavoritable = true,
   favoritePaths = [],
   canAddFavorite = true,
@@ -28,6 +30,21 @@ export const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
 }) => {
   const isFavorites = title === "Favorites";
   const isAltGroup = title.startsWith("Alt /");
+
+  if (collapsed) {
+    return (
+      <div className="space-y-1 border-b border-slate-800/50 pb-2 mb-2 last:border-b-0">
+        {items.map((item) => (
+          <SidebarNavItem
+            key={`${title}-${item.path}`}
+            item={item}
+            collapsed={true}
+            onNavClick={onNavClick}
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-1">
@@ -65,6 +82,7 @@ export const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
               <SidebarNavItem
                 key={`${title}-${item.path}`}
                 item={item}
+                collapsed={false}
                 isFavorite={favoritePaths.includes(item.path)}
                 canFavorite={isFavoritable && canAddFavorite}
                 onToggleFavorite={isFavoritable ? onToggleFavorite : undefined}
@@ -73,7 +91,7 @@ export const SidebarNavGroup: React.FC<SidebarNavGroupProps> = ({
             ))
           ) : (
             <div className="px-3 py-1.5 text-[11px] text-slate-600 italic">
-              Keine Einträge
+              No entries found
             </div>
           )}
         </div>

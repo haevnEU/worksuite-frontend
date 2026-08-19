@@ -55,6 +55,7 @@ import PlanSelectionPage from "./pages/public/PlanSelectionPage.tsx";
 import { getAppBackgroundStyles } from "./utils/license.util.ts";
 import { WeeklyTimeWarningOverlay } from "./components/overlays/warning/WeeklyTimeWarningOverlay.tsx";
 import { TimeLogModal } from "./components/dashboard";
+import { SessionReauthModal } from "./components/auth/SessionReauthModal.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -306,6 +307,8 @@ export const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
+        <SessionReauthModal />
+
         <LicenseProvider>
           <ConnectionProvider>
             <ToastProvider>
