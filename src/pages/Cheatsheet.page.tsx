@@ -50,11 +50,11 @@ export const CheatsheetPage: React.FC = () => {
   }, [selectedTopicId, selectedLevel, search]);
 
   return (
-    <div className="relative min-h-full w-full">
-      {/* Haupt-Container: Nutzt die volle Breite und weicht bei geöffnetem Drawer auf Desktop sauber nach links */}
+    <div className="relative w-full">
+      {/* Haupt-Bereich: Weicht dem Drawer exakt per Margin aus, Karten verteilen sich gleichmäßig */}
       <div
-        className={`w-full space-y-6 transition-all duration-300 ease-in-out ${
-          selectedItem ? "xl:mr-[500px]" : "mr-0"
+        className={`space-y-6 transition-all duration-300 ease-in-out ${
+          selectedItem ? "xl:mr-[460px]" : "mr-0"
         }`}
       >
         {/* Header Bar */}
@@ -64,7 +64,7 @@ export const CheatsheetPage: React.FC = () => {
               <BookOpen className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-lg font-extrabold text-white">
+              <h1 className="text-base font-extrabold text-white">
                 Developer Cheatsheets
               </h1>
               <p className="text-xs text-slate-400">
@@ -81,12 +81,12 @@ export const CheatsheetPage: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search syntax, tags, commands..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
             />
           </div>
         </div>
 
-        {/* Topic Filter Pills */}
+        {/* Topic Filters */}
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
@@ -116,7 +116,7 @@ export const CheatsheetPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Level Filter Tabs */}
+        {/* Level Filters */}
         <div className="flex items-center gap-2 border-b border-slate-800/80 pb-3">
           <Filter className="w-3.5 h-3.5 text-slate-500 mr-1 shrink-0" />
           {LEVEL_TABS.map((tab) => (
@@ -135,53 +135,53 @@ export const CheatsheetPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Sections & Full-Width Grid */}
+        {/* Cards Grid */}
         {filteredTopics.length > 0 ? (
-          <div className="space-y-10">
-            {filteredTopics.map((topic) => (
-              <div key={topic.id} className="space-y-4">
-                {/* Topic Title */}
-                <div className="flex items-center gap-2 pb-1 border-b border-slate-800/40">
-                  {renderTopicIcon(topic.iconName)}
-                  <h2 className="text-sm font-bold text-white">
-                    {topic.title}
-                  </h2>
-                  <span className="text-xs text-slate-500">
-                    ({topic.category})
-                  </span>
-                </div>
+          <div className="space-y-8">
+            {filteredTopics.map((topic) => {
+              const allTopicItems = topic.sections.flatMap((s) =>
+                s.items.map((item) => ({ ...item, sectionTitle: s.title })),
+              );
 
-                {topic.sections.map((section) => (
-                  <div key={section.id} className="space-y-3">
-                    <h3 className="text-xs font-semibold text-slate-400 pl-2 border-l-2 border-slate-700">
-                      {section.title}
-                    </h3>
-
-                    {/* Volle Breite: 4 Spalten auf Standard-Desktop, 5 Spalten auf Widescreen / 2K Monitoren */}
-                    <div
-                      className={`grid gap-3.5 transition-all duration-300 ${
-                        selectedItem
-                          ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3"
-                          : "grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4"
-                      }`}
-                    >
-                      {section.items.map((item) => (
-                        <CheatCard
-                          key={item.id}
-                          item={item}
-                          isSelected={selectedItem?.id === item.id}
-                          onSelect={(clicked) => {
-                            setSelectedItem((prev) =>
-                              prev?.id === clicked.id ? null : clicked,
-                            );
-                          }}
-                        />
-                      ))}
-                    </div>
+              return (
+                <section key={topic.id} className="space-y-3">
+                  <div className="flex items-center gap-2 pb-1.5 border-b border-slate-800/60">
+                    {renderTopicIcon(topic.iconName)}
+                    <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                      {topic.title}
+                    </h2>
+                    <span className="text-[11px] text-slate-500">
+                      ({topic.category})
+                    </span>
+                    <span className="ml-auto text-[10px] font-mono text-slate-500">
+                      {allTopicItems.length} commands
+                    </span>
                   </div>
-                ))}
-              </div>
-            ))}
+
+                  {/* Responsives Grid: 2 Spalten wenn Drawer offen, 4 Spalten wenn zu */}
+                  <div
+                    className={`grid gap-3.5 transition-all duration-300 ${
+                      selectedItem
+                        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-2"
+                        : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+                    }`}
+                  >
+                    {allTopicItems.map((item) => (
+                      <CheatCard
+                        key={item.id}
+                        item={item}
+                        isSelected={selectedItem?.id === item.id}
+                        onSelect={(clicked) => {
+                          setSelectedItem((prev) =>
+                            prev?.id === clicked.id ? null : clicked,
+                          );
+                        }}
+                      />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
           </div>
         ) : (
           <div className="p-12 text-center border border-dashed border-slate-800 rounded-2xl">

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Menu } from "lucide-react";
+import { Menu, Coffee } from "lucide-react";
 import { HeaderClock } from "./HeaderClock.tsx";
 import { HeaderTargetTimer } from "./HeaderTargetTimer.tsx";
 import { HeaderStats } from "./HeaderStats.tsx";
@@ -19,6 +19,10 @@ export const Header: React.FC<HeaderProps> = ({
   backgroundImageUrl,
 }) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  const handleTriggerTeapot = () => {
+    window.dispatchEvent(new CustomEvent("http:418-teapot"));
+  };
 
   return (
     <>
@@ -54,6 +58,17 @@ export const Header: React.FC<HeaderProps> = ({
 
           <HeaderClock />
           <HeaderTargetTimer />
+
+          {/* Teapot Easter Egg Button */}
+          <button
+            type="button"
+            onClick={handleTriggerTeapot}
+            className="hidden xl:flex p-2 rounded-xl bg-slate-800/60 hover:bg-amber-500/10 border border-slate-700/80 hover:border-amber-500/30 text-slate-400 hover:text-amber-400 transition-all cursor-pointer group shadow-xs"
+            title="HTTP 418 I'm a teapot (HTCPCP)"
+            aria-label="Brew tea Easter Egg"
+          >
+            <Coffee className="w-3.5 h-3.5 group-hover:animate-bounce" />
+          </button>
         </div>
 
         <div className="relative z-10 flex items-center space-x-2 sm:space-x-4">

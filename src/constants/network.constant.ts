@@ -1,6 +1,9 @@
 import { HttpMethodDetail, HttpStatusCode } from "../models/network.model.ts";
 
 export const HTTP_STATUS_CODES: HttpStatusCode[] = [
+  // ==========================================
+  // 1xx INFORMATIONAL
+  // ==========================================
   {
     code: 100,
     phrase: "Continue",
@@ -450,10 +453,12 @@ export const HTTP_STATUS_CODES: HttpStatusCode[] = [
     phrase: "I'm a teapot",
     category: "4xx",
     description:
-      "HTCPCP/Hyper Text Coffee Pot Control Protocol April Fools joke; any attempt to brew coffee with a teapot should result in this error.",
-    rfc: "RFC 2324 / RFC 7168",
-    practicalExample: "Humorous easter eggs or rate-limiting traps.",
-    clientBehavior: "Brew tea instead of coffee.",
+      "HTCPCP/1.0 protocol specification: Any attempt to brew coffee with a teapot should result in the error code 418 I'm a teapot.",
+    rfc: "RFC 2324, Section 2.3.2 / RFC 7168",
+    practicalExample:
+      "Easter eggs, honeypot traps for automated scrapers, or playful API rejection responses.",
+    clientBehavior:
+      "Do not attempt coffee extraction; switch beverage request to tea.",
   },
   {
     code: 421,
@@ -718,6 +723,39 @@ export const HTTP_METHODS: HttpMethodDetail[] = [
     sampleHeaders: {
       Accept: "application/json",
     },
+  },
+  {
+    method: "QUERY",
+    category: "CORE",
+    description:
+      "Safe, idempotent request method that carries a request body to execute complex queries and search filters without hitting URL length limits or abusing POST.",
+    rfc: "RFC 9457 / IETF HTTP-QUERY",
+    isSafe: true,
+    isIdempotent: true,
+    isCacheable: true,
+    requestBodyAllowed: "YES",
+    responseBodyAllowed: "YES",
+    useCase:
+      "Complex filtering, multi-condition database searches, and GraphQL-like querying while maintaining safe GET caching semantics.",
+    sampleEndpoint: "/api/v1/tickets/query",
+    sampleHeaders: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    samplePayload: JSON.stringify(
+      {
+        filter: {
+          status: ["OPEN", "IN_PROGRESS"],
+          assignedTo: "nils.milewski",
+          tags: { $in: ["backend", "security"] },
+          createdAfter: "2026-01-01T00:00:00Z",
+        },
+        sort: { priority: "DESC", createdAt: "ASC" },
+        pagination: { page: 1, pageSize: 50 },
+      },
+      null,
+      2,
+    ),
   },
   {
     method: "POST",

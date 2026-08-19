@@ -59,6 +59,7 @@ import { SessionReauthModal } from "./components/auth/SessionReauthModal.tsx";
 import { HttpStatusPage } from "./pages/Http.status.page.tsx";
 import HttpMethodsPage from "./pages/Http.methods.page.tsx";
 import CheatsheetPage from "./pages/Cheatsheet.page.tsx";
+import { TeapotOverlay } from "./components/overlays/teapot/TeapotOverlay.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -331,6 +332,20 @@ const AppRoutes: React.FC = () => {
 };
 
 export const App: React.FC = () => {
+  const [isTeapotOpen, setIsTeapotOpen] = useState(false);
+
+  useEffect(() => {
+    const handleTeapotTrigger = () => {
+      setIsTeapotOpen(true);
+    };
+
+    window.addEventListener("http:418-teapot", handleTeapotTrigger);
+
+    return () => {
+      window.removeEventListener("http:418-teapot", handleTeapotTrigger);
+    };
+  }, []);
+
   return (
     <Router>
       <AuthProvider>
@@ -342,6 +357,12 @@ export const App: React.FC = () => {
               <SettingsProvider>
                 <AboutProvider>
                   <AppRoutes />
+
+                  {/* Globales 418 I'm a Teapot Overlay */}
+                  <TeapotOverlay
+                    isOpen={isTeapotOpen}
+                    onClose={() => setIsTeapotOpen(false)}
+                  />
                 </AboutProvider>
               </SettingsProvider>
             </ToastProvider>

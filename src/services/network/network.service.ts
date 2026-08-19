@@ -103,6 +103,12 @@ export class NetworkService {
 
       const response = await fetch(context.url, context.options);
 
+      if (response.status === 418) {
+        window.dispatchEvent(
+          new CustomEvent("http:418-teapot", { detail: response }),
+        );
+      }
+
       if (!response.ok) {
         const errorBody = await response.text().catch(() => "");
         throw new HttpError(

@@ -1,7 +1,7 @@
 import React from "react";
-import { Copy, Check, ExternalLink } from "lucide-react";
-import { HttpStatusCategory } from "../../types/network.types.ts";
-import type { HttpStatusCode } from "../../models/network.model.ts";
+import { Check, Copy } from "lucide-react";
+import { HttpStatusCategory } from "../../../types/network.types.ts";
+import type { HttpStatusCode } from "../../../models/network.model.ts";
 
 interface HttpStatusCardProps {
   item: HttpStatusCode;
