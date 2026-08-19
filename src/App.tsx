@@ -8,20 +8,20 @@ import {
 import { Sidebar } from "./components/sidebar";
 import { Header } from "./components/header";
 import { DashboardSkeleton } from "./components/SkeletonLoader.tsx";
-import { DashboardPage } from "./pages/DashboardPage.tsx";
-import { TicketsPage } from "./pages/TicketsPage.tsx";
-import { TimeTrackingPage } from "./pages/TimeTrackingPage.tsx";
-import { TeamMeetingPage } from "./pages/TeamMeetingPage.tsx";
-import { RetroPage } from "./pages/RetroPage.tsx";
-import { ReviewPage } from "./pages/ReviewPage.tsx";
-import { SharePage } from "./pages/SharePage.tsx";
-import { TemplatePage } from "./pages/TemplatePage.tsx";
-import { NotesPage } from "./pages/NotesPage.tsx";
-import { SnippetsPage } from "./pages/SnippetsPage.tsx";
-import { VcsPage } from "./pages/VcsPage.tsx";
-import { SettingsPage } from "./pages/SettingsPage.tsx";
-import { DatabaseQueryPage } from "./pages/DatabaseQueryPage.tsx";
-import { CsvViewerPage } from "./pages/CsvViewerPage.tsx";
+import { DashboardPage } from "./pages/Dashboard.page.tsx";
+import { TicketsPage } from "./pages/Tickets.page.tsx";
+import { TimeTrackingPage } from "./pages/TimeTracking.page.tsx";
+import { TeamMeetingPage } from "./pages/TeamMeeting.page.tsx";
+import { RetroPage } from "./pages/Retro.page.tsx";
+import { ReviewPage } from "./pages/Review.page.tsx";
+import { SharePage } from "./pages/Share.page.tsx";
+import { TemplatePage } from "./pages/Template.page.tsx";
+import { NotesPage } from "./pages/Notes.page.tsx";
+import { SnippetsPage } from "./pages/Snippets.page.tsx";
+import { VcsPage } from "./pages/Vcs.page.tsx";
+import { SettingsPage } from "./pages/Settings.page.tsx";
+import { DatabaseQueryPage } from "./pages/DatabaseQuery.page.tsx";
+import { CsvViewerPage } from "./pages/CsvViewer.page.tsx";
 
 import { ToastProvider } from "./toaster/ToastContext.tsx";
 import { SettingsProvider } from "./context/SettingsContext.tsx";
@@ -42,20 +42,23 @@ import { ProtectedRoute } from "./ProtectedRoute.tsx";
 import { NoConnectionPage } from "./components/overlays/no-connection/NoConnection.tsx";
 import { GlobalErrorOverlay } from "./components/overlays/error/ErrorOverlay.tsx";
 import { LicenseGuard } from "./components/license/LicenseGuard.tsx";
-import LogViewerPage from "./pages/LogViewerPage.tsx";
-import ToolsPage from "./pages/ToolsPage.tsx";
-import MockDataPage from "./pages/MockDataPage.tsx";
-import RuleGeneratorPage from "./pages/RuleGeneratorPage.tsx";
+import LogViewerPage from "./pages/LogViewer.page.tsx";
+import ToolsPage from "./pages/Tools.page.tsx";
+import MockDataPage from "./pages/MockData.page.tsx";
+import RuleGeneratorPage from "./pages/RuleGenerator.page.tsx";
 import { LicenseProvider, useLicense } from "./context/LicenseContext.tsx";
 import { InsufficientLicenseGuard } from "./components/license/InssuficientLicense.tsx";
-import { AboutPage } from "./pages/AboutPage.tsx";
+import { AboutPage } from "./pages/About.page.tsx";
 import { AboutProvider } from "./context/AboutContext.tsx";
-import PlanSelectionPage from "./pages/public/PlanSelectionPage.tsx";
+import PlanSelectionPage from "./pages/public/PlanSelection.page.tsx";
 
 import { getAppBackgroundStyles } from "./utils/license.util.ts";
 import { WeeklyTimeWarningOverlay } from "./components/overlays/warning/WeeklyTimeWarningOverlay.tsx";
 import { TimeLogModal } from "./components/dashboard";
 import { SessionReauthModal } from "./components/auth/SessionReauthModal.tsx";
+import { HttpStatusPage } from "./pages/Http.status.page.tsx";
+import HttpMethodsPage from "./pages/Http.methods.page.tsx";
+import CheatsheetPage from "./pages/Cheatsheet.page.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -242,6 +245,30 @@ const AuthenticatedLayout: React.FC = () => {
                 element={
                   <InsufficientLicenseGuard minPlan="ENTERPRISE">
                     <RuleGeneratorPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/http-status"
+                element={
+                  <InsufficientLicenseGuard minPlan="COMMUNITY">
+                    <HttpStatusPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/http-methods"
+                element={
+                  <InsufficientLicenseGuard minPlan="COMMUNITY">
+                    <HttpMethodsPage />
+                  </InsufficientLicenseGuard>
+                }
+              />
+              <Route
+                path="/cheats"
+                element={
+                  <InsufficientLicenseGuard minPlan="COMMUNITY">
+                    <CheatsheetPage />
                   </InsufficientLicenseGuard>
                 }
               />

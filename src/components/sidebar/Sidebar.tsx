@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  BookOpen,
   Clock,
   Code2,
   CodeXml,
@@ -7,8 +8,10 @@ import {
   FileCode,
   FileTerminal,
   GitBranch,
+  Globe,
   Info,
   LayoutDashboard,
+  Radio,
   RotateCcw,
   Settings,
   Share2,
@@ -312,6 +315,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         title: "Development Tools",
         items: [
           {
+            label: "Cheat Sheets",
+            path: "/cheats",
+            icon: BookOpen,
+            requiredPlan: "COMMUNITY",
+          },
+          {
             label: "Backend Table Query",
             path: "/database",
             icon: Database,
@@ -375,6 +384,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
             path: "/review",
             icon: Sparkles,
             requiredPlan: "PRO",
+          },
+        ],
+      },
+
+      {
+        title: "HTTP",
+        items: [
+          {
+            label: "HTTP Status",
+            path: "/http-status",
+            icon: Globe,
+            requiredPlan: "COMMUNITY",
+          },
+          {
+            label: "HTTP Methods",
+            path: "/http-methods",
+            icon: Radio,
+            requiredPlan: "COMMUNITY",
           },
         ],
       },
