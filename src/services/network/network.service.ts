@@ -9,6 +9,7 @@ import { ErrorToastInterceptor } from "./internal/ErrorToast.interceptor.ts";
 import { AuthInterceptor } from "./internal/AuthInterceptor.ts";
 import { HttpError } from "../../exception/http.error.ts";
 import { LicenseLockInterceptor } from "./internal/licenseLock.interceptor.ts";
+import { httpEvents } from "../../events/http.event.ts";
 
 export class NetworkService {
   protected baseUrl: string;
@@ -103,10 +104,23 @@ export class NetworkService {
 
       const response = await fetch(context.url, context.options);
 
-      if (response.status === 418) {
-        window.dispatchEvent(
-          new CustomEvent("http:418-teapot", { detail: response }),
-        );
+      if (options.returnRaw) {
+        return response as unknown as T;
+      }
+
+      switch (response.status) {
+        case 401:
+          httpEvents.emit("http:401-unauthorized");
+          break;
+        case 403:
+          httpEvents.emit("http:403-forbidden");
+          break;
+        case 418:
+          httpEvents.emit("http:418-teapot");
+          break;
+        case 500:
+          httpEvents.emit("http:500-server-error");
+          break;
       }
 
       if (!response.ok) {
@@ -247,5 +261,15 @@ export class NetworkService {
       headers.set("Content-Type", "application/json");
     }
     return JSON.stringify(body);
+  }
+
+  public async ping(): Promise<boolean> {
+    try {
+      const response = await fetch("/api/v1/about/ping");
+      return response.ok;
+    } catch (error) {
+      console.error("[NetworkService] Ping failed:", error);
+      return false;
+    }
   }
 }

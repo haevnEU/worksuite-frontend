@@ -13,7 +13,6 @@ export class ErrorToastInterceptor implements Interceptor {
         GlobalErrorManager.showError(error);
         return;
       }
-      ToastManager.toastBad(error.message);
       return;
     }
     ToastManager.toastBad(error?.message || "An unexpected error occurred.");

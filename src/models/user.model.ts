@@ -7,4 +7,5 @@ export interface UserModel {
   redmineKey?: string;
   createdAt: string;
   avatarUrl?: string;
+  username?: string;
 }

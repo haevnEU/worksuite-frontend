@@ -41,13 +41,11 @@ import { LoginPage } from "./components/auth/LoginPage.tsx";
 import { ProtectedRoute } from "./ProtectedRoute.tsx";
 import { NoConnectionPage } from "./components/overlays/no-connection/NoConnection.tsx";
 import { GlobalErrorOverlay } from "./components/overlays/error/ErrorOverlay.tsx";
-import { LicenseGuard } from "./components/license/LicenseGuard.tsx";
 import LogViewerPage from "./pages/LogViewer.page.tsx";
 import ToolsPage from "./pages/Tools.page.tsx";
 import MockDataPage from "./pages/MockData.page.tsx";
 import RuleGeneratorPage from "./pages/RuleGenerator.page.tsx";
 import { LicenseProvider, useLicense } from "./context/LicenseContext.tsx";
-import { InsufficientLicenseGuard } from "./components/license/InssuficientLicense.tsx";
 import { AboutPage } from "./pages/About.page.tsx";
 import { AboutProvider } from "./context/AboutContext.tsx";
 import PlanSelectionPage from "./pages/public/PlanSelection.page.tsx";
@@ -55,11 +53,10 @@ import PlanSelectionPage from "./pages/public/PlanSelection.page.tsx";
 import { getAppBackgroundStyles } from "./utils/license.util.ts";
 import { WeeklyTimeWarningOverlay } from "./components/overlays/warning/WeeklyTimeWarningOverlay.tsx";
 import { TimeLogModal } from "./components/dashboard";
-import { SessionReauthModal } from "./components/auth/SessionReauthModal.tsx";
 import { HttpStatusPage } from "./pages/Http.status.page.tsx";
 import HttpMethodsPage from "./pages/Http.methods.page.tsx";
 import CheatsheetPage from "./pages/Cheatsheet.page.tsx";
-import { TeapotOverlay } from "./components/overlays/teapot/TeapotOverlay.tsx";
+import { HttpEventsHandler } from "./context/httpEventContext.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -108,183 +105,41 @@ const AuthenticatedLayout: React.FC = () => {
             <DashboardSkeleton />
           ) : (
             <Routes>
-              <Route
-                path="/"
-                element={
-                  <InsufficientLicenseGuard minPlan="COMMUNITY">
-                    <DashboardPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
+              <Route path="/" element={<DashboardPage />} />
               <Route path="/about" element={<AboutPage />} />
-              <Route
-                path="/vcs"
-                element={
-                  <InsufficientLicenseGuard minPlan="COMMUNITY">
-                    <VcsPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/redmine"
-                element={
-                  <InsufficientLicenseGuard minPlan="COMMUNITY">
-                    <TicketsPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
+              <Route path="/vcs" element={<VcsPage />} />
+              <Route path="/redmine" element={<TicketsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
 
-              <Route
-                path="/notes"
-                element={
-                  <InsufficientLicenseGuard minPlan="PRO">
-                    <NotesPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/snippets"
-                element={
-                  <InsufficientLicenseGuard minPlan="PRO">
-                    <SnippetsPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/templates"
-                element={
-                  <InsufficientLicenseGuard minPlan="PRO">
-                    <TemplatePage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/time-log"
-                element={
-                  <InsufficientLicenseGuard minPlan="PRO">
-                    <TimeTrackingPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/share"
-                element={
-                  <InsufficientLicenseGuard minPlan="PRO">
-                    <SharePage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/log"
-                element={
-                  <InsufficientLicenseGuard minPlan="PRO">
-                    <LogViewerPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/tools"
-                element={
-                  <InsufficientLicenseGuard minPlan="PRO">
-                    <ToolsPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/retro"
-                element={
-                  <InsufficientLicenseGuard minPlan="PRO">
-                    <RetroPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/teammeeting"
-                element={
-                  <InsufficientLicenseGuard minPlan="PRO">
-                    <TeamMeetingPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/review"
-                element={
-                  <InsufficientLicenseGuard minPlan="PRO">
-                    <ReviewPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
+              <Route path="/notes" element={<NotesPage />} />
+              <Route path="/snippets" element={<SnippetsPage />} />
+              <Route path="/templates" element={<TemplatePage />} />
+              <Route path="/time-log" element={<TimeTrackingPage />} />
+              <Route path="/share" element={<SharePage />} />
+              <Route path="/log" element={<LogViewerPage />} />
+              <Route path="/tools" element={<ToolsPage />} />
+              <Route path="/retro" element={<RetroPage />} />
+              <Route path="/teammeeting" element={<TeamMeetingPage />} />
+              <Route path="/review" element={<ReviewPage />} />
 
-              {/* --- ENTERPRISE TIER --- */}
-              <Route
-                path="/database"
-                element={
-                  <InsufficientLicenseGuard minPlan="ENTERPRISE">
-                    <DatabaseQueryPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/csv-viewer"
-                element={
-                  <InsufficientLicenseGuard minPlan="ENTERPRISE">
-                    <CsvViewerPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/mock-data"
-                element={
-                  <InsufficientLicenseGuard minPlan="ENTERPRISE">
-                    <MockDataPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/rule-generator"
-                element={
-                  <InsufficientLicenseGuard minPlan="ENTERPRISE">
-                    <RuleGeneratorPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/http-status"
-                element={
-                  <InsufficientLicenseGuard minPlan="COMMUNITY">
-                    <HttpStatusPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/http-methods"
-                element={
-                  <InsufficientLicenseGuard minPlan="COMMUNITY">
-                    <HttpMethodsPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
-              <Route
-                path="/cheats"
-                element={
-                  <InsufficientLicenseGuard minPlan="COMMUNITY">
-                    <CheatsheetPage />
-                  </InsufficientLicenseGuard>
-                }
-              />
+              <Route path="/database" element={<DatabaseQueryPage />} />
+              <Route path="/csv-viewer" element={<CsvViewerPage />} />
+              <Route path="/mock-data" element={<MockDataPage />} />
+              <Route path="/rule-generator" element={<RuleGeneratorPage />} />
+              <Route path="/http-status" element={<HttpStatusPage />} />
+              <Route path="/http-methods" element={<HttpMethodsPage />} />
+              <Route path="/cheats" element={<CheatsheetPage />} />
+
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           )}
         </main>
       </div>
 
-      {/* Freitags-Warnung mit Snooze & Acknowledge */}
       <WeeklyTimeWarningOverlay
         onOpenTimeLogModal={() => setIsTimeLogModalOpen(true)}
       />
 
-      {/* Zeiterfassungsmodal */}
       <TimeLogModal
         isOpen={isTimeLogModalOpen}
         onClose={() => setIsTimeLogModalOpen(false)}
@@ -310,20 +165,18 @@ const AppRoutes: React.FC = () => {
         path="/*"
         element={
           <ProtectedRoute>
-            <LicenseGuard renewUrl="/license/renew">
-              <InfoProvider>
-                <TimeProvider>
-                  <VcsProvider>
-                    <TicketProvider>
-                      <KPIProvider>
-                        <GlobalErrorOverlay />
-                        <AuthenticatedLayout />
-                      </KPIProvider>
-                    </TicketProvider>
-                  </VcsProvider>
-                </TimeProvider>
-              </InfoProvider>
-            </LicenseGuard>
+            <InfoProvider>
+              <TimeProvider>
+                <VcsProvider>
+                  <TicketProvider>
+                    <KPIProvider>
+                      <GlobalErrorOverlay />
+                      <AuthenticatedLayout />
+                    </KPIProvider>
+                  </TicketProvider>
+                </VcsProvider>
+              </TimeProvider>
+            </InfoProvider>
           </ProtectedRoute>
         }
       />
@@ -349,20 +202,14 @@ export const App: React.FC = () => {
   return (
     <Router>
       <AuthProvider>
-        <SessionReauthModal />
-
         <LicenseProvider>
           <ConnectionProvider>
             <ToastProvider>
               <SettingsProvider>
                 <AboutProvider>
-                  <AppRoutes />
-
-                  {/* Globales 418 I'm a Teapot Overlay */}
-                  <TeapotOverlay
-                    isOpen={isTeapotOpen}
-                    onClose={() => setIsTeapotOpen(false)}
-                  />
+                  <HttpEventsHandler>
+                    <AppRoutes />
+                  </HttpEventsHandler>
                 </AboutProvider>
               </SettingsProvider>
             </ToastProvider>

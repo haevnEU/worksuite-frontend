@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import { ConnectionStatus } from "../types/PushService.type";
 import { pushService } from "../services/push/push.service.ts";
+import { aboutService } from "../services/network/about.service.ts";
 
 interface ConnectionContextType {
   isConnected: boolean;
@@ -34,7 +35,7 @@ export const ConnectionProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => unsubscribe();
   }, []);
 
-  const isConnected = pushStatus === "connected";
+  const isConnected = aboutService.ping();
 
   const retryConnection = useCallback(() => {
     pushService.connect();

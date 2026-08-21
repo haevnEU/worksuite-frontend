@@ -13,6 +13,8 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isReauthRequired: boolean;
+  setIsReauthRequired: (required: boolean) => void;
   login: (token: string, user: UserModel) => void;
   logout: () => void;
   reauth: (password: string) => Promise<void>;
@@ -31,12 +33,36 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Utility: Prüft, ob ein JWT-Token abgelaufen ist
+ */
+export const isTokenExpired = (jwtToken: string | null): boolean => {
+  if (!jwtToken) return true;
+  try {
+    const parts = jwtToken.split(".");
+    if (parts.length !== 3) return true;
+
+    // Base64URL decodieren
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
+    if (!payload.exp) return false;
+
+    // exp ist in Sekunden, Date.now() in Millisekunden
+    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+    return payload.exp <= currentTimeInSeconds;
+  } catch {
+    return true;
+  }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, setUser] = useState<UserModel | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isReauthRequired, setIsReauthRequired] = useState<boolean>(false);
 
   // Initialer Restore beim App-Start
   useEffect(() => {
@@ -45,8 +71,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     if (storedToken && storedUser) {
       try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
         setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+
+        // Prüfen, ob das gespeicherte Token bereits abgelaufen ist
+        if (isTokenExpired(storedToken)) {
+          setIsReauthRequired(true);
+        }
       } catch {
         localStorage.removeItem("access_token");
         localStorage.removeItem("auth_user");
@@ -55,11 +87,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(false);
   }, []);
 
+  // Zyklischer Check zur Laufzeit (alle 15 Sekunden)
+  useEffect(() => {
+    if (!token) {
+      setIsReauthRequired(false);
+      return;
+    }
+
+    const checkTokenValidity = () => {
+      if (isTokenExpired(token)) {
+        setIsReauthRequired(true);
+      }
+    };
+
+    // Sofort und periodisch ausführen
+    checkTokenValidity();
+    const intervalId = setInterval(checkTokenValidity, 15_000);
+
+    return () => clearInterval(intervalId);
+  }, [token]);
+
   const login = useCallback((newToken: string, newUser: UserModel) => {
     localStorage.setItem("access_token", newToken);
     localStorage.setItem("auth_user", JSON.stringify(newUser));
     setToken(newToken);
     setUser(newUser);
+    setIsReauthRequired(false);
   }, []);
 
   const logout = useCallback(() => {
@@ -67,14 +120,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.removeItem("auth_user");
     setToken(null);
     setUser(null);
+    setIsReauthRequired(false);
   }, []);
 
   const updateToken = useCallback((newToken: string) => {
     localStorage.setItem("access_token", newToken);
     setToken(newToken);
+    setIsReauthRequired(false);
   }, []);
 
-  // 1. Re-Auth nutzt direkt den username
+  // Re-Authentication mit Passwort
   const reauth = useCallback(
     async (password: string): Promise<void> => {
       if (!user) {
@@ -104,12 +159,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       if (newToken) {
         localStorage.setItem("access_token", newToken);
         setToken(newToken);
+        setIsReauthRequired(false);
       }
     },
     [user],
   );
 
-  // 2. Change Password nutzt nun username statt userId
   const changePassword = useCallback(
     async (currentPassword: string, newPassword: string) => {
       const username = (user as any)?.username || (user as any)?.email;
@@ -163,6 +218,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       token,
       isAuthenticated: Boolean(token),
       isLoading,
+      isReauthRequired,
+      setIsReauthRequired,
       login,
       logout,
       reauth,
@@ -174,6 +231,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       user,
       token,
       isLoading,
+      isReauthRequired,
       login,
       logout,
       reauth,
