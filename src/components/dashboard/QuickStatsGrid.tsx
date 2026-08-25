@@ -42,20 +42,24 @@ export const QuickStatsGrid: React.FC<QuickStatsGridProps> = ({
   onOpenTimeLogModal,
 }) => {
   const { todayTotal, weeklyTotal } = useTime();
-  const { tickets, getAmountStatus, getAmountPriority } = useTickets();
-
-  const totalOpenTickets =
-    getAmountStatus("Open") +
-    getAmountStatus("In Progress") +
-    getAmountStatus("Sprint Backlog") +
-    getAmountStatus("Refinement") +
-    getAmountStatus("In Review");
+  const { tickets, openTickets, getAmountPriority } = useTickets();
 
   const immediatePriorityCount =
-    getAmountPriority("Immediate") + getAmountPriority("Urgent");
-  const urgentPriorityCount = getAmountPriority("High");
-  const normalPriorityCount = getAmountPriority("Normal");
-  const lowPriorityCount = getAmountPriority("Low");
+      getAmountPriority("Immediate") +
+      getAmountPriority("Urgent") +
+      getAmountPriority("Dringend") +
+      getAmountPriority("Sofort");
+
+  const urgentPriorityCount =
+      getAmountPriority("High") +
+      getAmountPriority("Hoch");
+
+  const normalPriorityCount =
+      getAmountPriority("Normal");
+
+  const lowPriorityCount =
+      getAmountPriority("Low") +
+      getAmountPriority("Niedrig");
 
   // Wochenarbeitszeit & verbleibende Zeit berechnen
   const weekHours = weeklyTotal?.hours || 0;
@@ -98,7 +102,7 @@ export const QuickStatsGrid: React.FC<QuickStatsGridProps> = ({
 
         <div className="my-6 flex items-baseline space-x-4">
           <span className="text-5xl md:text-6xl font-black text-white tracking-tight">
-            {totalOpenTickets}
+            {openTickets}
           </span>
           <div className="text-sm text-slate-300">
             <span className="font-bold text-white">open tickets</span>

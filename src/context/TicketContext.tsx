@@ -34,7 +34,6 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
   const [openTickets, setOpenTickets] = useState<number>(0);
 
   const fetchTickets = useCallback(async () => {
-    // 🛑 Guard: Nicht fetchen, wenn kein Key existiert
     if (!hasRedmineKey) {
       setTickets([]);
       setProjects([]);
@@ -108,10 +107,13 @@ export const TicketProvider: React.FC<{ children: ReactNode }> = ({
   );
 
   const getAmountPriority = useCallback(
-    (name: string) => {
-      return tickets.filter((t) => t.priority?.name === name).length;
-    },
-    [tickets],
+      (name: string) => {
+        const search = name.trim().toLowerCase();
+        return tickets.filter(
+            (t) => t.status?.name?.trim().toLowerCase() === search
+        ).length;
+      },
+      [tickets],
   );
 
   useEffect(() => {

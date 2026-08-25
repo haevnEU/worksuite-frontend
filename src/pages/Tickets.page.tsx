@@ -20,34 +20,156 @@ import {
 import { useToast } from "../toaster/ToastContext.tsx";
 import { MissingApiKeyCard } from "../components/MissingApiKeyCard.tsx";
 
+interface ParsedQuery {
+  exactFilters: Record<string, string>;
+  textTokens: string[];
+}
+
+const parseGitLabQuery = (query: string): ParsedQuery => {
+  const exactFilters: Record<string, string> = {};
+  const textTokens: string[] = [];
+
+  const normalized = query.replace(/\s*(&&|\bAND\b)\s*/gi, " ").trim();
+  if (!normalized) {
+    return { exactFilters, textTokens };
+  }
+
+  const regex = /(?:([\w.-]+)[:=](?:"([^"]*)"|(\S+)))|(?:"([^"]+)"|([^\s]+))/g;
+
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(normalized)) !== null) {
+    const key = match[1]?.toLowerCase();
+    const keyValue = match[2] ?? match[3];
+    const freeText = match[4] ?? match[5];
+
+    if (key && keyValue !== undefined) {
+      exactFilters[key] = keyValue.trim().toLowerCase();
+    } else if (freeText && freeText.trim().length > 0) {
+      textTokens.push(freeText.trim().toLowerCase());
+    }
+  }
+
+  return { exactFilters, textTokens };
+};
+
+const matchesTicketQuery = (ticket: any, searchQuery: string): boolean => {
+  if (!searchQuery || searchQuery.trim() === "") {
+    return true;
+  }
+
+  const { exactFilters, textTokens } = parseGitLabQuery(searchQuery);
+
+  const getStr = (val: any): string => {
+    if (val === null || val === undefined) return "";
+    if (typeof val === "string") return val.trim().toLowerCase();
+    if (typeof val === "object" && val.name) return String(val.name).trim().toLowerCase();
+    return String(val).trim().toLowerCase();
+  };
+
+  const idStr = String(ticket.id ?? "");
+  const subjectStr = getStr(ticket.subject);
+  const descriptionStr = getStr(ticket.description);
+  const authorStr = getStr(ticket.author);
+  const assignedStr = getStr(ticket.assignedTo);
+  const createdStr = getStr(ticket.createdOn);
+  const updatedStr = getStr(ticket.updatedOn);
+  const statusStr = getStr(ticket.status);
+  const priorityStr = getStr(ticket.priority);
+  const projectStr = getStr(ticket.project);
+  const trackerStr = getStr(ticket.tracker);
+
+  for (const [key, expected] of Object.entries(exactFilters)) {
+    switch (key) {
+      case "id":
+        if (!idStr.includes(expected)) return false;
+        break;
+      case "subject":
+        if (!subjectStr.includes(expected)) return false;
+        break;
+      case "description":
+        if (!descriptionStr.includes(expected)) return false;
+        break;
+      case "author":
+        if (!authorStr.includes(expected)) return false;
+        break;
+      case "assignedto":
+      case "assigned_to":
+      case "assignee":
+        if (!assignedStr.includes(expected)) return false;
+        break;
+      case "createdon":
+      case "created_on":
+        if (!createdStr.includes(expected)) return false;
+        break;
+      case "updatedon":
+      case "updated_on":
+        if (!updatedStr.includes(expected)) return false;
+        break;
+      case "status":
+        if (!statusStr.includes(expected)) return false;
+        break;
+      case "priority":
+        if (!priorityStr.includes(expected)) return false;
+        break;
+      case "project":
+        if (!projectStr.includes(expected)) return false;
+        break;
+      case "tracker":
+        if (!trackerStr.includes(expected)) return false;
+        break;
+      default:
+        return false;
+    }
+  }
+
+  for (const token of textTokens) {
+    const matchesAnyField =
+        idStr.includes(token) ||
+        subjectStr.includes(token) ||
+        descriptionStr.includes(token) ||
+        authorStr.includes(token) ||
+        assignedStr.includes(token) ||
+        createdStr.includes(token) ||
+        updatedStr.includes(token) ||
+        statusStr.includes(token) ||
+        priorityStr.includes(token) ||
+        projectStr.includes(token) ||
+        trackerStr.includes(token);
+
+    if (!matchesAnyField) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export const TicketsPage: React.FC = () => {
   const { hasRedmineKey } = useSettings();
   const { status, projects, fetchTickets, tickets } = useTickets();
   const { toastGood } = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [projectIdFilter, setProjectIdFilter] = useState<number | "all">("all");
+  const [projectIdFilter, setProjectIdFilter] = useState<number | "all">(375);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const [sortField, setSortField] = useState<SortField>("id");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const [sortField, setSortField] = useState<SortField>("tracker");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   const [selectedTicket, setSelectedTicket] = useState<Issue | null>(null);
   const [selectedTicketTab, setSelectedTicketTab] = useState<
       "details" | "comments" | "files" | "time"
   >("details");
 
-  const [mrModalTicket, setMrModalTicket] = useState<RedmineTicket | null>(
-      null,
-  );
-  const [qsModalTicket, setQsModalTicket] = useState<RedmineTicket | null>(
-      null,
-  );
+  const [mrModalTicket, setMrModalTicket] = useState<RedmineTicket | null>(null);
+  const [qsModalTicket, setQsModalTicket] = useState<RedmineTicket | null>(null);
 
   const resetLocalFilter = () => {
     setSearchQuery("");
-    setProjectIdFilter("all");
+    setProjectIdFilter(375);
     setStatusFilter("all");
+    setSortField("tracker");
+    setSortDirection("asc");
   };
 
   const calculateOpenTickets = () => {
@@ -73,7 +195,7 @@ export const TicketsPage: React.FC = () => {
 
   const handleOpenDetailModal = (
       ticket: Issue,
-      initialTab: "details" | "comments" | "files" | "time" = "details",
+      initialTab: "details" | "comments" | "files" | "time" = "details"
   ) => {
     setSelectedTicketTab(initialTab);
     setSelectedTicket(ticket);
@@ -86,10 +208,7 @@ export const TicketsPage: React.FC = () => {
     await fetchTickets();
   };
 
-  const handleSaveQaProtocol = async (
-      ticketId: number,
-      qaFormData: QaProtocolData,
-  ) => {
+  const handleSaveQaProtocol = async (ticketId: number, qaFormData: QaProtocolData) => {
     await ticketService.moveToQA(ticketId, qaFormData);
     toastGood(`Ticket #${ticketId} successfully submitted to QA!`);
     setQsModalTicket(null);
@@ -104,16 +223,14 @@ export const TicketsPage: React.FC = () => {
 
   const handleLogTime = async (ticketId: number, data: LogTimePayload) => {
     await ticketService.logTime(ticketId, data);
-    toastGood(
-        `Logged ${data.hours}h ${data.minutes}m successfully for Ticket #${ticketId}!`,
-    );
+    toastGood(`Logged ${data.hours}h ${data.minutes}m successfully for Ticket #${ticketId}!`);
     await fetchTickets();
   };
 
   if (!hasRedmineKey) {
     return (
-        <div className="space-y-6 pb-12 font-sans">
-          <TicketHeader openTicketsCount={0} totalTicketsCount={0} />
+        <div className="h-full flex flex-col space-y-4 pb-4 font-sans overflow-hidden">
+          <TicketHeader openTicketsCount={0} totalTicketsCount={0} onRefresh={fetchTickets} />
           <MissingApiKeyCard
               title="Redmine API Key Not Found"
               serviceName="Redmine"
@@ -129,8 +246,7 @@ export const TicketsPage: React.FC = () => {
         if (projectIdFilter !== "all") {
           const matchesProjectId = t.project?.id === projectIdFilter;
           const matchesProjectName =
-              t.project?.name?.toLowerCase() ===
-              String(projectIdFilter).toLowerCase();
+              t.project?.name?.toLowerCase() === String(projectIdFilter).toLowerCase();
           if (!matchesProjectId && !matchesProjectName) return false;
         }
 
@@ -141,29 +257,7 @@ export const TicketsPage: React.FC = () => {
           if (!matchesStatusName && !matchesStatusId) return false;
         }
 
-        if (searchQuery.trim() !== "") {
-          const q = searchQuery.toLowerCase();
-          const matchesId = t.id.toString().includes(q);
-          const matchesSubject = t.subject.toLowerCase().includes(q);
-          const matchesAuthor =
-              t.author?.name?.toLowerCase().includes(q) ?? false;
-          const matchesAssigned =
-              t.assignedTo?.name?.toLowerCase().includes(q) ?? false;
-          const matchesTracker =
-              t.tracker?.name?.toLowerCase().includes(q) ?? false;
-
-          if (
-              !matchesId &&
-              !matchesSubject &&
-              !matchesAuthor &&
-              !matchesAssigned &&
-              !matchesTracker
-          ) {
-            return false;
-          }
-        }
-
-        return true;
+        return matchesTicketQuery(t, searchQuery);
       })
       .sort((a, b) => {
         let aValue: any = "";
@@ -202,34 +296,41 @@ export const TicketsPage: React.FC = () => {
       });
 
   return (
-      <div className="space-y-6 pb-12 font-sans">
-        <TicketHeader
-            openTicketsCount={calculateOpenTickets()}
-            totalTicketsCount={tickets.length}
-        />
+      <div className="h-full flex flex-col min-h-0 space-y-3 font-sans overflow-hidden">
+        <div className="shrink-0">
+          <TicketHeader
+              openTicketsCount={calculateOpenTickets()}
+              totalTicketsCount={tickets.length}
+              onRefresh={fetchTickets}
+          />
+        </div>
 
-        <TicketFilterBar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            projectIdFilter={projectIdFilter}
-            onProjectChange={setProjectIdFilter}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            projects={projects}
-            statusList={status}
-            onReset={resetLocalFilter}
-        />
+        <div className="shrink-0">
+          <TicketFilterBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              projectIdFilter={projectIdFilter}
+              onProjectChange={setProjectIdFilter}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              projects={projects}
+              statusList={status}
+              onReset={resetLocalFilter}
+          />
+        </div>
 
-        <TicketTable
-            tickets={filteredAndSortedTickets}
-            totalCount={tickets.length}
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            onOpenMRModal={(ticket) => setMrModalTicket(ticket)}
-            onOpenQSModal={(ticket) => setQsModalTicket(ticket)}
-            onOpenDetailModal={handleOpenDetailModal}
-        />
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          <TicketTable
+              tickets={filteredAndSortedTickets}
+              totalCount={tickets.length}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              onOpenMRModal={(ticket) => setMrModalTicket(ticket)}
+              onOpenQSModal={(ticket) => setQsModalTicket(ticket)}
+              onOpenDetailModal={handleOpenDetailModal}
+          />
+        </div>
 
         {selectedTicket && (
             <TicketDetailModal
@@ -238,9 +339,7 @@ export const TicketsPage: React.FC = () => {
                 onClose={() => setSelectedTicket(null)}
                 onAddComment={handleAddComment}
                 onLogTime={handleLogTime}
-                onDownloadFile={(url, filename) =>
-                    ticketService.downloadAttachment(url, filename)
-                }
+                onDownloadFile={(url, filename) => ticketService.downloadAttachment(url, filename)}
             />
         )}
 

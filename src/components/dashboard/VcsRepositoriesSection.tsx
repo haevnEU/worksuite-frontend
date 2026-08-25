@@ -30,8 +30,8 @@ export const VcsRepositoriesSection: React.FC = () => {
     mrIconColor: isGitLab ? "text-orange-400" : "text-purple-400",
     mrLabel: isGitLab ? "Merge Requests" : "Pull Requests",
     mrUrlPath: isGitLab ? "/dashboard/merge_requests" : "/pulls",
-    pipelineUrlPath: isGitLab ? "/dashboard/pipelines" : "/actions",
-    pipelineLabel: isGitLab ? "Pipelines" : "Actions",
+    pipelineUrlPath: isGitLab ? "/dashboard/issues" : "/actions",
+    pipelineLabel: isGitLab ? "Issues" : "Issues",
   };
 
   return (

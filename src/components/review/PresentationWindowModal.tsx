@@ -231,7 +231,7 @@ export const PresentationWindowModal: React.FC<
               const slideText = document.getElementById('slideText');
 
               function render() {
-                slideText.innerText = '"' + facts[currentIndex] + '"';
+                slideText.innerText = facts[currentIndex];
                 document.documentElement.style.setProperty('--zoom-factor', currentZoom / 100);
               }
 
