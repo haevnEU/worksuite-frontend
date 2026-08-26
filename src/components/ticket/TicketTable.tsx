@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, {useMemo} from "react";
 import {
   AlertCircle,
   ArrowUpDown,
@@ -10,12 +10,9 @@ import {
   GitPullRequest,
   ShieldCheck,
 } from "lucide-react";
-import { Issue } from "../../models/ticketModel.model.ts";
-import { CustomField, RedmineTicket } from "../../models/ticket.model";
-import {
-  getPriorityBadgeClass,
-  getStatusBadgeClass,
-} from "../../utils/ticket.util.ts";
+import {Issue} from "../../models/ticketModel.model.ts";
+import {CustomField, RedmineTicket} from "../../models/ticket.model";
+import {getPriorityBadgeClass, getStatusBadgeClass, getTrackerColor,} from "../../utils/ticket.util.ts";
 
 export type SortField =
   | "id"
@@ -267,25 +264,25 @@ export const TicketTable: React.FC<TicketTableProps> = ({
                     {t.project.name}
                   </td>
                   <td className="py-3 px-4">
-                    <span className="px-2 py-0.5 rounded bg-slate-800 text-[10px] font-semibold border border-slate-700 whitespace-nowrap">
-                      {t.tracker.name}
-                    </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border whitespace-nowrap ${getTrackerColor(t.tracker.name)}`}>
+                        {t.tracker.name}
+                      </span>
                   </td>
                   <td className="py-3 px-4 font-bold text-white max-w-xs truncate">
                     <div>{t.subject}</div>
                   </td>
                   <td className="py-3 px-4">
                     <span
-                      className={`inline-flex items-center justify-center whitespace-nowrap leading-none px-2.5 py-1 rounded-full text-[10px] font-bold ${getStatusBadgeClass(t.status.name)}`}
+                        className={`inline-flex items-center justify-center whitespace-nowrap leading-none px-2.5 py-1 rounded-full text-[10px] font-bold ${getStatusBadgeClass(t.priority.name)}`}
                     >
-                      {t.status.name}
+                      {t.priority.name}
                     </span>
                   </td>
                   <td className="py-3 px-4">
                     <span
-                      className={`inline-flex items-center justify-center whitespace-nowrap leading-none px-2 py-1 rounded text-[10px] font-bold border ${getPriorityBadgeClass(t.priority.name)}`}
+                        className={`inline-flex items-center justify-center whitespace-nowrap leading-none px-2 py-1 rounded text-[10px] font-bold border ${getPriorityBadgeClass(t.status.name)}`}
                     >
-                      {t.priority.name}
+                      {t.status.name}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right whitespace-nowrap">

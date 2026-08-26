@@ -14,6 +14,7 @@ import {
 } from "../models/vcs.model.ts";
 import { vcsService } from "../services/network/vcs.service.ts";
 import { useSettings } from "./SettingsContext.tsx";
+import {VCS_URL} from "../constants/url.constant.ts";
 
 interface VcsContextType {
   vcsLink: string;
@@ -34,7 +35,7 @@ export const VcsProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { hasVcsKey, vcsProvider } = useSettings();
-  const vcsLink: string = "git/";
+  const vcsLink: string = VCS_URL;
 
   const [repos, setRepos] = useState<GitLabRepository[]>([]);
   const [myMrs, setMyMrs] = useState<MergeRequestModel[]>([]);
