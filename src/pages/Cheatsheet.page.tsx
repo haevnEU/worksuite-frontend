@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Search,
   BookOpen,
@@ -7,51 +7,128 @@ import {
   GitBranch,
   Container,
   Database,
+  RefreshCw,
+  Plus,
+  Hammer,
+  Globe,
+  TerminalSquare,
 } from "lucide-react";
-import { CheatLevel } from "../types/cheat.type.ts";
-import { CheatItem } from "../models/cheat.model.ts";
+import {
+  CheatSheetLevel,
+  CheatSheetResponseDto,
+} from "../models/cheatSheet.model.ts";
 import { filterCheatsheetItems } from "../utils/cheat.util.ts";
-import { CHEATSHEET_TOPICS } from "../constants/cheat.constant.ts";
-import { CheatCard, CheatDrawer } from "../components/cheat";
+import {
+  CheatCard,
+  CheatDrawer,
+  CreateCheatSheetModal,
+} from "../components/cheat";
+import { cheatSheetService } from "../services/network/cheatSheet.service.ts";
 
-const LEVEL_TABS: { label: string; value: CheatLevel | "ALL" }[] = [
+const LEVEL_TABS: { label: string; value: CheatSheetLevel | "ALL" }[] = [
   { label: "All Levels", value: "ALL" },
-  { label: "Basic", value: "basic" },
-  { label: "Intermediate", value: "intermediate" },
-  { label: "Advanced", value: "advanced" },
+  { label: "Basic", value: "BASIC" },
+  { label: "Intermediate", value: "INTERMEDIATE" },
+  { label: "Advanced", value: "ADVANCED" },
 ];
 
-const renderTopicIcon = (iconName: string) => {
-  switch (iconName) {
-    case "GitBranch":
+const renderCategoryIcon = (category: string) => {
+  switch (category.toLowerCase()) {
+    case "git":
       return <GitBranch className="w-4 h-4 text-orange-400" />;
-    case "Container":
+    case "docker":
+    case "k8s":
+    case "container":
       return <Container className="w-4 h-4 text-blue-400" />;
-    case "Database":
+    case "database":
+    case "postgres":
+    case "psql":
+    case "mongo":
+    case "sql":
       return <Database className="w-4 h-4 text-emerald-400" />;
+    case "gradle":
+      return <Hammer className="w-4 h-4 text-teal-400" />;
+    case "curl":
+      return <Globe className="w-4 h-4 text-cyan-400" />;
+    case "unix":
+    case "linux":
+    case "bash":
+      return <TerminalSquare className="w-4 h-4 text-yellow-400" />;
     default:
       return <Terminal className="w-4 h-4 text-purple-400" />;
   }
 };
 
 export const CheatsheetPage: React.FC = () => {
-  const [search, setSearch] = useState("");
-  const [selectedTopicId, setSelectedTopicId] = useState<string | "ALL">("ALL");
-  const [selectedLevel, setSelectedLevel] = useState<CheatLevel | "ALL">("ALL");
-  const [selectedItem, setSelectedItem] = useState<CheatItem | null>(null);
+  const [items, setItems] = useState<CheatSheetResponseDto[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredTopics = useMemo(() => {
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | "ALL">(
+    "ALL",
+  );
+  const [selectedLevel, setSelectedLevel] = useState<CheatSheetLevel | "ALL">(
+    "ALL",
+  );
+  const [selectedItem, setSelectedItem] =
+    useState<CheatSheetResponseDto | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const loadCheatSheets = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await cheatSheetService.fetchAll();
+      setItems(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      setError(err?.message || "Failed to load cheatsheets from backend");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCheatSheets();
+  }, []);
+
+  // Dynamische Kategorien dedupliziert und case-insensitive ermittelt
+  const availableCategories = useMemo(() => {
+    const cats = new Map<string, string>();
+    items.forEach((item) => {
+      if (item.category) {
+        const key = item.category.trim().toLowerCase();
+        if (!cats.has(key)) {
+          cats.set(key, item.category.trim());
+        }
+      }
+    });
+    return Array.from(cats.values());
+  }, [items]);
+
+  // Live gefilterte Einträge
+  const filteredItems = useMemo(() => {
     return filterCheatsheetItems(
-      CHEATSHEET_TOPICS,
-      selectedTopicId,
+      items,
+      selectedCategory,
       selectedLevel,
       search,
     );
-  }, [selectedTopicId, selectedLevel, search]);
+  }, [items, selectedCategory, selectedLevel, search]);
+
+  // Nach Kategorie gruppiert für die Sektionen
+  const groupedByCategory = useMemo(() => {
+    const groups: Record<string, CheatSheetResponseDto[]> = {};
+    filteredItems.forEach((item) => {
+      const catKey = (item.category || "General").toUpperCase();
+      if (!groups[catKey]) groups[catKey] = [];
+      groups[catKey].push(item);
+    });
+    return groups;
+  }, [filteredItems]);
 
   return (
     <div className="relative w-full">
-      {/* Haupt-Bereich: Weicht dem Drawer exakt per Margin aus, Karten verteilen sich gleichmäßig */}
       <div
         className={`space-y-6 transition-all duration-300 ease-in-out ${
           selectedItem ? "xl:mr-[460px]" : "mr-0"
@@ -73,47 +150,96 @@ export const CheatsheetPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Search Input */}
-          <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search syntax, tags, commands..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-            />
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Suchfeld mit Clear-Button */}
+            <div className="relative w-full sm:w-80">
+              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search syntax, tags, commands, flags..."
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs cursor-pointer p-0.5"
+                  title="Clear search"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={loadCheatSheets}
+              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title="Refresh Cheatsheets"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+              />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Entry</span>
+            </button>
+            {/*<button*/}
+            {/*  type="button"*/}
+            {/*  onClick={() => cheatSheetService.seed()}*/}
+            {/*  className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/20 transition-all cursor-pointer"*/}
+            {/*>*/}
+            {/*  Seed Cheatsheets*/}
+            {/*</button>*/}
           </div>
         </div>
 
-        {/* Topic Filters */}
+        {/* Category Filters */}
         <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={() => setSelectedTopicId("ALL")}
+            onClick={() => setSelectedCategory("ALL")}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-              selectedTopicId === "ALL"
+              selectedCategory === "ALL"
                 ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
                 : "bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800"
             }`}
           >
-            All Topics
+            All Topics ({items.length})
           </button>
-          {CHEATSHEET_TOPICS.map((topic) => (
-            <button
-              key={topic.id}
-              type="button"
-              onClick={() => setSelectedTopicId(topic.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedTopicId === topic.id
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
-                  : "bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800"
-              }`}
-            >
-              {renderTopicIcon(topic.iconName)}
-              <span>{topic.title}</span>
-            </button>
-          ))}
+          {availableCategories.map((cat) => {
+            const isSelected =
+              selectedCategory.toLowerCase() === cat.toLowerCase();
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() =>
+                  setSelectedCategory((prev) =>
+                    prev.toLowerCase() === cat.toLowerCase()
+                      ? "ALL"
+                      : cat.toLowerCase(),
+                  )
+                }
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 uppercase ${
+                  isSelected
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-600/20"
+                    : "bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800"
+                }`}
+              >
+                {renderCategoryIcon(cat)}
+                <span>{cat}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Level Filters */}
@@ -135,53 +261,59 @@ export const CheatsheetPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Cards Grid */}
-        {filteredTopics.length > 0 ? (
+        {/* Content View */}
+        {error ? (
+          <div className="p-8 text-center border border-rose-800/50 bg-rose-950/20 rounded-2xl text-rose-300 text-xs">
+            <p className="font-semibold mb-2">Error loading cheat sheets</p>
+            <p className="text-slate-400 mb-4">{error}</p>
+            <button
+              onClick={loadCheatSheets}
+              className="px-3 py-1.5 rounded-lg bg-slate-800 text-white hover:bg-slate-700 transition cursor-pointer"
+            >
+              Retry
+            </button>
+          </div>
+        ) : isLoading && items.length === 0 ? (
+          <div className="p-16 text-center text-xs text-slate-500 flex flex-col items-center justify-center gap-2">
+            <RefreshCw className="w-5 h-5 animate-spin text-blue-500" />
+            <span>Loading cheatsheets from database...</span>
+          </div>
+        ) : Object.keys(groupedByCategory).length > 0 ? (
           <div className="space-y-8">
-            {filteredTopics.map((topic) => {
-              const allTopicItems = topic.sections.flatMap((s) =>
-                s.items.map((item) => ({ ...item, sectionTitle: s.title })),
-              );
+            {Object.entries(groupedByCategory).map(([category, catItems]) => (
+              <section key={category} className="space-y-3">
+                <div className="flex items-center gap-2 pb-1.5 border-b border-slate-800/60">
+                  {renderCategoryIcon(category)}
+                  <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                    {category}
+                  </h2>
+                  <span className="ml-auto text-[10px] font-mono text-slate-500">
+                    {catItems.length} commands
+                  </span>
+                </div>
 
-              return (
-                <section key={topic.id} className="space-y-3">
-                  <div className="flex items-center gap-2 pb-1.5 border-b border-slate-800/60">
-                    {renderTopicIcon(topic.iconName)}
-                    <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
-                      {topic.title}
-                    </h2>
-                    <span className="text-[11px] text-slate-500">
-                      ({topic.category})
-                    </span>
-                    <span className="ml-auto text-[10px] font-mono text-slate-500">
-                      {allTopicItems.length} commands
-                    </span>
-                  </div>
-
-                  {/* Responsives Grid: 2 Spalten wenn Drawer offen, 4 Spalten wenn zu */}
-                  <div
-                    className={`grid gap-3.5 transition-all duration-300 ${
-                      selectedItem
-                        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-2"
-                        : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-                    }`}
-                  >
-                    {allTopicItems.map((item) => (
-                      <CheatCard
-                        key={item.id}
-                        item={item}
-                        isSelected={selectedItem?.id === item.id}
-                        onSelect={(clicked) => {
-                          setSelectedItem((prev) =>
-                            prev?.id === clicked.id ? null : clicked,
-                          );
-                        }}
-                      />
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
+                <div
+                  className={`grid gap-3.5 transition-all duration-300 ${
+                    selectedItem
+                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-2"
+                      : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+                  }`}
+                >
+                  {catItems.map((item) => (
+                    <CheatCard
+                      key={item.id}
+                      item={item}
+                      isSelected={selectedItem?.id === item.id}
+                      onSelect={(clicked) => {
+                        setSelectedItem((prev) =>
+                          prev?.id === clicked.id ? null : clicked,
+                        );
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
         ) : (
           <div className="p-12 text-center border border-dashed border-slate-800 rounded-2xl">
@@ -192,8 +324,15 @@ export const CheatsheetPage: React.FC = () => {
         )}
       </div>
 
-      {/* Drawer */}
+      {/* Detail Drawer */}
       <CheatDrawer item={selectedItem} onClose={() => setSelectedItem(null)} />
+
+      {/* Create Modal Dialog */}
+      <CreateCheatSheetModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={loadCheatSheets}
+      />
     </div>
   );
 };

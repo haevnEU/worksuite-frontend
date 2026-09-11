@@ -57,6 +57,7 @@ import { HttpStatusPage } from "./pages/Http.status.page.tsx";
 import HttpMethodsPage from "./pages/Http.methods.page.tsx";
 import CheatsheetPage from "./pages/Cheatsheet.page.tsx";
 import { HttpEventsHandler } from "./context/httpEventContext.tsx";
+import StackTraceAnalyzerPage from "./pages/StackTraceAnalyzer.page.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -117,6 +118,7 @@ const AuthenticatedLayout: React.FC = () => {
               <Route path="/time-log" element={<TimeTrackingPage />} />
               <Route path="/share" element={<SharePage />} />
               <Route path="/log" element={<LogViewerPage />} />
+              <Route path="/stacktrace" element={<StackTraceAnalyzerPage />} />
               <Route path="/tools" element={<ToolsPage />} />
               <Route path="/retro" element={<RetroPage />} />
               <Route path="/teammeeting" element={<TeamMeetingPage />} />

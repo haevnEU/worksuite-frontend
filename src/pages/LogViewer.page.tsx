@@ -1,10 +1,44 @@
-import React from "react";
-import { FileTerminal } from "lucide-react";
-import { LogDetailDrawer, LogHeaderSection, LogTable } from "../components/log";
+import React, { useState, useEffect } from "react";
+import { Clipboard, FileTerminal } from "lucide-react";
+import {
+  LogDetailDrawer,
+  LogHeaderSection,
+  LogTable,
+  LogPasteModal,
+} from "../components/log";
 import { useLogViewerState } from "../hooks/useLogViewer.ts";
 
 export const LogViewerPage: React.FC = () => {
   const state = useLogViewerState();
+  const [isPasteModalOpen, setIsPasteModalOpen] = useState(false);
+
+  // Globaler Paste-Listener (wird nur getriggert, wenn kein Texteingabefeld fokussiert ist)
+  useEffect(() => {
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      const activeTag = document.activeElement?.tagName.toLowerCase();
+      if (activeTag === "input" || activeTag === "textarea") return;
+
+      const pastedText = e.clipboardData?.getData("text");
+      if (pastedText && pastedText.trim().length > 0) {
+        e.preventDefault();
+        const timestamp = new Date()
+          .toISOString()
+          .replace(/[:.]/g, "-")
+          .slice(11, 19);
+        const file = new File([pastedText], `pasted-log-${timestamp}.log`, {
+          type: "text/plain",
+        });
+        state.handleFilesSelect([file]);
+      }
+    };
+
+    window.addEventListener("paste", handleGlobalPaste);
+    return () => window.removeEventListener("paste", handleGlobalPaste);
+  }, [state]);
+
+  const handlePastedFile = (file: File) => {
+    state.handleFilesSelect([file]);
+  };
 
   return (
     <div className="relative space-y-6 pb-12 font-sans">
@@ -12,6 +46,13 @@ export const LogViewerPage: React.FC = () => {
         filesCount={state.files.length}
         maxFiles={state.MAX_FILES}
         onFilesSelect={state.handleFilesSelect}
+        onPasteClick={() => setIsPasteModalOpen(true)}
+        searchTerm={state.searchTerm}
+        onSearchChange={state.setSearchTerm}
+        searchMode={state.searchMode}
+        onSearchModeChange={state.setSearchMode}
+        selectedLogLevel={state.selectedLevel}
+        onLogLevelChange={state.setSelectedLevel}
       />
 
       {state.isLoading && (
@@ -30,10 +71,22 @@ export const LogViewerPage: React.FC = () => {
               No log files loaded
             </p>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Select or drop up to 5 log files (.log, .txt, .out) at once to
-              inspect, filter, and analyze system logs.
+              Drop up to 5 log files, or paste clipboard contents directly with{" "}
+              <kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-blue-400 font-mono">
+                Ctrl+V
+              </kbd>
+              .
             </p>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setIsPasteModalOpen(true)}
+            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold inline-flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+          >
+            <Clipboard className="w-3.5 h-3.5 text-blue-400" />
+            <span>Paste Logs Now</span>
+          </button>
         </div>
       )}
 
@@ -77,6 +130,12 @@ export const LogViewerPage: React.FC = () => {
           }
         />
       )}
+
+      <LogPasteModal
+        isOpen={isPasteModalOpen}
+        onClose={() => setIsPasteModalOpen(false)}
+        onConfirm={handlePastedFile}
+      />
     </div>
   );
 };

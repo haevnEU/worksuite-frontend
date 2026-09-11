@@ -1,58 +1,93 @@
-import { CheatCategory, CheatLevel } from "../types/cheat.type.ts";
-import { CheatItem, CheatsheetTopic } from "../models/cheat.model.ts";
+import {
+  CheatSheetLevel,
+  CheatSheetResponseDto,
+} from "../models/cheatSheet.model.ts";
 
-export const extractUniqueCategories = (
-  topics: CheatsheetTopic[],
-): string[] => {
-  return Array.from(new Set(topics.map((t) => t.category)));
+export const getLevelBadgeClass = (level?: CheatSheetLevel): string => {
+  switch (level) {
+    case "BASIC":
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30";
+    case "INTERMEDIATE":
+      return "bg-amber-500/10 text-amber-400 border-amber-500/30";
+    case "ADVANCED":
+      return "bg-rose-500/10 text-rose-400 border-rose-500/30";
+    default:
+      return "bg-slate-800 text-slate-400 border-slate-700";
+  }
 };
 
 export const filterCheatsheetItems = (
-  topics: CheatsheetTopic[],
-  selectedTopicId: string | "ALL",
-  selectedLevel: CheatLevel | "ALL",
-  searchQuery: string,
-): CheatsheetTopic[] => {
-  const query = searchQuery.trim().toLowerCase();
+  items: CheatSheetResponseDto[],
+  selectedCategory: string | "ALL",
+  selectedLevel: CheatSheetLevel | "ALL",
+  search: string,
+): CheatSheetResponseDto[] => {
+  const query = search.trim().toLowerCase();
 
-  return topics
-    .filter(
-      (topic) => selectedTopicId === "ALL" || topic.id === selectedTopicId,
-    )
-    .map((topic) => {
-      const filteredSections = topic.sections
-        .map((section) => {
-          const matchingItems = section.items.filter((item) => {
-            const matchesLevel =
-              selectedLevel === "ALL" || item.level === selectedLevel;
-            const matchesSearch =
-              query === "" ||
-              item.title.toLowerCase().includes(query) ||
-              item.syntax.toLowerCase().includes(query) ||
-              item.description.toLowerCase().includes(query) ||
-              item.tags.some((tag) => tag.toLowerCase().includes(query));
+  return items.filter((item) => {
+    // 1. Topic / Category Filter
+    if (
+      selectedCategory !== "ALL" &&
+      item.category.toLowerCase() !== selectedCategory.toLowerCase()
+    ) {
+      return false;
+    }
 
-            return matchesLevel && matchesSearch;
-          });
+    // 2. Level Filter
+    if (selectedLevel !== "ALL" && item.level !== selectedLevel) {
+      return false;
+    }
 
-          return { ...section, items: matchingItems };
-        })
-        .filter((section) => section.items.length > 0);
+    // 3. Search Query Filter
+    if (!query) {
+      return true;
+    }
 
-      return { ...topic, sections: filteredSections };
-    })
-    .filter((topic) => topic.sections.length > 0);
-};
+    // Direkte Textfelder prüfen
+    const matchTitle = item.title?.toLowerCase().includes(query) ?? false;
+    const matchSyntax = item.syntax?.toLowerCase().includes(query) ?? false;
+    const matchExplanation =
+      item.explanation?.toLowerCase().includes(query) ?? false;
+    const matchCategory = item.category?.toLowerCase().includes(query) ?? false;
+    const matchSubcategory =
+      item.subcategory?.toLowerCase().includes(query) ?? false;
+    const matchLanguage = item.language?.toLowerCase().includes(query) ?? false;
 
-export const getLevelBadgeClass = (level?: CheatLevel): string => {
-  switch (level) {
-    case "basic":
-      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-    case "intermediate":
-      return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-    case "advanced":
-      return "bg-purple-500/10 text-purple-400 border-purple-500/20";
-    default:
-      return "bg-slate-500/10 text-slate-400 border-slate-500/20";
-  }
+    // Tags prüfen (z. B. "git" oder "#rebase")
+    const normalizedQuery = query.startsWith("#") ? query.slice(1) : query;
+    const matchTags =
+      item.tags?.some(
+        (t) =>
+          t.toLowerCase().includes(query) ||
+          t.toLowerCase().includes(normalizedQuery),
+      ) ?? false;
+
+    // Flags prüfen (-i, --volumes, etc.)
+    const matchFlags =
+      item.flags?.some(
+        (f) =>
+          f.flag.toLowerCase().includes(query) ||
+          f.description.toLowerCase().includes(query),
+      ) ?? false;
+
+    // Examples prüfen
+    const matchExamples =
+      item.examples?.some(
+        (ex) =>
+          ex.title.toLowerCase().includes(query) ||
+          ex.command.toLowerCase().includes(query),
+      ) ?? false;
+
+    return (
+      matchTitle ||
+      matchSyntax ||
+      matchExplanation ||
+      matchCategory ||
+      matchSubcategory ||
+      matchLanguage ||
+      matchTags ||
+      matchFlags ||
+      matchExamples
+    );
+  });
 };

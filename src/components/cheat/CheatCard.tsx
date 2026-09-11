@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { Copy, Check, Terminal } from "lucide-react";
-import { CheatItem } from "../../models/cheat.model.ts";
-import { getLevelBadgeClass } from "../../utils/cheat.util.ts";
+import { Copy, Check, AlertTriangle } from "lucide-react";
+import { CheatSheetResponseDto } from "../../models/cheatSheet.model";
+import { getLevelBadgeClass } from "../../utils/cheat.util";
 
 interface CheatCardProps {
-  item: CheatItem;
+  item: CheatSheetResponseDto;
   isSelected: boolean;
-  onSelect: (item: CheatItem) => void;
+  onSelect: (item: CheatSheetResponseDto) => void;
 }
 
 export const CheatCard: React.FC<CheatCardProps> = ({
@@ -34,9 +34,16 @@ export const CheatCard: React.FC<CheatCardProps> = ({
     >
       <div>
         <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="text-xs font-bold text-slate-200 group-hover:text-blue-400 transition-colors">
-            {item.title}
-          </h3>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h3 className="text-xs font-bold text-slate-200 group-hover:text-blue-400 transition-colors">
+              {item.title}
+            </h3>
+            {item.destructive && (
+              <span title="Destructive Command">
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0 inline" />
+              </span>
+            )}
+          </div>
           {item.level && (
             <span
               className={`px-1.5 py-0.5 text-[9px] font-bold uppercase rounded border shrink-0 ${getLevelBadgeClass(
@@ -49,7 +56,7 @@ export const CheatCard: React.FC<CheatCardProps> = ({
         </div>
 
         <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-3">
-          {item.description}
+          {item.explanation}
         </p>
       </div>
 
@@ -62,7 +69,7 @@ export const CheatCard: React.FC<CheatCardProps> = ({
           <button
             type="button"
             onClick={handleCopy}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-all shadow-xs"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-md bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition-all shadow-xs cursor-pointer"
             title="Copy command"
           >
             {copied ? (
@@ -73,9 +80,14 @@ export const CheatCard: React.FC<CheatCardProps> = ({
           </button>
         </div>
 
-        {/* Tags */}
-        <div className="flex items-center gap-1 overflow-hidden">
-          {item.tags.slice(0, 3).map((tag) => (
+        {/* Tags & Subcategory */}
+        <div className="flex items-center gap-1 overflow-hidden flex-wrap">
+          {item.subcategory && (
+            <span className="text-[9px] font-mono text-blue-400 bg-blue-950/40 border border-blue-900/40 px-1.5 py-0.5 rounded">
+              {item.subcategory}
+            </span>
+          )}
+          {item.tags?.slice(0, 3).map((tag) => (
             <span
               key={tag}
               className="text-[9px] font-mono text-slate-500 bg-slate-950/60 px-1.5 py-0.5 rounded"

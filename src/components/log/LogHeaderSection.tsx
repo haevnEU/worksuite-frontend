@@ -11,6 +11,7 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  Clipboard,
 } from "lucide-react";
 
 export type SearchMode = "all" | "timestamp" | "logger_endpoint";
@@ -19,6 +20,7 @@ interface LogHeaderSectionProps {
   filesCount: number;
   maxFiles: number;
   onFilesSelect: (files: File[]) => void;
+  onPasteClick?: () => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   searchMode: SearchMode;
@@ -31,6 +33,7 @@ export const LogHeaderSection: React.FC<LogHeaderSectionProps> = ({
   filesCount,
   maxFiles,
   onFilesSelect,
+  onPasteClick,
   searchTerm,
   onSearchChange,
   searchMode,
@@ -142,6 +145,23 @@ export const LogHeaderSection: React.FC<LogHeaderSectionProps> = ({
             </span>
           </div>
 
+          {onPasteClick && (
+            <button
+              type="button"
+              onClick={onPasteClick}
+              disabled={isLimitReached}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                isLimitReached
+                  ? "bg-slate-800/60 text-slate-500 border border-slate-800 cursor-not-allowed"
+                  : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 active:scale-95"
+              }`}
+              title="Paste log lines from clipboard"
+            >
+              <Clipboard className="w-3.5 h-3.5 text-blue-400" />
+              <span>Paste Log</span>
+            </button>
+          )}
+
           <label
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
               isLimitReached
@@ -174,7 +194,6 @@ export const LogHeaderSection: React.FC<LogHeaderSectionProps> = ({
 
       {/* Middle Row: Search & Filter Toolbar */}
       <div className="pt-2 border-t border-slate-800/60 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-        {/* Search Mode Switcher */}
         <div className="flex items-center bg-[#0b111e] p-1 rounded-xl border border-slate-800 shrink-0">
           <button
             type="button"
@@ -213,7 +232,6 @@ export const LogHeaderSection: React.FC<LogHeaderSectionProps> = ({
           </button>
         </div>
 
-        {/* Search Bar Input */}
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -235,7 +253,6 @@ export const LogHeaderSection: React.FC<LogHeaderSectionProps> = ({
           )}
         </div>
 
-        {/* Log Level Quick Filter Buttons */}
         {onLogLevelChange && (
           <div className="flex items-center gap-1 shrink-0 bg-[#0b111e] p-1 rounded-xl border border-slate-800">
             {["ALL", "ERROR", "WARN", "INFO", "DEBUG"].map((lvl) => (
@@ -259,7 +276,6 @@ export const LogHeaderSection: React.FC<LogHeaderSectionProps> = ({
           </div>
         )}
 
-        {/* Filter Guide Toggle Button */}
         <button
           type="button"
           onClick={() => setShowFilterGuide((prev) => !prev)}
@@ -280,7 +296,6 @@ export const LogHeaderSection: React.FC<LogHeaderSectionProps> = ({
         </button>
       </div>
 
-      {/* Collapsible Filter Guide Section (English) */}
       {showFilterGuide && (
         <div className="mt-1 p-4 rounded-xl bg-[#0b111e]/90 border border-slate-800/90 animate-in fade-in slide-in-from-top-2 duration-200 text-xs text-slate-300 space-y-3">
           <div className="flex items-center gap-2 text-indigo-400 font-semibold border-b border-slate-800 pb-2">
@@ -289,7 +304,6 @@ export const LogHeaderSection: React.FC<LogHeaderSectionProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Timestamp Mode */}
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800/60 space-y-1.5">
               <div className="flex items-center gap-1.5 text-blue-400 font-semibold">
                 <Clock className="w-3.5 h-3.5" />
@@ -310,7 +324,6 @@ export const LogHeaderSection: React.FC<LogHeaderSectionProps> = ({
               </div>
             </div>
 
-            {/* Logger / Endpoint Mode */}
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800/60 space-y-1.5">
               <div className="flex items-center gap-1.5 text-cyan-400 font-semibold">
                 <Code2 className="w-3.5 h-3.5" />
@@ -331,7 +344,6 @@ export const LogHeaderSection: React.FC<LogHeaderSectionProps> = ({
               </div>
             </div>
 
-            {/* General Log Level Quick Filter */}
             <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800/60 space-y-1.5">
               <div className="flex items-center gap-1.5 text-amber-400 font-semibold">
                 <Search className="w-3.5 h-3.5" />

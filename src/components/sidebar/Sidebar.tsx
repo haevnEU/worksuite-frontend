@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
+  Bug,
   Clock,
   Code2,
   CodeXml,
@@ -345,9 +346,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             requiredPlan: "PRO",
           },
           {
-            label: "Log Inspect",
-            path: "/log",
-            icon: FileTerminal,
+            label: "StackTrace Analyzer",
+            path: "/stacktrace",
+            icon: Bug,
             requiredPlan: "PRO",
           },
           {
