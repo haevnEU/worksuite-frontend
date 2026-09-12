@@ -1,18 +1,18 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
-  Search,
-  Globe,
-  Filter,
-  Info,
+  AlertTriangle,
   CheckCircle2,
   CornerUpRight,
-  AlertTriangle,
+  Filter,
+  Globe,
+  Info,
+  Search,
   ServerCrash,
 } from "lucide-react";
-import { HttpStatusCategory } from "../types/network.types.ts";
-import { HTTP_STATUS_CODES } from "../constants/network.constant.ts";
-import { HttpStatusCode } from "../models/network.model.ts";
-import { HttpStatusCard, HttpStatusDrawer } from "../components/http/status";
+import { HttpStatusCategory, HttpStatusCode } from "../models/http.model.ts";
+import { HTTP_STATUS_CODES } from "../constants/http.constant.ts";
+import { HttpStatusCard } from "../components/HttpStatusCard.tsx";
+import { HttpStatusDrawer } from "../components/HttpStatusDrawer.tsx";
 
 interface CategoryMeta {
   value: HttpStatusCategory;
@@ -70,7 +70,6 @@ export const HttpStatusPage: React.FC = () => {
   >("ALL");
   const [selectedItem, setSelectedItem] = useState<HttpStatusCode | null>(null);
 
-  // Zähler & Timer für 3x Klicks auf Status 418
   const teapotClickCountRef = useRef(0);
   const teapotResetTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -97,8 +96,7 @@ export const HttpStatusPage: React.FC = () => {
       .filter((group) => group.items.length > 0);
   }, [search, selectedCategory]);
 
-  const handleSelectStatus = (clicked: HttpStatusCode) => {
-    // 418 Easter Egg: Nach genau 3 Klicks Event auslösen
+  const handleSelectStatus = useCallback((clicked: HttpStatusCode) => {
     if (clicked.code === 418) {
       teapotClickCountRef.current += 1;
 
@@ -120,13 +118,15 @@ export const HttpStatusPage: React.FC = () => {
       teapotClickCountRef.current = 0;
     }
 
-    // Toggle-Verhalten für Drawer
     setSelectedItem((prev) => (prev?.code === clicked.code ? null : clicked));
-  };
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setSelectedItem(null);
+  }, []);
 
   return (
     <div className="relative min-h-full w-full">
-      {/* Hauptbereich */}
       <div
         className={`space-y-6 transition-all duration-300 ease-in-out ${
           selectedItem ? "xl:mr-[460px]" : "mr-0"
@@ -149,20 +149,28 @@ export const HttpStatusPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Search Input */}
           <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search code, phrase, description..."
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs cursor-pointer"
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Category Filter Tabs */}
+        {/* Filter Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           <Filter className="w-3.5 h-3.5 text-slate-500 shrink-0 mr-1" />
           {FILTER_TABS.map((cat) => (
@@ -181,12 +189,11 @@ export const HttpStatusPage: React.FC = () => {
           ))}
         </div>
 
-        {/* Grouped Status Sections */}
+        {/* Groups */}
         {filteredGroups.length > 0 ? (
           <div className="space-y-8">
             {filteredGroups.map((group) => (
               <section key={group.value} className="space-y-3">
-                {/* Category Header */}
                 <div className="flex items-center gap-2 pb-1.5 border-b border-slate-800/60">
                   {group.icon}
                   <h2 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
@@ -200,7 +207,6 @@ export const HttpStatusPage: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Card Grid */}
                 <div
                   className={`grid gap-3.5 transition-all duration-300 ${
                     selectedItem
@@ -229,11 +235,7 @@ export const HttpStatusPage: React.FC = () => {
         )}
       </div>
 
-      {/* Detail Inspection Drawer */}
-      <HttpStatusDrawer
-        item={selectedItem}
-        onClose={() => setSelectedItem(null)}
-      />
+      <HttpStatusDrawer item={selectedItem} onClose={handleCloseDrawer} />
     </div>
   );
 };

@@ -58,6 +58,8 @@ import HttpMethodsPage from "./pages/Http.methods.page.tsx";
 import CheatsheetPage from "./pages/Cheatsheet.page.tsx";
 import { HttpEventsHandler } from "./context/httpEventContext.tsx";
 import StackTraceAnalyzerPage from "./pages/StackTraceAnalyzer.page.tsx";
+import HttpMethods from "./feature/http/pages/HttpMethods.tsx";
+import HttpStatus from "./feature/http/pages/HttpStatus.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -128,8 +130,8 @@ const AuthenticatedLayout: React.FC = () => {
               <Route path="/csv-viewer" element={<CsvViewerPage />} />
               <Route path="/mock-data" element={<MockDataPage />} />
               <Route path="/rule-generator" element={<RuleGeneratorPage />} />
-              <Route path="/http-status" element={<HttpStatusPage />} />
-              <Route path="/http-methods" element={<HttpMethodsPage />} />
+              <Route path="/http-status" element={<HttpStatus />} />
+              <Route path="/http-methods" element={<HttpMethods />} />
               <Route path="/cheats" element={<CheatsheetPage />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
