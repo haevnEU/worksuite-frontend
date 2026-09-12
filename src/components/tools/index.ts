@@ -5,3 +5,5 @@ export * from "./IdGeneratorTool.tsx";
 export * from "./ToolsHeader.tsx";
 export * from "./UrlEncoderTool.tsx";
 export * from "./ApiRequestBuilder.tsx";
+export * from "./RegexTesterTool.tsx";
+export * from "./RecordConverterTool.tsx";
