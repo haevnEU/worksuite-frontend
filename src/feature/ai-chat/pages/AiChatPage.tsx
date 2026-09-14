@@ -101,20 +101,20 @@ export const AiChatPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] max-w-5xl mx-auto font-sans text-slate-200">
+    <div className="flex flex-col h-full max-h-[calc(100dvh-5.5rem)] max-w-5xl mx-auto font-sans text-slate-200 overflow-hidden pb-1">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-[#10192c]/80 border border-slate-800 rounded-2xl shadow-lg backdrop-blur mb-4">
+      <div className="shrink-0 flex items-center justify-between p-3.5 bg-[#10192c]/80 border border-slate-800 rounded-2xl shadow-lg backdrop-blur mb-2.5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
-            <Sparkles className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+            <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-white">
+            <h1 className="text-sm font-bold text-white leading-tight">
               {assistantName} Chat
             </h1>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[10px] text-slate-400 font-mono mt-0.5">
               Active Model:{" "}
-              <span className="text-purple-300 font-mono">{currentModel}</span>
+              <span className="text-purple-300">{currentModel}</span>
             </p>
           </div>
         </div>
@@ -134,21 +134,21 @@ export const AiChatPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Warning if AI is not ready */}
+      {/* Offline Alert */}
       {!isReady && (
-        <div className="p-3 mb-4 bg-amber-950/20 border border-amber-800/40 rounded-xl flex items-center gap-2.5 text-amber-300 text-xs">
+        <div className="shrink-0 p-2.5 mb-2.5 bg-amber-950/20 border border-amber-800/40 rounded-xl flex items-center gap-2 text-amber-300 text-xs">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>
             The {assistantName} integration is currently offline or disabled.
-            Check your connection in AI Settings.
+            Check connection in Settings.
           </span>
         </div>
       )}
 
-      {/* Message List */}
-      <div className="flex-1 overflow-y-auto space-y-4 p-4 bg-[#0b111e]/60 border border-slate-800/80 rounded-2xl">
+      {/* Chat Area - Der einzige Container, der scrollen darf */}
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-4 p-4 bg-[#0b111e]/60 border border-slate-800/80 rounded-2xl scrollbar-thin scrollbar-thumb-slate-800">
         {messages.length === 0 && !streamingText && (
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-3 text-slate-500">
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-3 text-slate-500 select-none">
             <div className="w-12 h-12 rounded-2xl bg-slate-800/50 border border-slate-700/50 flex items-center justify-center text-slate-400">
               <Sparkles className="w-6 h-6" />
             </div>
@@ -186,7 +186,7 @@ export const AiChatPage: React.FC = () => {
             </div>
 
             <div
-              className={`p-4 rounded-2xl border text-xs shadow-md ${
+              className={`p-3.5 rounded-2xl border text-xs shadow-md ${
                 msg.role === "user"
                   ? "bg-blue-600/10 border-blue-500/30 text-slate-100"
                   : "bg-[#10192c] border-slate-800 text-slate-200"
@@ -199,7 +199,7 @@ export const AiChatPage: React.FC = () => {
               ) : (
                 <MarkdownRenderer content={msg.content} />
               )}
-              <span className="block mt-2 text-[10px] text-slate-500 font-mono">
+              <span className="block mt-1.5 text-[10px] text-slate-500 font-mono">
                 {msg.timestamp}
               </span>
             </div>
@@ -211,7 +211,7 @@ export const AiChatPage: React.FC = () => {
             <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center border bg-purple-600/20 border-purple-500/40 text-purple-400">
               <Bot className="w-4 h-4" />
             </div>
-            <div className="p-4 rounded-2xl border border-slate-800 bg-[#10192c] text-slate-200 text-xs shadow-md">
+            <div className="p-3.5 rounded-2xl border border-slate-800 bg-[#10192c] text-slate-200 text-xs shadow-md">
               <MarkdownRenderer content={streamingText} />
               <span className="inline-block w-1.5 h-3.5 bg-purple-400 animate-pulse ml-1 align-middle" />
             </div>
@@ -229,7 +229,7 @@ export const AiChatPage: React.FC = () => {
       </div>
 
       {/* Input Area */}
-      <div className="mt-3 relative bg-[#10192c] border border-slate-800 rounded-2xl p-2 shadow-lg focus-within:border-purple-500/60 transition-colors">
+      <div className="shrink-0 mt-2.5 relative bg-[#10192c] border border-slate-800 rounded-2xl p-2 shadow-lg focus-within:border-purple-500/60 transition-colors">
         <textarea
           ref={inputRef}
           rows={2}
@@ -242,10 +242,10 @@ export const AiChatPage: React.FC = () => {
               ? `Ask ${assistantName} anything... (Enter to send, Shift+Enter for newline)`
               : `Enable ${assistantName} in Settings to chat`
           }
-          className="w-full bg-transparent p-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none resize-none disabled:opacity-50"
+          className="w-full bg-transparent p-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none resize-none disabled:opacity-50 max-h-20"
         />
 
-        <div className="flex justify-between items-center px-2 pt-1 border-t border-slate-800/50">
+        <div className="flex justify-between items-center px-1.5 pt-1 border-t border-slate-800/50">
           <span className="text-[10px] text-slate-500 font-mono">
             {input.length} chars
           </span>
@@ -265,7 +265,7 @@ export const AiChatPage: React.FC = () => {
                 type="button"
                 onClick={handleSend}
                 disabled={!input.trim() || !isReady}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold transition cursor-pointer shadow-md shadow-purple-600/20"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold transition cursor-pointer shadow-md shadow-purple-600/20"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Send</span>
@@ -275,12 +275,12 @@ export const AiChatPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Verification Disclaimer Footer */}
-      <div className="mt-2 px-2 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
-        <AlertTriangle className="w-3.5 h-3.5 text-amber-500/70 shrink-0" />
+      {/* Disclaimer Footer */}
+      <div className="shrink-0 mt-1.5 px-2 flex items-center justify-center gap-1.5 text-[10px] text-slate-500 select-none">
+        <AlertTriangle className="w-3 h-3 text-amber-500/70 shrink-0" />
         <span>
           {assistantName} responses can contain inaccuracies. Always verify
-          generated code and instructions before use.
+          generated code.
         </span>
       </div>
     </div>

@@ -15,17 +15,21 @@ export const StacktraceAiOverlay: React.FC<StacktraceAiOverlayProps> = ({
   analysis,
 }) => {
   const { assistantName } = useAI();
+  const name = assistantName || "WorkSuite AI";
 
   const rootCause =
-    analysis && analysis.exceptions.length > 0
+    analysis && analysis.exceptions && analysis.exceptions.length > 0
       ? analysis.exceptions[analysis.exceptions.length - 1]
       : null;
 
   return (
     <AiOverlayDrawer
+      buttonLabel={`Ask ${name}`}
       buttonBadge={analysis ? analysis.exceptions.length : undefined}
-      isDisabled={!analysis || analysis.exceptions.length === 0}
-      title={`${assistantName} Root-Cause Diagnosis`}
+      isDisabled={
+        !analysis || !analysis.exceptions || analysis.exceptions.length === 0
+      }
+      title={`${name} Root-Cause Diagnosis`}
       icon={<Bug className="w-4 h-4 text-rose-400" />}
       subtitle={
         <span>
@@ -35,6 +39,7 @@ export const StacktraceAiOverlay: React.FC<StacktraceAiOverlayProps> = ({
           </strong>
         </span>
       }
+      loadingTitle={`${name} is analyzing Java Stacktrace...`}
       loadingSubtitle="Evaluating exception chains, causal links, and project frames."
       emptyMessage="No parsed stacktrace available to analyze."
       systemPrompt={STACKTRACE_ANALYSIS_SYSTEM_PROMPT}
@@ -42,3 +47,5 @@ export const StacktraceAiOverlay: React.FC<StacktraceAiOverlayProps> = ({
     />
   );
 };
+
+export default StacktraceAiOverlay;

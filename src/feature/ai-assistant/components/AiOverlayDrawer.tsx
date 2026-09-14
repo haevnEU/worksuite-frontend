@@ -59,18 +59,21 @@ export const AiOverlayDrawer: React.FC<AiOverlayDrawerProps> = ({
     isLoading,
     error,
     isReady,
+    isEnabled,
     currentModel,
     assistantName,
   } = useAI();
 
-  if (!isReady) return null;
+  if (!isEnabled) return null;
 
-  const resolvedButtonLabel = buttonLabel || `Ask ${assistantName}`;
+  const resolvedButtonLabel =
+    buttonLabel || `Ask ${assistantName || "WorkSuite AI"}`;
   const resolvedLoadingTitle =
-    loadingTitle || `${assistantName} is analyzing...`;
+    loadingTitle || `${assistantName || "WorkSuite AI"} is analyzing...`;
+  const isButtonDisabled = isDisabled || !isReady || isLoading;
 
   const runAnalysis = async () => {
-    if (isDisabled) return;
+    if (isButtonDisabled) return;
     const prompt = getPrompt();
     if (!prompt.trim()) return;
 
@@ -82,7 +85,7 @@ export const AiOverlayDrawer: React.FC<AiOverlayDrawerProps> = ({
 
   const handleOpen = () => {
     setIsOpen(true);
-    if (!output && !isDisabled) {
+    if (!output && !isButtonDisabled) {
       runAnalysis();
     }
   };
@@ -94,13 +97,17 @@ export const AiOverlayDrawer: React.FC<AiOverlayDrawerProps> = ({
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-40">
+      <div className="fixed bottom-6 right-6 z-50">
         <button
           type="button"
           onClick={handleOpen}
-          disabled={isDisabled}
+          disabled={isButtonDisabled}
           className="group flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold shadow-xl shadow-purple-600/30 border border-purple-400/30 transition-all hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md"
-          title={`Run analysis with ${currentModel}`}
+          title={
+            !isReady
+              ? "Connecting to local AI engine..."
+              : `Run analysis with ${currentModel}`
+          }
         >
           <Sparkles className="w-4 h-4 text-purple-200 group-hover:rotate-12 transition-transform" />
           <span>{resolvedButtonLabel}</span>
@@ -146,7 +153,7 @@ export const AiOverlayDrawer: React.FC<AiOverlayDrawerProps> = ({
               <button
                 type="button"
                 onClick={runAnalysis}
-                disabled={isLoading || isDisabled}
+                disabled={isLoading || isButtonDisabled}
                 className="p-1 hover:text-white transition cursor-pointer text-slate-400 disabled:opacity-40"
                 title="Re-run analysis"
               >
@@ -158,8 +165,22 @@ export const AiOverlayDrawer: React.FC<AiOverlayDrawerProps> = ({
           </div>
         }
       >
-        <div className="flex flex-col min-h-full justify-between space-y-4 font-sans text-xs text-slate-200">
-          <div className="space-y-4">
+        <div className="flex flex-col min-h-full space-y-4 font-sans text-xs text-slate-200">
+          {/* Verification Disclaimer Banner ganz oben */}
+          <div className="flex items-center justify-between gap-2 p-2.5 bg-amber-950/20 border border-amber-800/40 rounded-xl text-amber-300/90 text-[11px]">
+            <span className="flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>
+                {assistantName || "WorkSuite AI"} responses can contain
+                inaccuracies. Always verify generated answers.
+              </span>
+            </span>
+            <span className="font-mono text-[10px] text-amber-400/60 shrink-0 hidden sm:inline-block">
+              {currentModel}
+            </span>
+          </div>
+
+          <div className="space-y-4 flex-1">
             {isLoading && !output && (
               <div className="py-16 text-center space-y-3">
                 <Loader2 className="w-7 h-7 animate-spin mx-auto text-purple-400" />
@@ -196,22 +217,10 @@ export const AiOverlayDrawer: React.FC<AiOverlayDrawerProps> = ({
 
             {children}
           </div>
-
-          {/* Verification Disclaimer Footer */}
-          <div className="pt-3 border-t border-slate-800/70 flex items-center justify-between text-[11px] text-slate-500 font-sans">
-            <span className="flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-500/70 shrink-0" />
-              <span>
-                {assistantName} responses can contain hallucinations. Always
-                verify generated code and schema fixes.
-              </span>
-            </span>
-            <span className="font-mono text-[10px] text-slate-600 hidden sm:inline-block">
-              {currentModel}
-            </span>
-          </div>
         </div>
       </Drawer>
     </>
   );
 };
+
+export default AiOverlayDrawer;
