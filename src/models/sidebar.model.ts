@@ -22,4 +22,5 @@ export interface NavItem {
     pulse?: boolean;
     tooltip?: string;
   };
+  active?: boolean;
 }

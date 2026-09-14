@@ -11,6 +11,7 @@ import {
   VcsKeySection,
 } from "../components/settings";
 import { LicenseSettingsSection } from "../components/settings/LicenseSettingsSection.tsx";
+import { AiSettingsCard } from "../feature/ai-assistant";
 
 export const SettingsPage: React.FC = () => {
   return (
@@ -27,6 +28,7 @@ export const SettingsPage: React.FC = () => {
         <KpiSettingsSection />
         <VcsKeySection />
         <RedmineKeySection />
+        <AiSettingsCard />
       </div>
     </div>
   );

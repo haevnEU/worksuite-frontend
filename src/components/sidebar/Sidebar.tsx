@@ -12,6 +12,8 @@ import {
   Globe,
   Info,
   LayoutDashboard,
+  MessageSquare,
+  MessageSquareCheckIcon,
   Radio,
   RotateCcw,
   Settings,
@@ -34,6 +36,7 @@ import {
   toggleFavoritePath,
   triggerHapticFeedback,
 } from "../../utils/sidebar.util.ts";
+import { useAI } from "../../feature/ai-assistant";
 
 const COLLAPSED_STORAGE_KEY = "worktool_sidebar_desktop_collapsed";
 
@@ -48,9 +51,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { openTickets } = useTickets();
   const { pendingReviews } = useVCS();
+  const { isReady, currentModel } = useAI();
   const pendingReviewsCount = pendingReviews?.length || 0;
 
-  // Desktop Collapse State
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     return localStorage.getItem(COLLAPSED_STORAGE_KEY) === "true";
   });
@@ -64,11 +67,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   // -------------------------------------------------------------
-  // Option 1: Konfliktfreier Shortcut (Alt + S oder Ctrl/Cmd + \)
+  // Option 1: Shortcut (Alt + S oder Ctrl/Cmd + \)
   // -------------------------------------------------------------
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignorieren, wenn der Fokus in einem Input, Textarea oder contentEditable liegt
       const activeTag = document.activeElement?.tagName.toLowerCase();
       const isInput =
         activeTag === "input" ||
@@ -77,9 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       if (isInput) return;
 
-      // 1. Alt + S (Option + S auf Mac)
       const isAltS = e.altKey && e.key.toLowerCase() === "s";
-      // 2. Ctrl + \ oder Cmd + \ (bekannter Standard aus VS Code / Linear)
       const isCtrlBackslash = (e.ctrlKey || e.metaKey) && e.key === "\\";
 
       if (isAltS || isCtrlBackslash) {
@@ -93,12 +93,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, []);
 
   // -------------------------------------------------------------
-  // Option 2: Responsive Auto-Collapse bei mittleren Screens (< 1280px)
+  // Option 2: Auto-Collapse bei mittleren Screens (< 1280px)
   // -------------------------------------------------------------
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
-      // Bei Split-Screen / halbem Monitor (Desktop zw. 1024px und 1280px) automatisch kollabieren
       if (width < 1280 && width >= 1024) {
         setCollapsed(true);
       }
@@ -109,7 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, []);
 
   // -------------------------------------------------------------
-  // Mobile Gesten: Touch Pull-Down & Snap-Up Drag State
+  // Mobile Gesten: Touch Pull-Down
   // -------------------------------------------------------------
   const [dragY, setDragY] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -160,7 +159,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       setIsDragging(true);
       setDragY(diffY);
 
-      // Haptik-Impuls bei Erreichen der 45% Schwelle
       const threshold = window.innerHeight * 0.45;
       if (diffY >= threshold && !hasTriggeredThresholdHaptic.current) {
         triggerHapticFeedback(12);
@@ -230,7 +228,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }));
   };
 
-  // Overview (fest oben)
+  // Overview
   const overviewGroup: { title: string; items: NavItem[] } = useMemo(
     () => ({
       title: "Overview",
@@ -271,9 +269,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
               : undefined,
           requiredPlan: "COMMUNITY",
         },
+        {
+          label: "LLM Chat",
+          path: "/ai-chat",
+          icon: MessageSquare,
+          requiredPlan: "PRO",
+          statusDot: isReady
+            ? {
+                variant: "emerald",
+                pulse: false,
+                tooltip: `AI Ready (${currentModel})`,
+              }
+            : {
+                variant: "amber",
+                pulse: false,
+                tooltip: "AI Offline / Not configured",
+              },
+          disabled: !isReady,
+        },
+        {
+          label: "MR Review Wizard",
+          path: "/mr-review",
+          icon: MessageSquareCheckIcon,
+          requiredPlan: "PRO",
+        },
       ],
     }),
-    [pendingReviewsCount, openTickets],
+    [pendingReviewsCount, openTickets, isReady, currentModel],
   );
 
   const otherNavGroups: { title: string; items: NavItem[] }[] = useMemo(
@@ -343,6 +365,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             label: "Share & Export",
             path: "/share",
             icon: Share2,
+            requiredPlan: "PRO",
+          },
+          {
+            label: "Log Analyzer",
+            path: "/log",
+            icon: FileTerminal,
             requiredPlan: "PRO",
           },
           {
@@ -481,7 +509,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               }`
         }`}
       >
-        {/* Mobile Pull-Down Handle */}
         {mobileOpen && (
           <div className="lg:hidden w-full flex justify-center pt-2.5 pb-1 shrink-0 cursor-grab active:cursor-grabbing">
             <div className="w-12 h-1.5 rounded-full bg-slate-700/90 hover:bg-slate-600 transition-colors" />

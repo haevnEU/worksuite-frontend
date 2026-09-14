@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Bug,
   ChevronDown,
@@ -12,14 +12,22 @@ import {
   Sparkles,
   Upload,
 } from "lucide-react";
-import { JavaStackTraceAnalyzer } from "../components/stacktrace/JavaStackTraceAnalyzer";
-import { parseJavaStackTrace } from "../utils/stacktraceParser.util";
-import { ParsedStackTrace } from "../models/stacktraceAnalyzer.model";
+import { JavaStackTraceAnalyzer } from "../components/JavaStackTraceAnalyzer";
+import type { ParsedStackTrace } from "../models/stacktrace.model";
+import { parseJavaStackTrace } from "../utils/stacktrace.util";
+import { StacktraceAiOverlay } from "../api";
 
 export const StackTraceAnalyzerPage: React.FC = () => {
   const [inputText, setInputText] = useState("");
   const [analysis, setAnalysis] = useState<ParsedStackTrace | null>(null);
   const [showGuide, setShowGuide] = useState(false);
+
+  const triggerAnalysis = (textToParse: string) => {
+    if (!textToParse.trim()) return;
+    const result = parseJavaStackTrace(textToParse);
+    setAnalysis(result);
+    setInputText(textToParse);
+  };
 
   useEffect(() => {
     const handleGlobalPaste = (e: ClipboardEvent) => {
@@ -38,13 +46,6 @@ export const StackTraceAnalyzerPage: React.FC = () => {
     window.addEventListener("paste", handleGlobalPaste);
     return () => window.removeEventListener("paste", handleGlobalPaste);
   }, []);
-
-  const triggerAnalysis = (textToParse: string) => {
-    if (!textToParse.trim()) return;
-    const result = parseJavaStackTrace(textToParse);
-    setAnalysis(result);
-    setInputText(textToParse);
-  };
 
   const handlePasteFromClipboard = async () => {
     try {
@@ -119,7 +120,6 @@ export const StackTraceAnalyzerPage: React.FC = () => {
               />
             </label>
 
-            {/* Guide Toggle Button */}
             <button
               type="button"
               onClick={() => setShowGuide((prev) => !prev)}
@@ -141,7 +141,6 @@ export const StackTraceAnalyzerPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Collapsible Guide Section */}
         {showGuide && (
           <div className="mt-1 p-4 rounded-xl bg-[#0b111e]/90 border border-slate-800/90 animate-in fade-in slide-in-from-top-2 duration-200 text-xs text-slate-300 space-y-3">
             <div className="flex items-center gap-2 text-rose-400 font-semibold border-b border-slate-800 pb-2">
@@ -150,7 +149,6 @@ export const StackTraceAnalyzerPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Box 1: Root Cause Isolation */}
               <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800/60 space-y-1.5">
                 <div className="flex items-center gap-1.5 text-rose-400 font-semibold">
                   <Layers className="w-3.5 h-3.5" />
@@ -158,21 +156,10 @@ export const StackTraceAnalyzerPage: React.FC = () => {
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed">
                   Automatically extracts nested causal chains and resolves the
-                  deepest root exception (e.g. Deserialization, DB errors).
+                  deepest root exception.
                 </p>
-                <div className="space-y-1 text-[10px] font-mono text-slate-300">
-                  <div>
-                    <span className="text-slate-500">Banner:</span> Highlights
-                    bottom-most cause
-                  </div>
-                  <div>
-                    <span className="text-slate-500">Collapsible:</span>{" "}
-                    Expand/collapse each step
-                  </div>
-                </div>
               </div>
 
-              {/* Box 2: Package & Project Code Filter */}
               <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800/60 space-y-1.5">
                 <div className="flex items-center gap-1.5 text-blue-400 font-semibold">
                   <Code2 className="w-3.5 h-3.5" />
@@ -182,19 +169,8 @@ export const StackTraceAnalyzerPage: React.FC = () => {
                   Filters out standard Java, Spring, Tomcat, and Netty proxies
                   to reveal your company code immediately.
                 </p>
-                <div className="space-y-1 text-[10px] font-mono text-slate-300">
-                  <div>
-                    <span className="text-slate-500">Hide 3rd-Party:</span>{" "}
-                    Toggles framework frames
-                  </div>
-                  <div>
-                    <span className="text-slate-500">Package Search:</span>{" "}
-                    Saves top 10 recent inputs
-                  </div>
-                </div>
               </div>
 
-              {/* Box 3: Quick Loading & Input */}
               <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800/60 space-y-1.5">
                 <div className="flex items-center gap-1.5 text-amber-400 font-semibold">
                   <Clipboard className="w-3.5 h-3.5" />
@@ -204,23 +180,12 @@ export const StackTraceAnalyzerPage: React.FC = () => {
                   Accepts raw console output, container timestamps (ISO), and
                   multiline stacktraces directly.
                 </p>
-                <div className="space-y-1 text-[10px] font-mono text-slate-300">
-                  <div>
-                    <span className="text-slate-500">Global Paste:</span>{" "}
-                    <code className="text-rose-300">Ctrl+V</code> anywhere
-                  </div>
-                  <div>
-                    <span className="text-slate-500">Format:</span> Cleans
-                    timestamps automatically
-                  </div>
-                </div>
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Input / Textarea State */}
       {!analysis && (
         <div className="bg-[#10192c]/80 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-lg backdrop-blur">
           <div className="flex items-center justify-between">
@@ -239,8 +204,8 @@ export const StackTraceAnalyzerPage: React.FC = () => {
             onChange={(e) => setInputText(e.target.value)}
             placeholder={`org.springframework.dao.InvalidDataAccessApiUsageException: Could not deserialize string...
 Caused by: com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Cannot construct instance...
-	at org.springframework.orm.jpa.EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(...)
-	at de.haevn.worksuite.settings.UserService.getUser(UserService.java:79)`}
+\tat org.springframework.orm.jpa.EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(...)
+\tat de.haevn.worksuite.settings.UserService.getUser(UserService.java:79)`}
             className="w-full bg-[#0b111e] border border-slate-800 rounded-xl p-4 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-rose-500 transition leading-relaxed resize-y"
           />
 
@@ -258,7 +223,6 @@ Caused by: com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Cannot
         </div>
       )}
 
-      {/* Structured Analysis Results */}
       {analysis && (
         <JavaStackTraceAnalyzer
           analysis={analysis}
@@ -268,6 +232,7 @@ Caused by: com.fasterxml.jackson.databind.exc.InvalidDefinitionException: Cannot
           }}
         />
       )}
+      <StacktraceAiOverlay analysis={analysis} />
     </div>
   );
 };

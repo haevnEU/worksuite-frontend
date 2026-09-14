@@ -1,18 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Clipboard, FileTerminal } from "lucide-react";
-import {
-  LogDetailDrawer,
-  LogHeaderSection,
-  LogTable,
-  LogPasteModal,
-} from "../components/log";
-import { useLogViewerState } from "../hooks/useLogViewer.ts";
 
-export const LogViewerPage: React.FC = () => {
-  const state = useLogViewerState();
+import { useLogViewer } from "../hooks/useLogViewer";
+import { LogHeaderSection } from "../components/LogHeaderSection";
+import { LogTable } from "../components/LogTable";
+import { LogDetailDrawer } from "../components/LogDetailDrawer";
+import { LogPasteModal } from "../components/LogPasteModal";
+import { LogAiOverlay } from "../ai/overlay.ai.tsx";
+
+export const LogAnalyzer: React.FC = () => {
+  const state = useLogViewer();
   const [isPasteModalOpen, setIsPasteModalOpen] = useState(false);
 
-  // Globaler Paste-Listener (wird nur getriggert, wenn kein Texteingabefeld fokussiert ist)
   useEffect(() => {
     const handleGlobalPaste = (e: ClipboardEvent) => {
       const activeTag = document.activeElement?.tagName.toLowerCase();
@@ -35,10 +34,6 @@ export const LogViewerPage: React.FC = () => {
     window.addEventListener("paste", handleGlobalPaste);
     return () => window.removeEventListener("paste", handleGlobalPaste);
   }, [state]);
-
-  const handlePastedFile = (file: File) => {
-    state.handleFilesSelect([file]);
-  };
 
   return (
     <div className="relative space-y-6 pb-12 font-sans">
@@ -71,7 +66,8 @@ export const LogViewerPage: React.FC = () => {
               No log files loaded
             </p>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
-              Drop up to 5 log files, or paste clipboard contents directly with{" "}
+              Drop up to {state.MAX_FILES} log files, or paste clipboard
+              contents directly with{" "}
               <kbd className="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-blue-400 font-mono">
                 Ctrl+V
               </kbd>
@@ -134,10 +130,15 @@ export const LogViewerPage: React.FC = () => {
       <LogPasteModal
         isOpen={isPasteModalOpen}
         onClose={() => setIsPasteModalOpen(false)}
-        onConfirm={handlePastedFile}
+        onConfirm={(file) => state.handleFilesSelect([file])}
+      />
+
+      <LogAiOverlay
+        entries={state.filteredEntries}
+        totalFilteredCount={state.filteredEntries.length}
       />
     </div>
   );
 };
 
-export default LogViewerPage;
+export default LogAnalyzer;

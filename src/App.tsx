@@ -41,7 +41,6 @@ import { LoginPage } from "./components/auth/LoginPage.tsx";
 import { ProtectedRoute } from "./ProtectedRoute.tsx";
 import { NoConnectionPage } from "./components/overlays/no-connection/NoConnection.tsx";
 import { GlobalErrorOverlay } from "./components/overlays/error/ErrorOverlay.tsx";
-import LogViewerPage from "./pages/LogViewer.page.tsx";
 import ToolsPage from "./pages/Tools.page.tsx";
 import MockDataPage from "./pages/MockData.page.tsx";
 import RuleGeneratorPage from "./pages/RuleGenerator.page.tsx";
@@ -53,13 +52,15 @@ import PlanSelectionPage from "./pages/public/PlanSelection.page.tsx";
 import { getAppBackgroundStyles } from "./utils/license.util.ts";
 import { WeeklyTimeWarningOverlay } from "./components/overlays/warning/WeeklyTimeWarningOverlay.tsx";
 import { TimeLogModal } from "./components/dashboard";
-import { HttpStatusPage } from "./pages/Http.status.page.tsx";
-import HttpMethodsPage from "./pages/Http.methods.page.tsx";
 import CheatsheetPage from "./pages/Cheatsheet.page.tsx";
 import { HttpEventsHandler } from "./context/httpEventContext.tsx";
-import StackTraceAnalyzerPage from "./pages/StackTraceAnalyzer.page.tsx";
 import HttpMethods from "./feature/http/pages/HttpMethods.tsx";
 import HttpStatus from "./feature/http/pages/HttpStatus.tsx";
+import LogAnalyzer from "./feature/log/pages/LogAnalyzer.tsx";
+import { MrReviewPage } from "./feature/mr-review";
+import { AiProvider } from "./feature/ai-assistant";
+import StackTraceAnalyzerPage from "./feature/stacktrace-analyzer/pages/StackTraceAnalyzerPage.tsx";
+import AiChatPage from "./feature/feature1/pages/AiChatPage.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -119,12 +120,14 @@ const AuthenticatedLayout: React.FC = () => {
               <Route path="/templates" element={<TemplatePage />} />
               <Route path="/time-log" element={<TimeTrackingPage />} />
               <Route path="/share" element={<SharePage />} />
-              <Route path="/log" element={<LogViewerPage />} />
+              <Route path="/log" element={<LogAnalyzer />} />
+              <Route path="/ai-chat" element={<AiChatPage />} />
               <Route path="/stacktrace" element={<StackTraceAnalyzerPage />} />
               <Route path="/tools" element={<ToolsPage />} />
               <Route path="/retro" element={<RetroPage />} />
               <Route path="/teammeeting" element={<TeamMeetingPage />} />
               <Route path="/review" element={<ReviewPage />} />
+              <Route path="/mr-review" element={<MrReviewPage />} />
 
               <Route path="/database" element={<DatabaseQueryPage />} />
               <Route path="/csv-viewer" element={<CsvViewerPage />} />
@@ -209,13 +212,15 @@ export const App: React.FC = () => {
         <LicenseProvider>
           <ConnectionProvider>
             <ToastProvider>
-              <SettingsProvider>
-                <AboutProvider>
-                  <HttpEventsHandler>
-                    <AppRoutes />
-                  </HttpEventsHandler>
-                </AboutProvider>
-              </SettingsProvider>
+              <AiProvider>
+                <SettingsProvider>
+                  <AboutProvider>
+                    <HttpEventsHandler>
+                      <AppRoutes />
+                    </HttpEventsHandler>
+                  </AboutProvider>
+                </SettingsProvider>
+              </AiProvider>
             </ToastProvider>
           </ConnectionProvider>
         </LicenseProvider>
