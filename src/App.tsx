@@ -60,7 +60,7 @@ import LogAnalyzer from "./feature/log/pages/LogAnalyzer.tsx";
 import { MrReviewPage } from "./feature/mr-review";
 import { AiProvider } from "./feature/ai-assistant";
 import StackTraceAnalyzerPage from "./feature/stacktrace-analyzer/pages/StackTraceAnalyzerPage.tsx";
-import AiChatPage from "./feature/feature1/pages/AiChatPage.tsx";
+import AiChatPage from "./feature/ai-chat/pages/AiChatPage.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -91,7 +91,6 @@ const AuthenticatedLayout: React.FC = () => {
   }, []);
 
   const appBgStyle = getAppBackgroundStyles(plan);
-
   return (
     <div
       className={`flex h-screen ${appBgStyle} text-slate-100 overflow-hidden font-sans transition-colors duration-500`}

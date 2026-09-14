@@ -51,7 +51,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { openTickets } = useTickets();
   const { pendingReviews } = useVCS();
-  const { isReady, currentModel } = useAI();
+  const { isReady, currentModel, config } = useAI();
+  const assistantName = config.assistantName || "WorkSuite AI";
   const pendingReviewsCount = pendingReviews?.length || 0;
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
@@ -270,7 +271,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           requiredPlan: "COMMUNITY",
         },
         {
-          label: "LLM Chat",
+          label: `${assistantName} Chat`,
           path: "/ai-chat",
           icon: MessageSquare,
           requiredPlan: "PRO",
@@ -278,12 +279,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             ? {
                 variant: "emerald",
                 pulse: false,
-                tooltip: `AI Ready (${currentModel})`,
+                tooltip: `${assistantName} Ready (${currentModel})`,
               }
             : {
                 variant: "amber",
                 pulse: false,
-                tooltip: "AI Offline / Not configured",
+                tooltip: `${assistantName} Offline`,
               },
           disabled: !isReady,
         },

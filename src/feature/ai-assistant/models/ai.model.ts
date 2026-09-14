@@ -4,9 +4,7 @@ export interface LocalAiConfig {
   enabled: boolean;
   baseUrl: string;
   model: string;
-  provider: AiProviderType;
-  temperature: number;
-  systemPrompt: string;
+  assistantName: string;
 }
 
 export interface PromptOptions {

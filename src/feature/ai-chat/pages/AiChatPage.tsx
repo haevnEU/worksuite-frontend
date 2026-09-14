@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
+  AlertTriangle,
   Bot,
   Send,
   Sparkles,
@@ -19,7 +20,16 @@ interface ChatMessage {
 }
 
 export const AiChatPage: React.FC = () => {
-  const { generate, abort, isLoading, error, isReady, currentModel } = useAI();
+  const {
+    generate,
+    abort,
+    isLoading,
+    error,
+    isReady,
+    currentModel,
+    assistantName,
+  } = useAI();
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [streamingText, setStreamingText] = useState("");
@@ -72,7 +82,6 @@ export const AiChatPage: React.FC = () => {
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch {
-      // Fehler wird über den internen error-State von useAI gehandhabt
     } finally {
       setStreamingText("");
     }
@@ -100,7 +109,9 @@ export const AiChatPage: React.FC = () => {
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-white">AI Assistant Chat</h1>
+            <h1 className="text-sm font-bold text-white">
+              {assistantName} Chat
+            </h1>
             <p className="text-[11px] text-slate-400">
               Active Model:{" "}
               <span className="text-purple-300 font-mono">{currentModel}</span>
@@ -128,8 +139,8 @@ export const AiChatPage: React.FC = () => {
         <div className="p-3 mb-4 bg-amber-950/20 border border-amber-800/40 rounded-xl flex items-center gap-2.5 text-amber-300 text-xs">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>
-            The local AI integration is currently offline or disabled. Check
-            your connection in AI Settings.
+            The {assistantName} integration is currently offline or disabled.
+            Check your connection in AI Settings.
           </span>
         </div>
       )}
@@ -139,11 +150,11 @@ export const AiChatPage: React.FC = () => {
         {messages.length === 0 && !streamingText && (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-3 text-slate-500">
             <div className="w-12 h-12 rounded-2xl bg-slate-800/50 border border-slate-700/50 flex items-center justify-center text-slate-400">
-              <Bot className="w-6 h-6" />
+              <Sparkles className="w-6 h-6" />
             </div>
             <div className="space-y-1">
               <p className="text-sm font-semibold text-slate-300">
-                Direct LLM Conversation
+                {assistantName} Chat
               </p>
               <p className="text-xs text-slate-500 max-w-sm">
                 Ask coding questions, refactoring ideas, architecture patterns,
@@ -195,7 +206,6 @@ export const AiChatPage: React.FC = () => {
           </div>
         ))}
 
-        {/* Live Streaming Assistant Message */}
         {isLoading && streamingText && (
           <div className="flex gap-3 max-w-[85%] mr-auto">
             <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center border bg-purple-600/20 border-purple-500/40 text-purple-400">
@@ -208,7 +218,6 @@ export const AiChatPage: React.FC = () => {
           </div>
         )}
 
-        {/* Error Notification */}
         {error && (
           <div className="p-3 bg-rose-950/30 border border-rose-800/40 rounded-xl text-rose-300 text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -230,8 +239,8 @@ export const AiChatPage: React.FC = () => {
           disabled={!isReady || isLoading}
           placeholder={
             isReady
-              ? "Ask anything... (Enter to send, Shift+Enter for newline)"
-              : "Enable local AI to chat"
+              ? `Ask ${assistantName} anything... (Enter to send, Shift+Enter for newline)`
+              : `Enable ${assistantName} in Settings to chat`
           }
           className="w-full bg-transparent p-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none resize-none disabled:opacity-50"
         />
@@ -264,6 +273,15 @@ export const AiChatPage: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Verification Disclaimer Footer */}
+      <div className="mt-2 px-2 flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
+        <AlertTriangle className="w-3.5 h-3.5 text-amber-500/70 shrink-0" />
+        <span>
+          {assistantName} responses can contain inaccuracies. Always verify
+          generated code and instructions before use.
+        </span>
       </div>
     </div>
   );

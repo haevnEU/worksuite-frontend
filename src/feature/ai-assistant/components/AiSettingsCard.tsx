@@ -3,11 +3,12 @@ import {
   AlertCircle,
   Bot,
   CheckCircle2,
+  Info,
   Power,
   RefreshCw,
   Server,
-  Sliders,
   Sparkles,
+  Tag,
   XCircle,
 } from "lucide-react";
 import { useLocalAI } from "../hooks/useLocalAI";
@@ -41,8 +42,10 @@ export const AiSettingsCard: React.FC = () => {
     }
   };
 
+  const displayName = config.assistantName || "WorkSuite AI";
+
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5 text-slate-200">
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5 text-slate-200 font-sans">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div className="flex items-center gap-3">
           <div
@@ -57,10 +60,10 @@ export const AiSettingsCard: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-bold text-white">
-                Local AI Integration
+                {displayName} Integration
               </h2>
               <span
-                className={`px-2 py-0.2 rounded-full text-[10px] font-bold border ${
+                className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                   isEnabled
                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                     : "bg-slate-800 text-slate-400 border-slate-700"
@@ -70,7 +73,7 @@ export const AiSettingsCard: React.FC = () => {
               </span>
             </div>
             <p className="text-[11px] text-slate-400">
-              Ollama or OpenAI-compatible local endpoints (LocalAI, vLLM)
+              {displayName} Engine via Ollama reverse proxy
             </p>
           </div>
         </div>
@@ -142,15 +145,34 @@ export const AiSettingsCard: React.FC = () => {
         <div className="p-3 bg-amber-950/20 border border-amber-800/40 rounded-xl flex items-center gap-2.5 text-amber-300 text-xs">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>
-            No connection to local AI instance. This feature can only be enabled
-            once the endpoint is reachable.
+            No connection to {displayName} engine. This feature can only be
+            enabled once the endpoint is reachable.
           </span>
         </div>
       )}
 
+      {/* 3-Column Configuration Grid */}
       <div
-        className={`grid grid-cols-1 md:grid-cols-2 gap-4 transition-opacity ${!isEnabled ? "opacity-75" : "opacity-100"}`}
+        className={`grid grid-cols-1 md:grid-cols-3 gap-4 transition-opacity ${
+          !isEnabled ? "opacity-75" : "opacity-100"
+        }`}
       >
+        {/* Assistant Name */}
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+            <Tag className="w-3.5 h-3.5 text-purple-400" />
+            Assistant Name
+          </label>
+          <input
+            type="text"
+            value={config.assistantName ?? "WorkSuite AI"}
+            onChange={(e) => updateConfig({ assistantName: e.target.value })}
+            placeholder="e.g. WorkSuite AI, Copilot"
+            className="w-full bg-[#0b111e] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-purple-500"
+          />
+        </div>
+
+        {/* API Base URL */}
         <div className="space-y-1.5">
           <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
             <Server className="w-3.5 h-3.5 text-blue-400" />
@@ -160,11 +182,12 @@ export const AiSettingsCard: React.FC = () => {
             type="text"
             value={config.baseUrl}
             onChange={(e) => updateConfig({ baseUrl: e.target.value })}
-            placeholder="http://localhost:11434"
+            placeholder="/api/ollama"
             className="w-full bg-[#0b111e] border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-purple-500"
           />
         </div>
 
+        {/* Active Model */}
         <div className="space-y-1.5">
           <label className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
@@ -200,57 +223,16 @@ export const AiSettingsCard: React.FC = () => {
             />
           )}
         </div>
-
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-semibold text-slate-400">
-            Protocol / Engine
-          </label>
-          <select
-            value={config.provider}
-            onChange={(e) => updateConfig({ provider: e.target.value as any })}
-            className="w-full bg-[#0b111e] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500 cursor-pointer"
-          >
-            <option value="ollama">Ollama (/api/generate)</option>
-            <option value="openai-compatible">
-              OpenAI-compatible (/v1/chat/completions)
-            </option>
-          </select>
-        </div>
-
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
-              <Sliders className="w-3.5 h-3.5 text-amber-400" />
-              Temperature (Creativity vs. Precision)
-            </label>
-            <span className="text-xs font-mono text-purple-400 font-bold">
-              {config.temperature}
-            </span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={config.temperature}
-            onChange={(e) =>
-              updateConfig({ temperature: parseFloat(e.target.value) })
-            }
-            className="w-full accent-purple-500 cursor-pointer"
-          />
-        </div>
       </div>
 
-      <div className="space-y-1.5 pt-2 border-t border-slate-800/60">
-        <label className="text-[11px] font-semibold text-slate-400">
-          Global Default System Prompt
-        </label>
-        <textarea
-          rows={3}
-          value={config.systemPrompt}
-          onChange={(e) => updateConfig({ systemPrompt: e.target.value })}
-          className="w-full bg-[#0b111e] border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-purple-500 leading-relaxed font-mono resize-y"
-        />
+      {/* Setting Disclaimer Note */}
+      <div className="flex items-center gap-2 text-[11px] text-slate-500 bg-slate-950/40 border border-slate-800/60 p-3 rounded-xl">
+        <Info className="w-4 h-4 text-purple-400/80 shrink-0" />
+        <span>
+          Local models (especially small parameter sizes such as 3B) can
+          hallucinate class structures and method signatures. Verify generated
+          suggestions before applying them.
+        </span>
       </div>
 
       <div className="flex justify-end gap-2 pt-2">
@@ -259,9 +241,11 @@ export const AiSettingsCard: React.FC = () => {
           onClick={resetConfig}
           className="px-3 py-1.5 rounded-xl border border-slate-800 text-slate-400 hover:text-white text-xs font-semibold hover:bg-slate-800 transition cursor-pointer"
         >
-          Reset
+          Reset to Defaults
         </button>
       </div>
     </div>
   );
 };
+
+export default AiSettingsCard;

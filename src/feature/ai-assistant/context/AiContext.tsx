@@ -1,9 +1,9 @@
 import React, {
   createContext,
-  useCallback,
   useContext,
-  useEffect,
   useState,
+  useEffect,
+  useCallback,
 } from "react";
 import type { AvailableModel, LocalAiConfig } from "../models/ai.model";
 import {
@@ -15,12 +15,9 @@ const STORAGE_KEY_CONFIG = "worktool_local_ai_config";
 
 export const DEFAULT_AI_CONFIG: LocalAiConfig = {
   enabled: true,
-  baseUrl: "http://localhost:11434",
+  baseUrl: "/api/ollama",
   model: "llama3:8b",
-  provider: "ollama",
-  temperature: 0.2,
-  systemPrompt:
-    "You are a Senior Software Engineer specializing in clean code, maintainability, testability, and security across Java and TypeScript environments.",
+  assistantName: "WorkSuite AI",
 };
 
 interface AiContextType {

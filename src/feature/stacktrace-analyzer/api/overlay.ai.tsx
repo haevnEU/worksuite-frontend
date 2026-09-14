@@ -1,6 +1,6 @@
 import React from "react";
 import { Bug } from "lucide-react";
-import { AiOverlayDrawer } from "../../ai-assistant";
+import { AiOverlayDrawer, useAI } from "../../ai-assistant";
 import type { ParsedStackTrace } from "../models/stacktrace.model";
 import {
   buildStackTracePrompt,
@@ -14,6 +14,8 @@ interface StacktraceAiOverlayProps {
 export const StacktraceAiOverlay: React.FC<StacktraceAiOverlayProps> = ({
   analysis,
 }) => {
+  const { assistantName } = useAI();
+
   const rootCause =
     analysis && analysis.exceptions.length > 0
       ? analysis.exceptions[analysis.exceptions.length - 1]
@@ -21,10 +23,9 @@ export const StacktraceAiOverlay: React.FC<StacktraceAiOverlayProps> = ({
 
   return (
     <AiOverlayDrawer
-      buttonLabel="AI Root Cause Analysis"
       buttonBadge={analysis ? analysis.exceptions.length : undefined}
       isDisabled={!analysis || analysis.exceptions.length === 0}
-      title="AI Stacktrace & Root-Cause Diagnosis"
+      title={`${assistantName} Root-Cause Diagnosis`}
       icon={<Bug className="w-4 h-4 text-rose-400" />}
       subtitle={
         <span>
@@ -34,11 +35,9 @@ export const StacktraceAiOverlay: React.FC<StacktraceAiOverlayProps> = ({
           </strong>
         </span>
       }
-      loadingTitle="Analyzing Java Stacktrace..."
       loadingSubtitle="Evaluating exception chains, causal links, and project frames."
       emptyMessage="No parsed stacktrace available to analyze."
       systemPrompt={STACKTRACE_ANALYSIS_SYSTEM_PROMPT}
-      temperature={0.15}
       getPrompt={() => (analysis ? buildStackTracePrompt(analysis) : "")}
     />
   );

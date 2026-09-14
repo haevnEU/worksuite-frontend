@@ -12,6 +12,7 @@ export function useAI() {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const isReady = Boolean(config.enabled && isConnected);
+  const assistantName = config.assistantName || "WorkSuite AI";
 
   const abort = useCallback(() => {
     if (abortControllerRef.current) {
@@ -24,13 +25,13 @@ export function useAI() {
   const generate = useCallback(
     async (prompt: string, options?: PromptOptions): Promise<string> => {
       if (!config.enabled) {
-        const msg = "Lokale KI ist in den Einstellungen deaktiviert.";
+        const msg = `${assistantName} is disabled in settings.`;
         setError(msg);
         throw new Error(msg);
       }
 
       if (!isConnected) {
-        const msg = "Lokale KI-Schnittstelle ist aktuell nicht erreichbar.";
+        const msg = `${assistantName} endpoint is currently unreachable.`;
         setError(msg);
         throw new Error(msg);
       }
@@ -56,7 +57,7 @@ export function useAI() {
         if (err instanceof Error && err.name === "AbortError") {
           return "";
         }
-        const msg = err instanceof Error ? err.message : "Inferenzfehler";
+        const msg = err instanceof Error ? err.message : "Inference error";
         setError(msg);
         throw err;
       } finally {
@@ -64,7 +65,7 @@ export function useAI() {
         abortControllerRef.current = null;
       }
     },
-    [config, isConnected],
+    [config, isConnected, assistantName],
   );
 
   return {
@@ -77,5 +78,7 @@ export function useAI() {
     isReady,
     isEnabled: config.enabled,
     currentModel: config.model,
+    assistantName,
+    config,
   };
 }
