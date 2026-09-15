@@ -70,6 +70,14 @@ export class TicketService extends NetworkService {
     await this.post<void>(`/${encodeURIComponent(id)}/time-entries`, data);
     ToastManager.toastGood(`Time logged successfully for ticket #${id}.`);
   }
+
+    async logProjectTime(projectId: number, payload: LogTimePayload) {
+      if (!projectId || projectId <= 0) {
+        return ToastManager.toastBad("Invalid project ID!");
+      }
+
+      await this.post<void>(`/projects/${encodeURIComponent(projectId)}/time-entries`, payload);
+    }
 }
 
 export const ticketService = new TicketService();
