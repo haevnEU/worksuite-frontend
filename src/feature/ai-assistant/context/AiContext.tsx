@@ -1,22 +1,13 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
-import type { AvailableModel, LocalAiConfig } from "../models/ai.model";
-import {
-  fetchInstalledModels,
-  testAiConnection,
-} from "../services/localllm.service";
+import React, {createContext, useCallback, useContext, useEffect, useRef, useState,} from "react";
+import type {AvailableModel, LocalAiConfig} from "../models/ai.model";
+import {fetchInstalledModels, testAiConnection,} from "../services/localllm.service";
 
 const STORAGE_KEY_CONFIG = "worktool_local_ai_config";
 
 export const DEFAULT_AI_CONFIG: LocalAiConfig = {
   enabled: true,
   baseUrl: "/api/ollama",
-  model: "llama3:8b",
+  model: "llama3.2:3b",
   assistantName: "WorkSuite AI",
 };
 
@@ -35,14 +26,14 @@ interface AiContextType {
 const AiContext = createContext<AiContextType | null>(null);
 
 export const AiProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+                                                                      children,
+                                                                    }) => {
   const [config, setConfig] = useState<LocalAiConfig>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY_CONFIG);
       return raw
-        ? { ...DEFAULT_AI_CONFIG, ...JSON.parse(raw) }
-        : DEFAULT_AI_CONFIG;
+          ? {...DEFAULT_AI_CONFIG, ...JSON.parse(raw)}
+          : DEFAULT_AI_CONFIG;
     } catch {
       return DEFAULT_AI_CONFIG;
     }
@@ -52,77 +43,78 @@ export const AiProvider: React.FC<{ children: React.ReactNode }> = ({
   const [availableModels, setAvailableModels] = useState<AvailableModel[]>([]);
   const [isLoadingModels, setIsLoadingModels] = useState(false);
 
+  // Ref, um in Callbacks immer die aktuellste Config ohne unnötige Re-Renders zu haben
+  const configRef = useRef(config);
+  configRef.current = config;
+
+  const updateConfig = useCallback((patch: Partial<LocalAiConfig>) => {
+    setConfig((prev) => {
+      const next = {...prev, ...patch};
+      localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const checkConnection = useCallback(async (): Promise<boolean> => {
-    const ok = await testAiConnection(config);
+    const currentConfig = configRef.current;
+    const ok = await testAiConnection(currentConfig);
     setIsConnected(ok);
 
-    if (!ok && config.enabled) {
-      setConfig((prev) => {
-        const updated = { ...prev, enabled: false };
-        localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(updated));
-        return updated;
-      });
+    if (!ok && currentConfig.enabled) {
+      updateConfig({enabled: false});
     }
 
     return ok;
-  }, [config]);
+  }, [updateConfig]);
 
   const refreshModels = useCallback(async () => {
     setIsLoadingModels(true);
+    const currentConfig = configRef.current;
     try {
-      const models = await fetchInstalledModels(config);
+      const models = await fetchInstalledModels(currentConfig);
       setAvailableModels(models);
+
       const connectionOk =
-        models.length > 0 || (await testAiConnection(config));
+          models.length > 0 || (await testAiConnection(currentConfig));
       setIsConnected(connectionOk);
 
-      if (!connectionOk && config.enabled) {
-        setConfig((prev) => {
-          const updated = { ...prev, enabled: false };
-          localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(updated));
-          return updated;
-        });
+      if (models.length > 0) {
+        // Falls das ausgewählte Modell nicht auf dem Host existiert,
+        // automatisch auf das erste verfügbare Modell wechseln
+        const exists = models.some((m) => m.name === currentConfig.model);
+        if (!exists) {
+          updateConfig({model: models[0].name});
+        }
+      }
+
+      if (!connectionOk && currentConfig.enabled) {
+        updateConfig({enabled: false});
       }
     } finally {
       setIsLoadingModels(false);
     }
-  }, [config]);
-
-  const updateConfig = useCallback(
-    (patch: Partial<LocalAiConfig>) => {
-      setConfig((prev) => {
-        const nextEnabled =
-          patch.enabled !== undefined
-            ? patch.enabled && isConnected === true
-            : prev.enabled;
-
-        const next = { ...prev, ...patch, enabled: nextEnabled };
-        localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(next));
-        return next;
-      });
-    },
-    [isConnected],
-  );
+  }, [updateConfig]);
 
   const toggleEnabled = useCallback(
-    async (forceState?: boolean): Promise<boolean> => {
-      const targetState = forceState ?? !config.enabled;
+      async (forceState?: boolean): Promise<boolean> => {
+        const currentConfig = configRef.current;
+        const targetState = forceState ?? !currentConfig.enabled;
 
-      if (!targetState) {
-        updateConfig({ enabled: false });
+        if (!targetState) {
+          updateConfig({enabled: false});
+          return false;
+        }
+
+        const ok = await checkConnection();
+        if (ok) {
+          updateConfig({enabled: true});
+          return true;
+        }
+
+        updateConfig({enabled: false});
         return false;
-      }
-
-      const ok = await checkConnection();
-      if (ok) {
-        updateConfig({ enabled: true });
-        return true;
-      }
-
-      updateConfig({ enabled: false });
-      return false;
-    },
-    [config.enabled, checkConnection, updateConfig],
+      },
+      [checkConnection, updateConfig],
   );
 
   const resetConfig = useCallback(() => {
@@ -135,21 +127,21 @@ export const AiProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [checkConnection]);
 
   return (
-    <AiContext.Provider
-      value={{
-        config,
-        updateConfig,
-        toggleEnabled,
-        resetConfig,
-        isConnected,
-        checkConnection,
-        availableModels,
-        refreshModels,
-        isLoadingModels,
-      }}
-    >
-      {children}
-    </AiContext.Provider>
+      <AiContext.Provider
+          value={{
+            config,
+            updateConfig,
+            toggleEnabled,
+            resetConfig,
+            isConnected,
+            checkConnection,
+            availableModels,
+            refreshModels,
+            isLoadingModels,
+          }}
+      >
+        {children}
+      </AiContext.Provider>
   );
 };
 
