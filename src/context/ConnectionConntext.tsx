@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { ConnectionStatus } from "../types/PushService.type";
 import { pushService } from "../services/push/push.service.ts";
-import { aboutService } from "../services/network/about.service.ts";
+import {aboutService} from "../feature/about/services/about.service.ts";
 
 interface ConnectionContextType {
   isConnected: boolean;

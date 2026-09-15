@@ -44,8 +44,6 @@ import ToolsPage from "./pages/Tools.page.tsx";
 import MockDataPage from "./pages/MockData.page.tsx";
 import RuleGeneratorPage from "./pages/RuleGenerator.page.tsx";
 import { LicenseProvider, useLicense } from "./context/LicenseContext.tsx";
-import { AboutPage } from "./pages/About.page.tsx";
-import { AboutProvider } from "./context/AboutContext.tsx";
 import PlanSelectionPage from "./pages/public/PlanSelection.page.tsx";
 
 import { getAppBackgroundStyles } from "./utils/license.util.ts";
@@ -61,6 +59,7 @@ import { AiProvider } from "./feature/ai-assistant";
 import StackTraceAnalyzerPage from "./feature/stacktrace-analyzer/pages/StackTraceAnalyzerPage.tsx";
 import AiChatPage from "./feature/ai-chat/pages/AiChatPage.tsx";
 import {WeeklyPage} from "./feature/team-meeting";
+import {AboutPage, AboutProvider} from "./feature/about";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);

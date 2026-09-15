@@ -1,5 +1,5 @@
-import { NetworkService } from "./network.service.ts";
-import { AboutSystemInfo } from "../../models/about.model.ts";
+import {NetworkService} from "../../../services/network/network.service.ts";
+import {AboutSystemInfo} from "../model/about.model.ts";
 
 export class AboutService extends NetworkService {
   constructor() {

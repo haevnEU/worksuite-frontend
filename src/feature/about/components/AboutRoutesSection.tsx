@@ -1,34 +1,14 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Route, RefreshCw, Search, RotateCcw, Filter, AlertTriangle } from "lucide-react";
-import {routeService, RouteUsageMetric} from "../../services/network/route.service";
+import { useAbout } from "../context/AboutContext";
 
 export const AboutRoutesSection: React.FC = () => {
-    const [metrics, setMetrics] = useState<RouteUsageMetric[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const { routeMetrics, isLoadingRoutes, refreshRouteMetrics, resetRouteMetric } = useAbout();
     const [search, setSearch] = useState<string>("");
     const [filterMode, setFilterMode] = useState<"ALL" | "UNUSED" | "ACTIVE">("ALL");
 
-    const loadMetrics = async () => {
-        setIsLoading(true);
-        try {
-            const data = await routeService.fetchAll();
-            setMetrics(data);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadMetrics();
-    }, []);
-
-    const handleReset = async (httpMethod: string, pattern: string) => {
-        await routeService.resetMetric(httpMethod, pattern);
-        loadMetrics();
-    };
-
     const filteredMetrics = useMemo(() => {
-        return metrics.filter((m) => {
+        return routeMetrics.filter((m) => {
             const matchesSearch =
                 m.pattern.toLowerCase().includes(search.toLowerCase()) ||
                 m.controllerClass.toLowerCase().includes(search.toLowerCase()) ||
@@ -40,11 +20,11 @@ export const AboutRoutesSection: React.FC = () => {
             if (filterMode === "ACTIVE") return m.invocationCount > 0;
             return true;
         });
-    }, [metrics, search, filterMode]);
+    }, [routeMetrics, search, filterMode]);
 
     const unusedCount = useMemo(
-        () => metrics.filter((m) => m.invocationCount === 0).length,
-        [metrics]
+        () => routeMetrics.filter((m) => m.invocationCount === 0).length,
+        [routeMetrics]
     );
 
     const getMethodBadgeClass = (method: string) => {
@@ -74,7 +54,7 @@ export const AboutRoutesSection: React.FC = () => {
                         API Route Metrics & Dead-Code Tracker
                     </h2>
                     <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-            {metrics.length} Routes
+            {routeMetrics.length} Routes
           </span>
                     {unusedCount > 0 && (
                         <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-950/60 text-rose-300 border border-rose-800/60 flex items-center gap-1">
@@ -86,13 +66,13 @@ export const AboutRoutesSection: React.FC = () => {
 
                 <button
                     type="button"
-                    onClick={loadMetrics}
-                    disabled={isLoading}
+                    onClick={refreshRouteMetrics}
+                    disabled={isLoadingRoutes}
                     className="p-1.5 rounded-lg bg-[#0b111e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition cursor-pointer disabled:opacity-50 self-start sm:self-center"
                     title="Refresh Route Metrics"
                 >
                     <RefreshCw
-                        className={`w-3.5 h-3.5 ${isLoading ? "animate-spin text-cyan-400" : ""}`}
+                        className={`w-3.5 h-3.5 ${isLoadingRoutes ? "animate-spin text-cyan-400" : ""}`}
                     />
                 </button>
             </div>
@@ -188,7 +168,7 @@ export const AboutRoutesSection: React.FC = () => {
                                     <td className="p-3 text-center">
                                         <button
                                             type="button"
-                                            onClick={() => handleReset(m.httpMethod, m.pattern)}
+                                            onClick={() => resetRouteMetric(m.httpMethod, m.pattern)}
                                             className="p-1 rounded bg-[#0b111e] hover:bg-slate-800 text-slate-500 hover:text-rose-400 border border-slate-800 transition cursor-pointer"
                                             title="Reset counter"
                                         >
