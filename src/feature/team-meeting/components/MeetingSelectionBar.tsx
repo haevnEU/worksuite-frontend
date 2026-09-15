@@ -1,6 +1,6 @@
 import React from "react";
 import { Archive, Calendar, CheckCircle2, ChevronRight } from "lucide-react";
-import { WeeklyMeetingDTO } from "../../models/weeklyMeeting.model.ts";
+import {WeeklyMeetingDTO} from "../models/weekly.model.ts";
 
 interface MeetingSelectionBarProps {
   allMeetings: WeeklyMeetingDTO[];

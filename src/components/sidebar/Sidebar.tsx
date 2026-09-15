@@ -404,8 +404,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             requiredPlan: "PRO",
           },
           {
-            label: "Team Meeting",
-            path: "/teammeeting",
+            label: "Weekly Meeting",
+            path: "/weekly",
             icon: Users,
             requiredPlan: "PRO",
           },

@@ -9,8 +9,9 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { WeeklyMeetingDTO } from "../../models/weeklyMeeting.model.ts";
-import { isWeekend } from "../../utils/teamMeeting.util.ts";
+import {WeeklyMeetingDTO} from "../models/weekly.model.ts";
+import {isWeekend} from "../utils/weekly.util.ts";
+
 
 interface MeetingArchiveModalProps {
   isOpen: boolean;

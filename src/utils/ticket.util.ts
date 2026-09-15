@@ -122,13 +122,13 @@ export const getPriorityBadgeClass = (priority: string | null): string => {
 };
 
 export const getTicketLink = (id: number | string): string => {
-  const redmineBaseUrl = (import.meta.env.VITE_REDMINE_URL || "./").replace(/\/+$/, "");
+  const redmineBaseUrl = (import.meta.env.VITE_REDMINE_URL || "https://pm.hausheld.info").replace(/\/+$/, "");
   return `${redmineBaseUrl}/issues/${id}`;
 };
 
 
 export const getProjectLink = (id: number | string): string => {
-  const redmineBaseUrl = (import.meta.env.VITE_REDMINE_URL || "./").replace(/\/+$/, "");
+  const redmineBaseUrl = (import.meta.env.VITE_REDMINE_URL || "https://pm.hausheld.info").replace(/\/+$/, "");
   return `${redmineBaseUrl}/projects/${id}`;
 };
 

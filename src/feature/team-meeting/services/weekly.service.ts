@@ -1,9 +1,10 @@
-import { ToastManager } from "../../toaster/ToastManager.ts";
-import { WeeklyMeetingDTO } from "../../models/weeklyMeeting.model.ts";
-import { NetworkService } from "./network.service.ts";
-import { fileDownloadService } from "./fileDownload.service.ts";
+import {NetworkService} from "../../../services/network/network.service.ts";
+import {WeeklyMeetingDTO} from "../models/weekly.model.ts";
+import {ToastManager} from "../../../toaster/ToastManager.ts";
+import {fileDownloadService} from "../../../services/network/fileDownload.service.ts";
 
-export class WeeklyMeetingService extends NetworkService {
+
+export class WeeklyService extends NetworkService {
   constructor() {
     super("/weekly-meetings");
   }
@@ -76,4 +77,4 @@ export class WeeklyMeetingService extends NetworkService {
   }
 }
 
-export const weeklyMeetingService = new WeeklyMeetingService();
+export const weeklyService = new WeeklyService();

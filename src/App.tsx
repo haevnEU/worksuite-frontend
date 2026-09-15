@@ -11,7 +11,6 @@ import { DashboardSkeleton } from "./components/SkeletonLoader.tsx";
 import { DashboardPage } from "./pages/Dashboard.page.tsx";
 import { TicketsPage } from "./pages/Tickets.page.tsx";
 import { TimeTrackingPage } from "./pages/TimeTracking.page.tsx";
-import { TeamMeetingPage } from "./pages/TeamMeeting.page.tsx";
 import { RetroPage } from "./pages/Retro.page.tsx";
 import { ReviewPage } from "./pages/Review.page.tsx";
 import { SharePage } from "./pages/Share.page.tsx";
@@ -61,6 +60,7 @@ import { MrReviewPage } from "./feature/mr-review";
 import { AiProvider } from "./feature/ai-assistant";
 import StackTraceAnalyzerPage from "./feature/stacktrace-analyzer/pages/StackTraceAnalyzerPage.tsx";
 import AiChatPage from "./feature/ai-chat/pages/AiChatPage.tsx";
+import {WeeklyPage} from "./feature/team-meeting";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -119,15 +119,9 @@ const AuthenticatedLayout: React.FC = () => {
               <Route path="/templates" element={<TemplatePage />} />
               <Route path="/time-log" element={<TimeTrackingPage />} />
               <Route path="/share" element={<SharePage />} />
-              <Route path="/log" element={<LogAnalyzer />} />
-              <Route path="/ai-chat" element={<AiChatPage />} />
-              <Route path="/stacktrace" element={<StackTraceAnalyzerPage />} />
               <Route path="/tools" element={<ToolsPage />} />
               <Route path="/retro" element={<RetroPage />} />
-              <Route path="/teammeeting" element={<TeamMeetingPage />} />
               <Route path="/review" element={<ReviewPage />} />
-              <Route path="/mr-review" element={<MrReviewPage />} />
-
               <Route path="/database" element={<DatabaseQueryPage />} />
               <Route path="/csv-viewer" element={<CsvViewerPage />} />
               <Route path="/mock-data" element={<MockDataPage />} />
@@ -136,6 +130,11 @@ const AuthenticatedLayout: React.FC = () => {
               <Route path="/http-methods" element={<HttpMethods />} />
               <Route path="/cheats" element={<CheatsheetPage />} />
 
+              <Route path="/stacktrace" element={<StackTraceAnalyzerPage />} />
+              <Route path="/log" element={<LogAnalyzer />} />
+              <Route path="/ai-chat" element={<AiChatPage />} />
+              <Route path="/weekly" element={<WeeklyPage />} />
+              <Route path="/mr-review" element={<MrReviewPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           )}
