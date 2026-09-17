@@ -58,8 +58,10 @@ import { MrReviewPage } from "./feature/mr-review";
 import { AiProvider } from "./feature/ai-assistant";
 import StackTraceAnalyzerPage from "./feature/stacktrace-analyzer/pages/StackTraceAnalyzerPage.tsx";
 import AiChatPage from "./feature/ai-chat/pages/AiChatPage.tsx";
-import {WeeklyPage} from "./feature/team-meeting";
-import {AboutPage, AboutProvider} from "./feature/about";
+import { WeeklyPage } from "./feature/team-meeting";
+import { AboutPage, AboutProvider } from "./feature/about";
+import { MrCreatorPage } from "./feature/mr-creator";
+import TicketHandoverPage from "./feature/ticket-handover/pages/TicketHandoverPage.tsx";
 
 const AuthenticatedLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -134,6 +136,8 @@ const AuthenticatedLayout: React.FC = () => {
               <Route path="/ai-chat" element={<AiChatPage />} />
               <Route path="/weekly" element={<WeeklyPage />} />
               <Route path="/mr-review" element={<MrReviewPage />} />
+              <Route path="/mr-wizard" element={<MrCreatorPage />} />
+              <Route path="/ticket-handover" element={<TicketHandoverPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           )}

@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowRightIcon,
   BookOpen,
   Bug,
+  CheckSquareIcon,
   Clock,
   Code2,
   CodeXml,
@@ -9,6 +11,7 @@ import {
   FileCode,
   FileTerminal,
   GitBranch,
+  GitPullRequestCreateIcon,
   Globe,
   Info,
   LayoutDashboard,
@@ -288,17 +291,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
               },
           disabled: !isReady,
         },
-        {
-          label: "MR Review Wizard",
-          path: "/mr-review",
-          icon: MessageSquareCheckIcon,
-          requiredPlan: "PRO",
-        },
       ],
     }),
     [pendingReviewsCount, openTickets, isReady, currentModel],
   );
 
+  const feedbackGroup: { title: string; items: NavItem[] } = useMemo(
+    () => ({
+      title: "Handoff Hub",
+      items: [
+        {
+          label: "MR Wizard",
+          path: "/mr-wizard",
+          icon: GitPullRequestCreateIcon,
+          requiredPlan: "PRO",
+        },
+        {
+          label: "MR Review Wizard",
+          path: "/mr-review",
+          icon: CheckSquareIcon,
+          requiredPlan: "PRO",
+        },
+        {
+          label: "Ticket Handover",
+          path: "/ticket-handover",
+          icon: ArrowRightIcon,
+          requiredPlan: "PRO",
+        },
+      ],
+    }),
+    [],
+  );
   const otherNavGroups: { title: string; items: NavItem[] }[] = useMemo(
     () => [
       {
@@ -553,6 +576,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onNavClick={handleNavClick}
               />
             </div>
+          )}
+
+          {feedbackGroup.items.length > 0 && (
+            <SidebarNavGroup
+              title={feedbackGroup.title}
+              items={feedbackGroup.items}
+              isOpen={openGroups[feedbackGroup.title] ?? true}
+              collapsed={collapsed && !mobileOpen}
+              isFavoritable={false}
+              onToggle={() => toggleGroup(feedbackGroup.title)}
+              onNavClick={handleNavClick}
+            />
           )}
 
           {/* Andere Gruppen */}
